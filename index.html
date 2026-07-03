@@ -174,7 +174,7 @@
   </div>
 
   <footer class="footer">
-    <div class="footer-left">VOIDCIPHER v0.4.0</div>
+    <div class="footer-left">VOIDCIPHER v0.5.0</div>
     <div class="footer-right">
       <span>EST. 2026</span>
       <span>NODE: HK-03</span>
@@ -188,11 +188,27 @@
 
   const DEFAULT_GAMES = [
     {
-      title: 'WHO — Alan Cross',
+      title: 'BLACKBOX',
+      path: '题库/blackbox.html',
+      icon: '◣',
+      desc: '经典 Blackbox 逻辑推理游戏。通过向网格发射射线，根据射线被吸收、反射或穿透的行为，推断隐藏球体的精确位置。',
+      category: '逻辑推理',
+      difficulty: '中等'
+    },
+    {
+      title: '艾伦·克罗斯谜案',
       path: '题库/WHO/index.html',
-      icon: '🔍',
-      desc: '冷战密码学家 Alan Cross 的 Wiki 条目。看似正常的人物百科，背后隐藏着不为人知的秘密。穿梭于多个 Wiki 页面，搜集线索，解开最终的密码。',
+      icon: '◎',
+      desc: '调查神秘的艾伦·克罗斯失踪事件。浏览维基百科风格的档案页面，在冷战密码、低语计划和遗失作品之间寻找线索，揭开真相。',
       category: '文字解密',
+      difficulty: '困难'
+    },
+    {
+      title: '码农老李遇害案',
+      path: '题库/KILLMEBABY/index.html',
+      icon: '◉',
+      desc: '退休前的最后一案。老码农论坛惊现命案，在帖子、回复和代码片段中挖掘蛛丝马迹，找出凶手。',
+      category: '推理探案',
       difficulty: '中等'
     }
   ];

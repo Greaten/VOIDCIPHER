@@ -419,6 +419,20 @@ const DEFAULT_GAMES = [{
   category: '逻辑推理',
   difficulty: '中等',
   icon: '◣'
+}, {
+  title: '艾伦·克罗斯谜案',
+  path: 'E:\\website\\题库\\WHO\\index.html',
+  desc: '调查神秘的艾伦·克罗斯失踪事件。浏览维基百科风格的档案页面，在冷战密码、低语计划和遗失作品之间寻找线索，揭开真相。',
+  category: '文字解密',
+  difficulty: '困难',
+  icon: '◎'
+}, {
+  title: '码农老李遇害案',
+  path: 'E:\\website\\题库\\KILLMEBABY\\index.html',
+  desc: '退休前的最后一案。老码农论坛惊现命案，在帖子、回复和代码片段中挖掘蛛丝马迹，找出凶手。',
+  category: '推理探案',
+  difficulty: '中等',
+  icon: '◉'
 }];
 
 function getGames() {
@@ -434,8 +448,16 @@ function saveGames(games) {
 }
 
 function ensureDefaults() {
-  if (!localStorage.getItem(STORAGE_KEY)) {
+  const games = getGames();
+  if (games.length === 0) {
     saveGames(DEFAULT_GAMES);
+    return;
+  }
+  // Merge: add new default games not already present (keyed by path)
+  const existingPaths = new Set(games.map(g => g.path));
+  const newGames = DEFAULT_GAMES.filter(g => !existingPaths.has(g.path));
+  if (newGames.length > 0) {
+    saveGames([...games, ...newGames]);
   }
 }
 
