@@ -186,9 +186,23 @@
 <script>
   const STORAGE_KEY = 'voidcipher_games';
 
+  const DEFAULT_GAMES = [
+    {
+      title: 'WHO — Alan Cross',
+      path: '题库/WHO/index.html',
+      icon: '🔍',
+      desc: '冷战密码学家 Alan Cross 的 Wiki 条目。看似正常的人物百科，背后隐藏着不为人知的秘密。穿梭于多个 Wiki 页面，搜集线索，解开最终的密码。',
+      category: '文字解密',
+      difficulty: '中等'
+    }
+  ];
+
   function getGames() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch(e) { return []; }
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (stored && stored.length > 0) return stored;
+    } catch(e) {}
+    return DEFAULT_GAMES;
   }
 
   function renderGameLibrary() {
