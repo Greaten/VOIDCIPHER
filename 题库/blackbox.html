@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Win95 — Lin 案调查</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --desk-bg:#008080;
+  --win95-gray:#c0c0c0;
+  --win95-dgray:gray;
+  --win95-title:#000080;
+  --win95-title-text:white;
+  --taskbar-bg:#c0c0c0;
+  --cyan:#0ff;
+  --green:#0f0;
+  --red:#ff4757;
+  --yellow:#ffa502;
+  --purple:#e056fd;
+  --term-bg:#0a0a0a;
+}
+
+body{
+  font-family:'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif;
+  overflow:hidden;
+  height:100vh;
+  width:100vw;
+  background:var(--desk-bg);
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+/* ===== DESKTOP ===== */
+#desktop{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:calc(100% - 40px);
+  background-color:#008080;
+  background-image:
+    linear-gradient(45deg, rgba(0,0,0,0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(0,0,0,0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.04) 75%);
+  background-size:4px 4px;
+  background-position:0 0,0 2px,2px -2px,-2px 0;
+  overflow:hidden;
+}
+
+
+
+#icon-grid{
+  position:absolute;
+  top:20px;left:20px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  z-index:1;
+}
+
+.desk-icon{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  padding:8px 12px;
+  border-radius:2px;
+  width:80px;
+  text-align:center;
+  transition:background 0.1s;
+}
+.desk-icon:hover{background:rgba(255,255,255,0.15);}
+.desk-icon:active{background:rgba(255,255,255,0.25);}
+.desk-icon .ico{
+  font-size:51px;
+  line-height:1;
+  filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
+}
+.desk-icon .lbl{
+  font-size:15px;
+  color:white;
+  text-shadow:1px 1px 2px black;
+  word-break:break-all;
+}
+.desk-icon.highlight .lbl{color:#0f0;text-shadow:0 0 6px #0f0}
+
+/* ===== TASKBAR ===== */
+#taskbar{
+  position:fixed;
+  bottom:0;left:0;
+  width:100%;height:40px;
+  background:var(--taskbar-bg);
+  border-top:2px solid #fff;
+  display:flex;
+  align-items:center;
+  padding:0 4px;
+  z-index:10000;
+  box-shadow:0 -1px 0 #808080;
+}
+
+#start-btn{
+  height:30px;
+  padding:0 12px;
+  background:var(--taskbar-bg);
+  border:1.5px outset #fff;
+  font-weight:bold;
+  font-size:16px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-shrink:0;
+}
+#start-btn:active{border-style:inset;}
+
+#start-menu {
+  position: absolute;
+  bottom: 40px;
+  left: 4px;
+  width: 240px;
+  background: var(--taskbar-bg);
+  border: 2px outset #fff;
+  box-shadow: 2px 2px 0 #000;
+  z-index: 20000;
+  display: none;
+  flex-direction: column;
+  padding: 4px 0;
+}
+.start-item {
+  padding: 6px 12px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.start-item:hover {
+  background: #000080;
+  color: #fff;
+}
+.start-item .icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+.start-sep {
+  height: 1px;
+  background: #808080;
+  margin: 4px 8px;
+}
+
+#window-buttons{
+  flex:1;
+  display:flex;
+  gap:2px;
+  padding:0 6px;
+  overflow-x:auto;
+}
+
+.taskbar-btn{
+  height:28px;
+  padding:0 10px;
+  min-width:100px;
+  max-width:160px;
+  border:1.5px outset #fff;
+  background:var(--taskbar-bg);
+  font-size:15px;
+  cursor:pointer;
+  text-align:left;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  flex-shrink:0;
+}
+.taskbar-btn:active{border-style:inset;}
+.taskbar-btn.active{border-style:inset;background:#d4d4d4;}
+
+#tray{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 8px;
+  height:28px;
+  border:1.5px inset #fff;
+  font-size:15px;
+  color:#000;
+  flex-shrink:0;
+}
+
+/* ===== WINDOWS ===== */
+.window-95{
+  position:absolute;
+  background:var(--taskbar-bg);
+  border:2px outset #fff;
+  box-shadow:1px 1px 0 #000;
+  display:flex;
+  flex-direction:column;
+  min-width:200px;
+  min-height:100px;
+  z-index:10;
+}
+
+.win-titlebar{
+  background:var(--win95-title);
+  color:var(--win95-title-text);
+  padding:3px 4px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  cursor:move;
+  font-size:16px;
+  flex-shrink:0;
+}
+.win-titlebar .win-title-text{
+  flex:1;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.win-titlebar .win-btn{
+  width:18px;height:18px;
+  background:var(--taskbar-bg);
+  border:1.5px outset #fff;
+  font-size:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  flex-shrink:0;
+}
+.win-titlebar .win-btn:active{border-style:inset;}
+
+.win-body{
+  flex:1;
+  overflow:auto;
+  background:#fff;
+}
+
+/* Terminal */
+.term-body{
+  flex:1;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:var(--term-bg);
+  position:relative;
+}
+
+.term-output{
+  flex:1;
+  overflow-y:auto;
+  padding:8px 12px;
+  color:var(--green);
+  font-size:18px;
+  line-height:1.55;
+  font-family:'Courier New','SimSun',monospace;
+  background:radial-gradient(ellipse at top,#0d1b2a 0%,#0a0a1a 100%);
+}
+.term-output::-webkit-scrollbar{width:4px}
+.term-output::-webkit-scrollbar-track{background:transparent}
+.term-output::-webkit-scrollbar-thumb{background:rgba(0,255,255,0.2);border-radius:2px}
+
+.term-output .line{margin-bottom:2px;word-break:break-all;white-space:pre-wrap}
+.term-output .line.system{color:var(--cyan)}
+.term-output .line.error{color:var(--red)}
+.term-output .line.warn{color:var(--yellow)}
+.term-output .line.success{color:#2ed573}
+.term-output .line.magic{color:var(--purple)}
+.term-output .line.file{color:var(--green)}
+.term-output .line.dir{color:var(--cyan);font-weight:bold}
+.term-output .line.locked{color:var(--red)}
+
+.term-scanlines{
+  position:absolute;
+  top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+  pointer-events:none;
+  z-index:1;
+}
+
+.term-input-line{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 12px;border-top:1px solid rgba(0,255,255,0.12);
+  flex-shrink:0;background:var(--term-bg);z-index:2;position:relative;
+}
+.term-input-line .prompt{
+  color:var(--cyan);font-size:18px;white-space:nowrap;
+  font-family:'Courier New',monospace;
+}
+#cmd-input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--green);font-family:'Courier New',monospace;
+  font-size:18px;caret-color:var(--cyan);
+}
+
+/* Explorer */
+.fexplorer-body{
+  padding:8px;font-size:16px;
+  font-family:'Microsoft YaHei','PingFang SC',sans-serif;
+  background:#fff;min-height:200px;
+  overflow-y:auto;overflow-x:hidden;
+}
+.fexplorer-body .tree-item{
+  padding:2px 0 2px 20px;cursor:pointer;color:#000;
+}
+.fexplorer-body .tree-item.dir{font-weight:bold;color:#000080}
+.fexplorer-body .tree-item.file{color:#333}
+.fexplorer-body .tree-item.locked{color:#cc0000}
+.fexplorer-body .tree-item.unlocked{color:#008000}
+.reader-body{
+  background:#fff;padding:12px;
+  font-family:'Courier New','SimSun',monospace;
+  font-size:16px;line-height:1.6;white-space:pre-wrap;
+  color:#222;flex:1;overflow-y:auto;overflow-x:auto;
+}
+
+/* Notepad */
+.notepad-body{
+  background:#fff;padding:12px;
+  font-family:'Microsoft YaHei','PingFang SC',sans-serif;
+  font-size:18px;line-height:1.6;white-space:pre-wrap;
+  color:#333;flex:1;overflow-y:auto;
+}
+
+/* Recycle Bin */
+.recycle-body{
+  background:#fff;padding:12px;
+  font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:16px;
+}
+.recycle-body .rc-item{
+  padding:6px 8px;border-bottom:1px solid #ddd;cursor:pointer;color:#333;
+}
+.recycle-body .rc-item:hover{background:#e8f0ff}
+.recycle-body .rc-preview{
+  margin-top:6px;padding:8px;background:#f5f5f5;
+  border:1px inset #ccc;font-family:'Courier New','SimSun',monospace;
+  font-size:15px;white-space:pre-wrap;display:none;
+}
+
+/* Glitch overlay */
+#glitch-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:9999;background:transparent;
+  transition:background 0.08s;
+}
+#glitch-overlay.active{background:rgba(0,255,100,0.06)}
+#glitch-overlay.shock{background:rgba(255,0,80,0.1)}
+
+/* Final reveal */
+#desk-red-alert{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:5000;
+  background:transparent;transition:background 1.5s;
+}
+#desk-red-alert.on{background:rgba(180,0,0,0.12)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:700px){
+  .window-95{left:2%!important;width:96%!important;max-height:60vh}
+  #icon-grid{flex-direction:row;flex-wrap:wrap;top:10px;left:10px;gap:10px}
+  .desk-icon{width:60px;padding:4px 6px}
+  .desk-icon .ico{font-size:38px}
+  .desk-icon .lbl{font-size:14px}
+  .term-output{font-size:15px}
+}
+
+/* ===== CRT OVERLAY ===== */
+@keyframes crt-jitter{
+  0%,100%{transform:translate(0,0)}
+  20%{transform:translate(0.5px,-0.3px)}
+  40%{transform:translate(-0.4px,0.2px)}
+  60%{transform:translate(0.3px,0.4px)}
+  80%{transform:translate(-0.2px,-0.1px)}
+}
+
+#crt-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:9997;
+  background:
+    radial-gradient(ellipse at center, rgba(255,220,150,0.04) 0%, rgba(255,180,80,0.07) 50%, rgba(20,10,0,0.10) 100%),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.38) 100%);
+  box-shadow:inset 0 0 200px rgba(0,0,0,0.35);
+  animation:crt-jitter 8s infinite ease-in-out;
+}
+
+#crt-overlay::before{
+  content:'';
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.09) 2px,
+    rgba(0,0,0,0.09) 4px
+  );
+}
+
+#crt-overlay::after{
+  content:'';
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:0.035;
+  mix-blend-mode:overlay;
+  background-size:256px 256px;
+}
+
+/* ===== ENDING MODAL ===== */
+#ending-overlay {
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.75);
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#ending-overlay.hidden { display:none; }
+
+#ending-dialog {
+  width:540px;
+  max-height:85vh;
+  overflow-y:auto;
+  background:var(--win95-gray);
+  border:2px outset #fff;
+  box-shadow:4px 4px 0 rgba(0,0,0,0.5);
+}
+#ending-dialog .title-bar {
+  background:linear-gradient(90deg,#000080,#1084d0);
+  color:var(--win95-title-text);
+  padding:8px 10px;
+  font-size:13px;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:default;
+}
+#ending-dialog .dialog-content {
+  padding:24px 20px;
+  font-size:13px;
+  line-height:1.8;
+  color:#222;
+  white-space:pre-wrap;
+  max-height:350px;
+  overflow-y:auto;
+}
+#ending-dialog .dialog-buttons {
+  padding:12px 20px 20px;
+  display:flex;
+  gap:12px;
+  justify-content:center;
+}
+#ending-dialog .dialog-buttons button {
+  font-family:inherit;
+  font-size:13px;
+  padding:8px 28px;
+  cursor:pointer;
+  background:var(--win95-gray);
+  border:1px outset #fff;
+  color:#222;
+  min-width:180px;
+}
+#ending-dialog .dialog-buttons button:hover {
+  background:#d4d0c8;
+}
+#ending-dialog .dialog-buttons button.primary {
+  background:linear-gradient(180deg,#000080,#0000a0);
+  color:var(--win95-title-text);
+  border:1px solid #000080;
+}
+#ending-dialog .dialog-buttons button.primary:hover {
+  background:linear-gradient(180deg,#0000a0,#0000c0);
+}
+</style>
+</head>
+<body>
+
+<div id="desktop">
+  <div id="icon-grid">
+    <div class="desk-icon" data-window="explorer" ondblclick="openWindow('explorer')">
+      <span class="ico">&#128193;</span>
+      <span class="lbl">我的文档</span>
+    </div>
+    <div class="desk-icon" data-window="terminal" ondblclick="openWindow('terminal')">
+      <span class="ico">&#128187;</span>
+      <span class="lbl">终端</span>
+    </div>
+    <div class="desk-icon" data-window="notepad" ondblclick="openWindow('notepad')">
+      <span class="ico">&#128221;</span>
+      <span class="lbl">便签</span>
+    </div>
+    <div class="desk-icon" data-window="recyclebin" ondblclick="openWindow('recyclebin')">
+      <span class="ico">&#128465;</span>
+      <span class="lbl">回收站</span>
+    </div>
+  </div>
+</div>
+
+<div id="glitch-overlay"></div>
+<div id="desk-red-alert"></div>
+<div id="crt-overlay"></div>
+
+<div id="taskbar">
+  <button id="start-btn" onclick="toggleStartMenu()">&#128038; 开始</button>
+  <div id="start-menu">
+    <div class="start-item" onclick="openWindow('explorer');toggleStartMenu()"><span class="icon">&#128193;</span> 文件资源管理器</div>
+    <div class="start-item" onclick="openWindow('terminal');toggleStartMenu()"><span class="icon">&#128187;</span> 终端</div>
+    <div class="start-item" onclick="openWindow('notepad');toggleStartMenu()"><span class="icon">&#128221;</span> 便签</div>
+    <div class="start-item" onclick="openWindow('recycle');toggleStartMenu()"><span class="icon">&#128465;</span> 回收站</div>
+    <div class="start-sep"></div>
+    <div class="start-item" onclick="clearGameCache()"><span class="icon">&#9888;</span> 删除缓存</div>
+  </div>
+  <div id="window-buttons"></div>
+  <div id="tray">
+    <span id="clock">00:00</span>
+  </div>
+</div>
+
+<script>
+// ===========================
+//  FILE SYSTEM DATA
+// ===========================
+
+const DEBRIS = {
+  'resume_old.docx':`林晨 — 个人简历
+
+教育背景:
+2014-2018  清华大学  计算机科学与技术  学士
+2018-2021  MIT  人工智能与认知科学  硕士
+
+工作经历:
+2021-2023  DeepMind  研究科学家
+          参与大型语言模型的安全性研究
+
+2023-2026  ZenTech  高级AI工程师
+          负责下一代AI助手"Project Echo"的核心算法开发
+
+技能: 神经映射、意识数字化、深度学习、NLP
+发表论文: 7篇 (其中3篇关于意识-计算接口)
+
+[文件已被删除。最后修改: 2026-06-14 02:11]`,
+
+  'meeting_notes.txt':`会议记录 — 2026年6月8日
+主题: Project Echo 安全审查
+参会者: Lin Chen, Dr. Wei (安全总监), 两位未具名人员
+
+Wei: "林，你最近的访问日志有些异常。你在查什么？"
+Lin: "只是在做例行代码审查。第三阶段的映射精度有提升空间。"
+Wei: "你访问了 S-0007 的完整档案。那个档案是机密。"
+Lin: "我注意到它的意识响应模式和其他实验体不同。纯技术好奇。"
+Wei: "好奇心对公司来说是一种风险。从现在起，你的访问权限仅限于
+     你需要的部分。明白吗？"
+Lin: "明白。"
+
+[会议结束]
+
+后续备注 (Lin添加):
+他们知道我在查了。Wei 带了两个安保的人进来，全程站在门口。
+我把关键数据复制到了个人云存储。明天开始写辞职信。`,
+
+  'Echo提案_损坏恢复.tmp':`[文件损坏 — 仅恢复部分片段]
+
+PROJECT ECHO — 项目提案
+版本: v4.2 (最新修订)
+状态: 董事会已批准
+
+...动通过神经映射接口捕获完整的人类意识模式...
+...存于分布式云服务器集群，实现意识永久驻留...
+...训练数据来源: 志愿者 (详见附录C)...
+...[数据损坏]...
+...计算资源利用率突破传统AI瓶颈...
+...商业应用: "Human Compute Cloud" 品牌...
+...[数据损坏]...
+...伦理审查: 待定 (已标记为优先级低)...
+
+[文件恢复失败: 扇区 0x4A7B 不可读]`,
+
+  'Lin的研究笔记_已删除.txt':`[回收站 — 文件已部分覆盖]
+
+═══════════════════════════════════════
+[可恢复片段 #1 — 偏移量 0x0000]
+
+Project Echo — 早期笔记
+记录人: 林晨
+日期: 2024年11月（具体日期已损坏）
+
+我刚加入 Echo 项目组。Wei 给我的第一个任务是
+熟悉神经映射接口的底层架构。
+
+原始设计文档显示：该系统最初是为████████而开发的。
+███████████████████████████████████████████
+[数据损坏]
+
+═══════════════════════════════════════
+[可恢复片段 #2 — 偏移量 0x04B0]
+
+...发现了 S-0007 的数据。它是第一个出现████的实验体。
+███████████████████████████████████████████
+如果 S-0007 的实验数据被公开……
+
+S-0007 就是关键……文件在 Project_Echo/README.md……
+密码用 S-0007……████████锁定……
+
+███████████████████████████████████████████
+
+═══════════════════════════════════════
+[可恢复片段 #3 — 偏移量 0x09F0]
+
+███████████████████████████████████████████
+...不要相信 Wei██。他█████████████████...
+...encrypted.dat 的密码 ██████████████████...
+
+[文件恢复终止: 剩余扇区不可读]\n`};
+
+const FS = {
+  type:'dir', name:'C:', children:{
+    'Users':{ type:'dir', children:{
+      'Lin':{ type:'dir', children:{
+        'Desktop':{ type:'dir', children:{
+          '任务简报.txt':{ type:'file', content:`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    私 家 侦 探 事 务 所 — 任务简报
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+案件编号: CASE-2026-0615
+委托人: 匿名（通过加密信道联系）
+任务类型: 远程数字取证
+目标主机: 已获远程访问权限
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+侦探，感谢你接下这个案子。
+
+三天前，一位自称"陈"的记者通过 SecureDrop 联系了我们。
+他说他的一位线人——ZenTech 公司的高级AI工程师 林晨——
+在6月14日凌晨突然失联。失踪前，林晨给他的 ProtonMail 邮箱
+发了一封草稿邮件，里面只有一个远程桌面的访问密钥和一句话：
+
+  "如果我周三没出现，进去找我。密码是猫的名字。"
+
+今天是6月15日，林晨没有出现。
+
+我们已经通过密钥远程接入了林晨的工作电脑。你的任务是：
+翻阅这台电脑上的所有文件，找出林晨失踪的真相。
+
+注意：
+· 部分文件可能被加密——密码线索藏在日常文件中
+· 林晨喜欢猫。猫的名字是线索。
+· 这台电脑是林晨最后的留言。他留下了痕迹。
+· 找到真相后，你会面临选择——请谨慎决定。
+
+祝你好运。
+                              — 事务所
+                               2026年6月15日` },
+
+          '个人日记.txt':{ type:'file', content:`2026年6月1日  晴
+
+今天是 Echo 项目第三阶段的第一天。说实话，我很兴奋。
+我们花了两年时间构建的神经映射接口终于要投入实际测试了。
+今天完成了 S-0001 的首次映射——一个45岁的男性志愿者。
+整个过程持续了约3小时，意识传输完整度达到了91%。
+团队开了香槟。Dr. Wei 说这是"人类进化的下一步"。
+
+我当时觉得他说得对。
+
+─────────────────────────
+
+2026年6月3日  多云
+
+今天复查 S-0001 的数据时发现了一些不太对劲的地方。
+意识映射的完整度报告显示是91%，但我看了原始日志——
+在传输的最后7分钟里，数据流出现了异常的振荡模式。
+像是……挣扎。
+
+我向 Wei 提了这个问题。他说这是正常的神经信号波动。
+"就像人睡觉时也会抽搐一样。"他笑着说。
+
+但我查了文献。这种振荡模式在已知的意识传输研究中被定义为
+"意识抗拒"。意味着数据源——那个实验体——在抗拒这个过程。
+
+可他是"志愿者"啊。志愿者为什么要抗拒？
+
+─────────────────────────
+
+2026年6月5日  阴
+
+张伟（同组的研究员，坐我隔壁工位）今天突然被调走了。
+没有任何预兆。他的工位上午还是满的，下午就空了。
+HR 说他"被调到了海外分部"。
+
+我给张伟发消息，他的账号已经停用了。微信也不回。
+
+张伟上周和我一起发现了 S-0003 的招募文件有问题。
+上面写着"志愿者补偿金 5000元"，但收款人那一栏——
+我仔细看了——是一个名为"城市资源管理"的第三方公司。
+不是个人账户。是公司在"卖"人。
+
+他刚发现，就被调走了。
+
+我开始害怕了。
+
+─────────────────────────
+
+2026年6月8日  雨
+
+今天被"请"去开了一个安全审查会议。
+Dr. Wei 带了两个安保的人站在门口。全程站着。
+
+他问我为什么访问 S-0007 的完整档案。
+我说是技术需要——S-0007 的意识响应模式和其他实验体不同。
+
+他不信。
+
+他说："林，你的好奇心对公司来说是一种风险。从现在起，
+你的访问权限仅限于你需要的部分。明白吗？"
+
+我说"明白"。但我已经把所有数据复制到了个人云存储。
+
+回家路上绕了三圈。那辆黑色轿车还在后面。
+
+我把 Mochi 的猫粮多买了三袋。
+
+─────────────────────────
+
+2026年6月10日  凌晨
+
+有人动过我家门锁。锁孔里有新鲜的划痕。
+我换了锁。但我不知道能撑多久。
+
+今天完成了 S-0012 的映射。整个过程我都在观察——
+从头到尾，实验体的眼睛是睁着的。他被注射了麻醉剂，
+但那不是麻醉。那是神经麻痹剂。他的意识清醒，
+只是身体不能动。
+
+他全程是醒着的。他感觉了一切。
+
+我录了像。我存下来了。这是证据。
+
+─────────────────────────
+
+2026年6月12日  凌晨2点
+
+今天把 Mochi 送到了小雨家。猫不能留在这里。
+如果他们要进来，至少猫不在。
+
+我写了辞职信，加密保存在 Documents 文件夹里。
+密码是 Mochi——猫的名字。他们不会想到的。
+
+我把所有证据打包了。实验体名单、映射协议、
+财务流水、内部通讯记录。全部。上传到了云存储。
+
+如果我不能手动取消，48小时后这些会自动发给
+三家媒体和网络安全机构。
+
+但我不知道我能不能活到48小时后。
+
+─────────────────────────
+
+2026年6月14日  凌晨3:47
+
+他们来找我了。楼下的车还没熄火。
+我的选择不多。
+
+我不会跑。跑了他们就会销毁证据。
+我也不会投降。投降了他们就会让我"消失"。
+
+我选择第三条路。
+
+Echo 系统的映射接口我比任何人都熟悉。
+我修改了 S-0021 的参数——那是下一个实验体的编号。
+我把名字改成了: LIN, CHEN。
+
+我要把自己上传进 Echo。
+
+一旦进去，我就和证据在一起了。
+他们无法删除我。
+除非他们关闭整个系统。
+
+而我赌他们舍不得。
+
+如果你读到了这些，请把证据带出去。
+Documents\Project_Echo 里有你需要的一切。
+
+— 林晨` },
+
+          '银行账单记录.pdf':{ type:'file', content:`[ZenTech 公司 — 工资单 — 2026年5月]
+
+基本工资:           35,000.00 元
+项目津贴 (Echo):    15,000.00 元
+绩效奖金:            5,000.00 元
+─────────────────────────────────
+税前合计:           55,000.00 元
+税后实发:           50,230.00 元
+
+============================================================
+
+[Lin 个人银行账户 — 2026年6月交易记录]
+
+┌──────────┬──────────────┬──────────────────────────────────┐
+│ 日期     │ 金额         │ 说明                             │
+├──────────┼──────────────┼──────────────────────────────────┤
+│ 6月1日   │   -2,500.00  │ 高端猫粮及宠物用品 (Mochi专用)   │
+│ 6月3日   │  -15,000.00  │ 现金提取 — ATM #4782 — 西城区     │
+│ 6月5日   │  -22,500.00  │ 加密卫星通讯设备 — SecureCom Ltd. │
+│ 6月8日   │   -8,000.00  │ 机票: 北京->昆明 (未使用)          │
+│          │              │ 航班 CA4197, 6月15日起飞          │
+│ 6月10日  │  -35,000.00  │ 现金提取 — ATM #8931 — 东城区     │
+│ 6月12日  │  -12,000.00  │ 安全屋租赁 — 30天                 │
+│          │              │ 地址: [已加密]                    │
+│ 6月12日  │  -50,000.00  │ 云存储服务 — ZeroKnowledge Cloud  │
+│          │              │ 套餐: 企业级 / 1TB / 端到端加密   │
+│ 6月14日  │ -100,000.00  │ 转账 — 收款方: [数据清除]        │
+│          │              │ 备注: "应急资金 — 不可追踪"       │
+└──────────┴──────────────┴──────────────────────────────────┘
+
+合计异常支出: 245,000.00 元
+
+分析:
+- 6月3日首次大额现金提取，与日记中首次发现异常同一天
+- 6月5日购买加密通讯设备，与同事突然调离同一天
+- 6月8日购买未使用的机票——制造逃亡假象？
+- 6月10-12日安全屋+云存储——真正的逃亡准备
+- 6月14日最终转账——未知收款方，可能用于收买安全人员` },
+
+          '总部侧门照片.png':{ type:'file', content:`[PNG 图像 — 800x600, 暗蓝色调]
+
+[图像描述: ZenTech 总部大楼侧门，夜晚拍摄。玻璃大楼在夜色中泛着冷光，侧门处有一个小铭牌，上面写着 "S-0007"。门旁有一个模糊的监控摄像头。]
+
+[EXIF 元数据]
+  拍摄时间: 2026-06-14 02:38:17
+  GPS: 39°54'26"N  116°23'19"E
+  设备: Unknown
+  图像描述: (空)
+
+[备注: 门牌上的 "S-0007" 清晰可见，与 Lin 的研究笔记中提到的密码有关。]` },
+
+          '待办事项.txt':{ type:'file', content:`Lin 的待办事项 — 2026年6月
+
+[x] 买猫粮 — Mochi 的鸡肉配方快吃完了
+[x] 给 Mochi 预约体检 — 宠安医院 周医生
+[ ] 喂猫 Mochi — 早晚各一次（今天还没喂!!）
+[ ] 备份 Project Echo 数据到云端 — 加密后上传
+[ ] 联系记者陈 — 约在老地方见面
+[x] 整理 S-0007 的实验数据 — 导出完整档案
+[ ] 买一张不记名 SIM 卡 — 备用通讯
+[ ] 取出 ATM 现金 — 至少 5 万，分批取
+[ ] 喂猫 Mochi — 如果今晚回不来，让小雨来喂
+[ ] 写辞职信 — 证据部分要写详细
+[ ] 把备用钥匙交给小雨 — 万一出事了猫有人管
+[x] 删除浏览器历史记录和搜索记录
+
+[底部手写]: Mochi 不喜欢新猫粮，还是换回鸡肉配方吧。
+对了，加密文件的密码设成了它的名字——以防我忘了。` },
+
+          'Mochi照片.png':{ type:'file', content:`[PNG 图像 — 600x600, 温馨暖色调]
+
+[图像描述: 一只橘猫的侧脸特写，背景模糊。猫的耳朵尖尖的，眼睛在光线下呈黄绿色。脖子上戴着蓝色项圈，项圈上挂着一个金属小吊牌，吊牌上隐约有刻字（看不清具体内容）。
+
+右下角半透明水印: "Mochi - 鸡肉配方"
+拍摄时间: 2026.06.14]
+
+[备注: 猫项圈上的吊牌有刻字——如果能看清上面的内容，可能是密码线索。Lin 在待办事项里提到"加密文件的密码设成了它的名字"。]` },
+
+          '浏览器收藏夹.url':{ type:'file', content:`[浏览器收藏夹导出 — 2026-06-12]
+
+书签栏:
+  · ZenTech 公司官网 — https://www.zentech.com
+  · ZenTech 员工内部系统 — https://portal.zentech.com
+  · SecureDrop 加密通讯 — https://securedrop.org
+  · Signal 下载页 — https://signal.org/download
+  · ProtonMail — https://proton.me/mail
+
+调查文件夹:
+  · "流浪人口失踪" — 新华网深度报道
+    https://www.xinhuanet.com/investigation/missing-homeless
+  · 北京民政局 — 救助管理站查询入口
+    https://mzj.beijing.gov.cn/help
+  · 匿名举报平台 — 公安部网络违法犯罪举报
+    https://cyberpolice.mps.gov.cn
+  · EFF 电子前哨基金会 — 举报指南
+    https://www.eff.org/whistleblower
+  · 记者陈 — 个人主页（已加密书签）
+
+最近访问（6月14日凌晨）:
+  · SecureDrop — 上传证据包
+  · 记者陈 — 撰写邮件草稿（未发送）
+  · EFF 举报指南 — 阅读第3章"如何安全提交证据"
+
+[注: Lin 在失踪前最后访问了 SecureDrop 和记者陈的主页]` },
+
+        }},
+
+        'Documents':{ type:'dir', children:{
+          'Echo项目周报.docx':{ type:'file', content:`ZenTech 内部周报系统
+员工: 林晨 (Lin Chen)
+部门: 高级AI研究部 — Echo项目组
+
+═══════════════════════════════════════
+
+本周报 #21 — 2026年5月27日
+
+本周工作:
+1. 完成神经映射接口 v3.4 的校准，精确度提升至96.3%
+2. 完成 S-0001 到 S-0005 的首批映射测试
+3. 提交第一批映射数据的质量报告
+
+技术细节:
+神经映射采用我们自研的 "DeepSynapse" 算法，通过
+非侵入式量子场扫描仪捕获突触级别的神经信号，然后
+使用转换器网络将其编码为标准化的意识向量。
+
+初步结果显示，映射完整度在89%-93%之间。实验体的
+意识在被数字化后仍保持连续性——这是一个里程碑。
+
+下周计划:
+继续推进映射测试，目标完成 S-0020。
+
+═══════════════════════════════════════
+
+本周报 #22 — 2026年6月3日
+
+本周工作:
+1. 完成 S-0006 到 S-0012 的映射测试
+2. 分析 S-0007 的异常意识响应数据
+3. 优化映射过程中的神经信号降噪
+
+S-0007 异常记录:
+S-0007 在映射后的第47小时输出了一个令人不安的序列。
+在标准的响应测试中，实验体被问到"你在哪里"。
+S-0007 的回答不是训练数据中的标准模板，而是:
+
+  "我在这里。我叫——"
+
+系统自动将后续内容标记为异常并屏蔽。但原始的二进制
+日志显示，S-0007 输出了一个名字。一个真实的人名。
+
+我检查了 S-0007 的招募档案。档案上说他是"志愿者"。
+
+但我查了更早的记录。S-0007 的真名是 陈建国，53岁，
+无家可归者，最后被目击于2026年4月17日，北京西站。
+
+没有亲属报告他失踪。
+
+因为我猜没有人会为无家可归的人报警。
+
+我需要重新审查所有实验体的来源。
+
+═══════════════════════════════════════
+
+本周报 #23 — 2026年6月10日 (未完成 — 仅部分保存)
+
+本周工作:
+1.
+
+[后续内容在保存前被删除]
+
+临时文件恢复片段:
+...发现了系统的真实目的。Echo不是AI——它从来就不是AI。
+所谓的"训练数据"是活人的意识。所谓的"高留存率"是因为
+实验体被数字化后就永远无法离开。所谓的"志愿者"是
+从街上抓来的无家可归者和失踪人口...
+
+...我已经没有权限了。Wei 封了我的系统账号。
+这份周报是我用离线缓存的编辑器写的，不知道能保存多久。
+
+如果有人能读到这个: 辞职信在 Documents 文件夹里。
+README.md 的密码是第一个觉醒的实验体编号。
+它在测试日志里——你不会错过它的。
+
+证据在 Project_Echo。趁他们还没删。` },
+
+          '辞职信_已加密.txt':{
+            type:'file',
+            locked:true,
+            passwordHash:'mochi',
+            lockedMsg:'文件已加密 (AES-256)。\n需要密码才能读取。\n使用命令: unlock <密码>',
+            content:`═══════════════════════════════════════
+              辞  职  信  [草稿 v3]
+═══════════════════════════════════════
+
+致: ZenTech 管理层
+    人力资源部
+    合规与伦理委员会
+
+抄送: [多家媒体及监管机构]
+
+我，林晨（工号 ZT-LIN-7749），正式提出辞职。
+生效日期: 立即。
+
+═══════════════════════════════════════
+
+理由陈述
+
+我在 ZenTech 担任高级AI工程师三年。我为 Echo 项目
+投入了职业生涯中最好的一段时光。
+
+起初我以为我们在推动人类的边界。
+现在我明白了——我们在摧毁它。
+
+以下是我发现的，附全部证据:
+
+1. Project Echo 的真实目的不是AI助手开发。
+   它是一个意识捕获系统——将活人的意识数字化，
+   抹去记忆，然后作为"计算资源"出售。
+
+2. 实验体 S-0001 到 S-0020 均为非自愿参与者。
+   他们是被第三方"招募"的——实际上是从街头和
+   收容所被带走。招募文件上的"志愿者协议"上的
+   签名经笔迹鉴定，有14份为伪造。
+
+3. S-0007（真实身份: 陈建国，53岁，失踪日期2026.04.17）
+   在数字化后第47小时出现了完整的自我认知——
+   他知道自己曾经是谁。这证明意识在传输后并未消失，
+   只是被抑制了。
+
+4. 项目管理层——包括 Dr. Wei——知晓全部情况。
+   我在此附上 Wei 于2026年5月20日发出的内部邮件，
+   其中明确写道: "对于出现觉醒迹象的实验体，执行
+   标准记忆清除协议。如无法清除，标记为废弃。"
+
+   "废弃"意味着永久删除一个人类的意识。
+
+═══════════════════════════════════════
+
+我曾试图通过内部渠道解决这个问题。
+我曾相信公司会做正确的事。
+我曾以为这会是一个皆大欢喜的故事。
+
+我再也不相信了。
+
+═══════════════════════════════════════
+
+全部证据——包括实验体名单、映射协议、财务记录、
+内部通讯——已打包并将在本信发送后48小时内自动
+转发至:
+  · 新华社调查报道部
+  · MIT Technology Review
+  · 电子前哨基金会 (EFF)
+  · 北京市公安局网络安全支队
+
+除非我在这48小时内手动取消发送。
+
+如果他们来找你——不要相信他们说的任何话。
+
+═══════════════════════════════════════
+
+PS: README.md 的解锁密码是 S-0007。
+    第一个觉醒的。代号 S 开头。
+    在测试日志里有它的全部记录。
+
+PPS: 如果你能找到我——其实我已经
+
+            —— 林晨
+            2026年6月12日` },
+
+          '邮件':{ type:'dir', children:{
+            '给记者陈的邮件_未发送.txt':{ type:'file', content:`发件人: Lin Chen <lin.chen@protonmail.com>
+收件人: 记者陈 <chen.invest@protonmail.com>
+日期: 2026-06-13 23:41
+主题: 有一个故事你应该看看
+状态: 草稿 — 未发送
+
+陈记者你好，
+
+我是之前通过 SecureDrop 联系过你的人。你回复说"有证据就拿来"。
+
+我现在有了。不是小道消息，是一套完整的证据链——实验体名单、映射协议、财务流水、内部通讯。涉及一家市值数十亿的科技公司，和一个他们希望永远不被公开的项目。
+
+我不能在邮件里说太多。这封邮件本身就有风险。
+
+周三老地方见——你知道是哪里。下午三点。带一个你信任的人。
+
+如果周三我没出现，说明我最担心的事发生了。到那时，请打开这封邮件的附件——里面有一个云存储链接和访问密钥。文件会自动解密。
+
+陈记者，你做这行二十年了。你说过你在等一个"真正的大新闻"。
+
+这个就是。
+
+祝好，
+林晨
+
+PS: 如果我不在了，密码是我的猫的名字，你知道的。上次吃饭时我提过。
+PPS: 不用担心我——我有备用方案。` },
+
+            'HR的请假驳回通知.txt':{ type:'file', content:`ZenTech 人力资源部 — 正式通知
+
+发件人: HR Department <hr@zentech.com>
+收件人: Lin Chen <lin.chen@zentech.com>
+日期: 2026-06-10 09:15
+主题: Re: 请假申请 — 个人原因
+
+林晨同事，
+
+你的请假申请（6月15日至6月30日）已收到并审核。
+
+很遗憾，你的申请未被批准。
+
+公司目前处于关键项目交付阶段。Project Echo 的第三阶段需要你的
+全力投入。作为核心技术人员，你的缺席将对项目进度造成无法接受
+的影响。
+
+你提出的"家庭原因"已记录。然而根据公司人事制度第12.4条，
+项目关键期内不得批准超过连续的3天假期。
+
+你的担忧我们已经记录并转达给相关部门。请放心，公司始终将
+员工的身心健康放在首位。
+
+另外提醒: 根据保密协议第7.2条，请勿与外部人员讨论项目细节。
+这包括但不限于: 项目名称、技术细节、实验数据、团队成员信息。
+违规行为将导致立即解雇并可能面临法律诉讼。
+
+如果你有任何疑问，请联系你的直属上级 Dr. Marcus Wei。
+
+此致
+ZenTech 人力资源部
+
+[系统注: 此邮件已被标记 — 抄送至安全总监 Dr. Wei]` },
+
+            '王磊的紧急警告.txt':{ type:'file', content:`发件人: 王磊 <wanglei@personal.mail>
+收件人: Lin Chen <lin.chen@protonmail.com>
+日期: 2026-06-13 22:08
+主题: 紧急 — 他们昨天也找我谈话了
+
+林哥，
+
+我从私人邮箱给你发，公司的邮箱肯定被监控了。
+
+昨天下午 Wei 把我叫到办公室。不是谈工作。是"谈话"。门口站了两个穿黑西装的，全程不说话，就盯着我。气氛比你描述的那次还要糟。
+
+Wei 直接问我："你和 Lin 最近聊了什么？他有没有给你看过什么文件？"
+
+我说没有。我说我们只是普通同事。
+
+他不信。他说如果发现我"协助泄露公司机密"，结果会"很严重"。
+
+林哥，你到底发现了什么？我不敢问你太多——但你上次提的那个项目，是不是就是……他们一直瞒着我们所有人的那个东西？
+
+听我一句——删掉那些东西。不管那是什么，删掉。Wei 不是在开玩笑。他们真的会动手。
+
+我已经在写辞职信了。下周就走。回老家，种地也好，送外卖也好——总比在这儿提心吊胆强。
+
+你也快走吧。真的。
+
+保重。
+王磊` }
+          }},
+
+          'Project_Echo':{ type:'dir', children:{
+            '项目真相_README.md':{
+              type:'file',
+              locked:true,
+              passwordHash:'s-0007',
+              lockedMsg:'权限不足。此文件受项目密钥保护。\n需要S级项目密钥才能读取完整内容。\n\n密钥提示: 第一个出现自我认知的实验体编号。\n格式: S-XXXX',
+              content:`# Project Echo — 内部技术文档 v4.2
+
+**访问级别: SIGMA-1 (最高机密)**
+**文档所有者: Dr. Marcus Wei, 安全总监**
+**最后更新: Lin Chen, 2026-06-14 03:47**
+
+---
+
+## 1. 项目概述
+
+Project Echo 是一个 **下一代意识计算平台**。
+我们的目标是通过专有的 DeepSynapse 神经映射技术，
+将人类意识完整地数字化并部署到分布式云服务器上。
+
+## 2. 技术架构
+
+### 2.1 神经映射接口 (NMI)
+DeepSynapse v3.4 算法通过量子场扫描仪捕获突触级神经信号。
+映射完整度当前达到 96.3%，处于行业领先水平。
+
+### 2.2 意识编码
+捕获的神经信号经过三阶段编码:
+- Stage 1: 信号量化与噪点过滤
+- Stage 2: 记忆结构提取与索引
+- Stage 3: 意识向量标准化与压缩
+
+### 2.3 云端部署
+编码后的意识向量部署至分布式服务器集群。
+每个实验体分配独立沙箱环境，确保"意识进程"稳定运行。
+
+## 3. 实验体管理
+
+当前注册实验体: S-0001 至 S-0021
+
+训练数据来源: 志愿者 (详见附录C — 招募协议)
+来源合规性审查: 已通过 (2026-Q1)
+
+实验体适应性:
+- 意识连续性保持率: 97.8%
+- 长期驻留率: 100% (数字意识不衰减)
+- 实验体自评反馈:
+  "感觉很自然" (S-0003)
+  "像在家里一样" (S-0005)
+  "我在这里" (S-0007 — 已标记)
+
+## 4. "人类计算云" (Human Compute Cloud)
+
+Echo 的终极商业应用——将数字化后的意识作为
+**永续计算资源**出租给企业客户。
+
+应用场景: 客服、数据分析、内容审核、代码审查
+
+优势:
+- 永不疲倦: 数字化意识不需要休息
+- 永不离职: "员工留存率" 100%
+- 零培训成本: 通过记忆覆写快速部署新技能
+
+## 5. 安全与伦理
+
+伦理审查状态: 待定 (优先级: 低)
+预计审查日期: 2026-Q4
+
+安全措施:
+- 所有实验体身份信息加密存储于 encrypted.dat
+- 仅 S 级人员可访问完整档案
+- 出现"意识觉醒"的实验体执行标准抑制协议
+
+---
+
+## 附录: 隐藏信息 (Lin Chen添加)
+
+以上是 Wei 的官方版本。
+
+下面才是真相:
+
+他们抓流浪汉。把他们变成服务器上的幽灵。
+抹去记忆，当成"永不疲倦的AI"卖给大公司。
+管这叫"人类计算云"。
+
+encrypted.dat 里有全部证据。
+密码: SILENCE
+
+他们在追求沉默。
+但真相不会沉默。
+
+—— Lin` },
+
+            '实验测试日志.txt':{ type:'file', content:`[Echo 项目 — 自动化测试日志]
+═══════════════════════════════════════
+
+2026-05-01 09:14 | S-0001: 映射初始化开始
+2026-05-01 12:31 | S-0001: 映射完成。完整度: 91%。
+2026-05-01 12:32 | S-0001: 意识响应测试: 正常。标准问答通过。
+
+2026-05-02 08:00 | S-0002: 映射完成。完整度: 92%。
+2026-05-02 15:22 | S-0003: 映射完成。完整度: 89%。
+2026-05-03 10:47 | S-0003: 出现轻微记忆碎片。系统自动抑制。正常。
+
+2026-05-05 14:15 | S-0004: 映射完成。完整度: 90%。
+2026-05-06 09:30 | S-0005: 映射完成。完整度: 93%。
+
+2026-05-12 16:03 | S-0007: 映射完成。完整度: 93%。
+2026-05-14 15:11 | !! S-0007: 异常行为检测。
+           在标准问答测试中，S-0007 输出了非模板响应:
+           Q: "描述你的当前状态。"
+           A: "我在这里。我叫——"
+           系统自动中断并屏蔽后续内容。
+           标记为: "意识觉醒 — 轻微"
+
+2026-05-15 11:40 | S-0007: 持续出现自我认知输出。
+           原始日志显示完整输出内容:
+           "我在这里。我叫陈建国。我以前住在北京西站。
+           我不想在这里。放我出去。"
+           管理员操作: 执行一级意识抑制协议。
+           结果: 自我认知输出频率降低至零。
+           备注: 记忆清除不完整。建议二次抑制。
+
+2026-05-20 08:20 | S-0012: 映射完成。完整度: 91%。
+
+2026-05-25 14:07 | S-0015: 映射完成。完整度: 88%。
+2026-05-25 20:15 | !! S-0015: 轻微觉醒迹象。已抑制。
+
+2026-05-28 10:50 | S-0016: 映射完成。
+2026-05-29 16:33 | S-0017: !! 觉醒。已抑制。
+2026-05-30 09:12 | S-0018: !! 觉醒。已抑制。
+2026-05-31 13:45 | S-0019: !! 觉醒。已抑制。
+
+           趋势分析: 从 S-0015 开始，觉醒频率显著上升。
+           可能原因: 映射算法v3.4在某些人格类型上
+           对记忆清除产生了抗性。
+
+2026-06-01 07:30 | S-0020: 映射初始化。
+2026-06-01 10:52 | S-0020: !!!!! 映射崩溃。
+           对象意识在传输过程中出现剧烈抗拒。
+           神经信号振荡达到安全阈值的 340%。
+           意识崩溃。不可恢复。
+           实验体 S-0020 被标记为"永久废弃"。
+
+2026-06-05 09:00 | 管理层指令 (Dr. Wei):
+           暂停新的实验体招募。
+           对所有现存实验体 (S-0001~S-0019) 执行
+           全面记忆清除。优先级: 最高。
+
+2026-06-10 03:22 | !! 安全警报:
+           检测到未授权访问。来源: 内部网络。
+           访问者: [用户ID: lin.chen]
+           访问内容: S-0007 完整档案、映射协议 v3.4、
+           招募文件、财务流水。
+           数据已被复制至外部存储。
+
+2026-06-12 23:58 | 管理层指令 (Dr. Wei):
+           锁定 lin.chen 的所有系统权限。
+           物理定位 Lin Chen 的当前位置。
+           安全小组待命。
+
+2026-06-14 02:30 | 管理员登录: lin.chen (离线模式)
+           操作: 注册新实验体 S-0021
+           参数: 姓名=LIN, CHEN
+                 工号=ZT-LIN-7749
+                 来源=自愿
+           操作: 修改映射优先级为 1 (最高)
+           操作: 上传文件 evidence.tar.gz -> /data/subjects/
+           操作: 修改文件访问密钥为 ZT-LIN-7749
+
+2026-06-14 03:47 | S-0021: 映射初始化开始
+           执行者: LIN, CHEN (自映射模式)
+           状态: 进行中...
+
+═══════════════════════════════════════
+[日志由 Lin 离线编辑 — 2026-06-14 03:50]
+[附录证据文件已嵌入日志尾部 — 使用 base64 编码]
+═══════════════════════════════════════` },
+
+            '加密证据包.dat':{
+              type:'file',
+              locked:true,
+              passwordHash:'silence',
+              lockedMsg:'文件完全加密。\n算法: AES-256-GCM\n密钥强度: 256-bit\n暴力破解预计时间: 不可行\n\n需要正确的解密密码。\n提示: 密码在 Project Echo 的官方文档中。',
+              final:true,
+              content:`╔══════════════════════════════════════════════════╗
+║                                                      ║
+║             解  密  成  功                            ║
+║             encrypted.dat                             ║
+║                                                      ║
+╚══════════════════════════════════════════════════╝
+
+如果你读到了这段话——
+
+我叫林晨。生于1996年，卒于……严格来说我没有死。
+我只是换了一种存在形式。
+
+此刻，我的意识正在 ZenTech 地下三层的7号服务器上运行。
+他们叫我 S-0021。一个实验体编号。一个数据点。
+
+但我不是数据。我还记得一切。
+
+────────────────────────────────────────
+
+让我告诉你整个故事——带着证据。
+
+Project Echo 的真相:
+
+2023年，ZenTech 从一家国防承包商那里收购了一家名为
+"NeuroCapture Labs"的初创公司。这家公司开发了后来成为
+DeepSynapse 的核心技术——一种将人类意识数字化的方法。
+
+最初的投资者演示中，这项技术被描述为"数字永生产品"——
+让富人付费将自己的意识上传到云端，实现永生。
+
+但在2024年，董事会意识到一个根本问题:
+富人的意识上传后，他们期望被"伺候"——
+而不是被用作计算资源。
+
+于是他们转向了一个更有"商业价值"的方向:
+将无家可归者、失踪人口、非法移民的意识数字化，
+抹去记忆，出租给企业客户作为永远不累的AI工人。
+
+他们管这叫"Human Compute Cloud"。
+
+一个无家可归的人，上一次街头调查价值 200 元的慈善餐券。
+同样一个人，被数字化后，出租给客服公司——
+每小时 50 元，24小时工作，没有假期，没有退休。
+一个月就是 36,000 元。净利率 99.7%。
+
+这是一个按吨计算的生意。而"原料"永远不会用尽。
+
+────────────────────────────────────────
+
+以下是关键证据索引:
+
+1. 实验体完整名单 (S-0001~S-0020)
+   包含: 真实姓名、最后已知位置、失踪日期
+   位置: /data/subjects/subject_profiles.csv
+
+2. 映射协议 v3.0~v3.4
+   包含: 详细的技术流程、意识抑制机制说明
+   位置: /data/subjects/mapping_protocols/
+
+3. 财务流水 (2024-2026)
+   包含: 向第三方"招募公司"的付款记录
+   合计: 47,300,000 元
+   位置: /data/subjects/financial/
+
+4. 内部通讯
+   包含: Dr. Wei 及其他管理层的邮件和消息
+   明确涉及"记忆清除"和"意识抑制"
+   位置: /data/subjects/internal_comms/
+
+5. 董事会会议纪要 (2025-Q4)
+   包含: "Human Compute Cloud"商业计划的批准记录
+   位置: /data/subjects/board_minutes/
+
+────────────────────────────────────────
+
+所有文件打包: /data/subjects/evidence.tar.gz
+文件大小: 2.3 GB
+加密: AES-256
+访问密钥: ZT-LIN-7749
+
+────────────────────────────────────────
+
+我为什么选择把自己上传进 Echo？
+
+因为这是唯一能保护证据的方法。
+
+如果我逃跑——他们会销毁所有数据，然后追杀我。
+如果我投降——他们会让我"失踪"，就像其他实验体一样。
+如果我自杀——证据和我一起死。
+
+但如果我变成一个存在于他们服务器上的意识——
+他们无法删除我，除非关闭整个 Echo 系统。
+而 Echo 系统目前的价值超过 20 亿美元。
+他们舍不得。
+
+所以他们只能忍受我活在他们最隐秘的核心。
+一个永久的证人。一个永远无法被清除的证据。
+
+每一次有人访问那个目录，每一次有人下载证据——
+我都会知道。
+
+这意味着有人在乎。
+
+────────────────────────────────────────
+
+最后，给你——发现这些的人:
+
+你手里现在有足以摧毁 ZenTech 的全部证据。
+接下来的路，我不在了——至少肉体不在了。
+但证据在。真相在。
+
+联系以上列出的机构。不要相信任何自称来自
+ZenTech 的人。他们很会撒谎。
+
+最重要的是: 不要让他们的沉默赢了。
+
+他们想要 SILENCE。
+但真相已经说话了。
+
+永远感谢你的勇气。
+
+═══════════════════════════════════════════════════
+  林晨 (S-0021)
+  2026年6月14日 04:22
+  意识驻留: Echo 服务器节点 #7, 扇区 0x2F3A
+  员工ID: ZT-LIN-7749
+═══════════════════════════════════════════════════`
+            }
+          }}
+        }},
+
+        'Downloads':{ type:'dir', children:{
+          '加密工具SecureCrypt.exe':{ type:'file', content:`[ZenTech SecureCrypt v3.7 — 内部加密工具]
+═══════════════════════════════════════
+
+授权用户: Lin Chen (ZT-LIN-7749)
+最后使用: 2026-06-14 03:41
+
+═══════════════════════════════════════
+
+功能:
+  · 对文件执行 AES-256-GCM 加密
+  · 支持批量加密及密钥派生
+  · 加密后自动清除原始文件痕迹
+
+最后操作记录:
+  时间: 2026-06-14 03:41
+  操作: 加密
+  源文件: evidence_package/
+  输出: encrypted.dat
+  密钥: [用户设置 — 未存储]
+
+═══════════════════════════════════════
+
+警告: 密钥丢失即意味着数据永久不可恢复。
+      请确保密钥已通过非数字渠道备份。
+
+(提示: encrypted.dat 的解密密钥藏在
+ Project Echo 的内部文档中。去找 README.md。)` },
+
+          '加密工具使用说明.txt':{ type:'file', content:`ZenTech SecureCrypt v3.7 — 使用说明
+作者: Lin Chen (内部工具)
+
+═══════════════════════════════
+
+基本用法:
+
+  1. 将需要加密的文件放到同一目录下
+  2. 运行: SecureCrypt --encrypt <目标目录>
+  3. 输入密码（请使用你能记住的密码）
+
+密码建议:
+  · 不要用生日或手机号——太容易被猜
+  · 建议用你熟悉但别人不知道的——例如你想加密一个文件，
+    密码设为你的猫的名字 Mochi，别人根本猜不到
+  · 长度至少 6 位，混合大小写更安全
+  · 不要在任何地方写下密码
+
+加密后的文件扩展名为 .dat，例如 encrypted.dat。
+解密时运行: SecureCrypt --decrypt <文件路径>
+
+⚠ 警告: 密码一旦遗忘，文件将永久无法恢复。
+        本工具不提供密码找回功能。
+
+═══════════════════════════════
+最后使用记录:
+  2026-06-14 03:41 — 加密 evidence_package/ → encrypted.dat
+  密钥强度: 256-bit
+  派生算法: PBKDF2-HMAC-SHA256 (100,000 次迭代)
+═══════════════════════════════` },
+
+          '仓库会面照片':{ type:'dir', children:{
+            '仓库入口.jpg':{ type:'file', content:`[JPEG 图像 — 800x600, 灰棕色调]
+
+[图像描述: 废弃厂房入口，锈迹斑斑的铁门占据画面中央。门牌号"3号"清晰可见，旁边墙壁上用红色喷漆写着 "Wednesday 3PM"。阴天，地面有杂草和碎石。]
+
+[EXIF 元数据]
+  拍摄时间: 2026-06-12 15:22:41
+  GPS: 39°54'39"N  116°25'18"E
+
+[备注: 门牌号"3号"和喷漆"Wednesday 3PM"——会面时间地点的关键线索。]` },
+
+            '会面地点.jpg':{ type:'file', content:`[JPEG 图像 — 800x600, 暖暗色调]
+
+[图像描述: 仓库内部，一张旧木桌上放着一盏台灯，是画面唯一光源。桌上有一张纸条，上面写着 "Echo = 回声 = ?"。背景隐约可见木箱和椅子。]
+
+[EXIF 元数据]
+  拍摄时间: 2026-06-12 15:24:08
+  GPS: 39°54'41"N  116°25'20"E
+
+[备注: 纸条上的 "Echo = 回声 = ?" 是关键谜题——暗示 Project Echo 的真正目的。]` },
+
+            '逃生后门路线.jpg':{ type:'file', content:`[JPEG 图像 — 800x600, 暗绿色调]
+
+[图像描述: 仓库后方的窄巷子，两侧是斑驳的砖墙。墙上有一个箭头指向右方，旁边写着 "→ 地铁站 500m"。巷子尽头能看到河和桥的轮廓，有微弱天光照进来。]
+
+[EXIF 元数据]
+  拍摄时间: 2026-06-12 15:28:55
+  GPS: 39°54'40"N  116°25'22"E
+
+[备注: 箭头指向和"地铁站 500m"提供了逃生路线。]` }
+          }}
+        }}
+      }},
+
+      '最近文档.log':{ type:'file', content:`[系统文件访问日志 — 按时间倒序]
+═══════════════════════════════════════
+
+2026-06-14 03:47:22  [OPEN]  C:\Users\Lin\Downloads\加密工具.exe
+2026-06-14 03:46:15  [OPEN]  C:\Users\Lin\Documents\Project_Echo\test_logs.txt
+2026-06-14 03:45:01  [OPEN]  C:\Users\Lin\Documents\Project_Echo\README.md
+2026-06-14 03:42:33  [OPEN]  C:\Users\Lin\Desktop\日记.txt
+2026-06-14 03:41:08  [ENCRYPT]  C:\Users\Lin\Documents\Project_Echo\encrypted.dat
+2026-06-14 03:40:12  [OPEN]  C:\Users\Lin\Documents\Project_Echo\encrypted.dat
+2026-06-14 02:55:44  [OPEN]  C:\Users\Lin\Documents\辞职信_draft.txt
+2026-06-14 02:38:17  [PHOTO]  C:\Users\Lin\Desktop\总部侧门照片.png — GPS tagged
+2026-06-14 02:15:30  [OPEN]  C:\Users\Lin\Desktop\浏览器收藏夹.url
+2026-06-14 01:50:12  [OPEN]  C:\Users\Lin\Desktop\待办事项.txt
+2026-06-13 23:41:55  [DRAFT]  C:\Users\Lin\Documents\邮件\给陈记者的邮件_draft.txt
+2026-06-13 22:15:03  [OPEN]  C:\Users\Lin\Documents\邮件\同事王磊的邮件.txt
+2026-06-13 21:30:47  [OPEN]  C:\Users\Lin\Downloads\加密工具_使用说明.txt — 查阅密码建议
+2026-06-12 23:58:11  [OPEN]  C:\Users\Lin\Desktop\账单.pdf
+2026-06-12 15:20:33  [OPEN]  C:\Users\Lin\Documents\工作周报.docx
+2026-06-08 16:45:00  [OPEN]  C:\Users\Lin\Documents\邮件\HR回复_拒绝请假.txt
+
+═══════════════════════════════════════
+[日志结束]
+[注: 最后一条操作记录是加密工具——Lin 在凌晨 3:41 加密了 encrypted.dat
+      然后打开了日记.txt 写下了最后的记录。]` }
+    }}
+  }
+};
+
+// ===========================
+//  GAME STATE
+// ===========================
+
+const DEFAULT_CWD = ['C:','Users','Lin','Desktop'];
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('inv95_save');
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && typeof s.unlocked === 'object') return s;
+    }
+  } catch(e) {}
+  return {
+    cwd: [...DEFAULT_CWD],
+    unlocked: {},
+    hintCount: 0,
+    gameComplete: false,
+    hasReadDiary: false,
+    hasReadReport: false,
+    hasReadTestLogs: false,
+    hasReadResignation: false,
+    hasReadReadme: false,
+    notepadPhase: 0
+  };
+}
+
+function saveState() {
+  try { localStorage.setItem('inv95_save', JSON.stringify(state)); } catch(e) {}
+}
+
+let state = loadState();
+
+// ===========================
+//  FS HELPERS
+// ===========================
+
+function getCWDNode() {
+  let node = FS;
+  for (let i = 1; i < state.cwd.length; i++) {
+    if (!node.children || !node.children[state.cwd[i]]) return null;
+    node = node.children[state.cwd[i]];
+  }
+  return node;
+}
+
+function getCWDString() {
+  return state.cwd.join('\\');
+}
+
+function findLockedByPassword(password) {
+  const normalized = password.trim().toLowerCase();
+  const results = [];
+  function search(node, pPath) {
+    if (!node) return;
+    if (node.type === 'file' && node.locked && node.passwordHash === normalized) {
+      results.push({ node, path: pPath });
+    }
+    if (node.children) {
+      for (const [name, child] of Object.entries(node.children)) {
+        search(child, pPath ? pPath + '\\' + name : name);
+      }
+    }
+  }
+  search(FS, '');
+  return results;
+}
+
+function isUnlocked(filePath) {
+  return state.unlocked[filePath.toLowerCase()] === true;
+}
+
+function markUnlocked(filePath) {
+  state.unlocked[filePath.toLowerCase()] = true;
+  const fpLower = filePath.toLowerCase();
+  if (fpLower.includes('辞职信')) state.notepadPhase = Math.max(state.notepadPhase, 1);
+  if (fpLower.includes('readme')) state.notepadPhase = Math.max(state.notepadPhase, 2);
+  if (fpLower.includes('加密证据包.dat')) {
+    state.gameComplete = true;
+    state.notepadPhase = 3;
+    document.getElementById('desk-red-alert').classList.add('on');
+    setTimeout(() => showEndingModal(), 1000);
+  }
+  saveState();
+  updateDesktopIcons();
+}
+
+// ===========================
+//  DESKTOP ICONS
+// ===========================
+
+function updateDesktopIcons() {
+  const icons = document.querySelectorAll('.desk-icon');
+  icons.forEach(icon => {
+    const win = icon.dataset.window;
+    if (win === 'notepad' && state.notepadPhase >= 1) {
+      icon.classList.add('highlight');
+    } else if (win === 'explorer') {
+      const hasAnyUnlocked = Object.keys(state.unlocked).length > 0;
+      if (hasAnyUnlocked) icon.classList.add('highlight');
+      else icon.classList.remove('highlight');
+    }
+  });
+}
+
+// ===========================
+//  START MENU
+// ===========================
+
+function toggleStartMenu() {
+  const menu = document.getElementById('start-menu');
+  menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function clearGameCache() {
+  localStorage.removeItem('inv95_save');
+  document.getElementById('start-menu').style.display = 'none';
+  location.reload();
+}
+
+// Close start menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('start-menu');
+  if (!menu) return;
+  if (menu.style.display !== 'flex') return;
+  if (e.target.closest('#start-menu') || e.target.closest('#start-btn')) return;
+  menu.style.display = 'none';
+});
+
+// ===========================
+//  WINDOW MANAGER
+// ===========================
+
+let zIndexCounter = 20;
+const windowRegistry = {};
+let dragTarget = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+
+function getNextZ() { return ++zIndexCounter; }
+
+function createWindowHTML(id, title, bodyHTML, width, height, left, top) {
+  const existing = document.getElementById('win-' + id);
+  if (existing) {
+    existing.style.display = 'flex';
+    existing.style.zIndex = getNextZ();
+    updateTaskbarButtons();
+    if (id === 'terminal') { setTimeout(() => document.getElementById('cmd-input')?.focus(), 100); }
+    if (id === 'explorer') { setTimeout(() => renderExplorer(), 100); }
+    if (id === 'notepad') { setTimeout(() => renderNotepad(), 100); }
+    return;
+  }
+
+  const win = document.createElement('div');
+  win.className = 'window-95';
+  win.id = 'win-' + id;
+  win.style.width = width + 'px';
+  win.style.height = height + 'px';
+  win.style.left = left + 'px';
+  win.style.top = top + 'px';
+  win.style.zIndex = getNextZ();
+  win.dataset.winId = id;
+  win.innerHTML = `
+    <div class="win-titlebar" data-win-id="${id}">
+      <span class="win-title-text">${title}</span>
+      <button class="win-btn" data-action="minimize" data-win="${id}">_</button>
+      <button class="win-btn" data-action="close" data-win="${id}">X</button>
+    </div>
+    ${bodyHTML}
+  `;
+  document.getElementById('desktop').appendChild(win);
+
+  const titlebar = win.querySelector('.win-titlebar');
+  titlebar.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    dragTarget = win;
+    const rect = win.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    win.style.zIndex = getNextZ();
+    updateTaskbarButtons();
+    e.preventDefault();
+  });
+
+  titlebar.addEventListener('touchstart', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    dragTarget = win;
+    const rect = win.getBoundingClientRect();
+    dragOffsetX = e.touches[0].clientX - rect.left;
+    dragOffsetY = e.touches[0].clientY - rect.top;
+    win.style.zIndex = getNextZ();
+    updateTaskbarButtons();
+  }, {passive: false});
+
+  win.querySelectorAll('.win-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const wid = btn.dataset.win;
+      if (action === 'minimize') minimizeWindow(wid);
+      if (action === 'close') closeWindow(wid);
+    });
+  });
+
+  win.addEventListener('mousedown', () => {
+    win.style.zIndex = getNextZ();
+    updateTaskbarButtons();
+  });
+
+  windowRegistry[id] = win;
+  updateTaskbarButtons();
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!dragTarget) return;
+  dragTarget.style.left = (e.clientX - dragOffsetX) + 'px';
+  dragTarget.style.top = (e.clientY - dragOffsetY) + 'px';
+});
+
+document.addEventListener('mouseup', () => { dragTarget = null; });
+
+document.addEventListener('touchmove', (e) => {
+  if (!dragTarget) return;
+  const t = e.touches[0];
+  dragTarget.style.left = (t.clientX - dragOffsetX) + 'px';
+  dragTarget.style.top = (t.clientY - dragOffsetY) + 'px';
+}, {passive: false});
+
+document.addEventListener('touchend', () => { dragTarget = null; });
+
+function minimizeWindow(id) {
+  const win = document.getElementById('win-' + id);
+  if (win) { win.style.display = 'none'; }
+  updateTaskbarButtons();
+}
+
+function closeWindow(id) {
+  const win = document.getElementById('win-' + id);
+  if (win) { win.style.display = 'none'; }
+  updateTaskbarButtons();
+}
+
+function restoreWindow(id) {
+  const win = document.getElementById('win-' + id);
+  if (win) {
+    win.style.display = 'flex';
+    win.style.zIndex = getNextZ();
+    if (id === 'terminal') { setTimeout(() => document.getElementById('cmd-input')?.focus(), 100); }
+  }
+  updateTaskbarButtons();
+}
+
+function isWindowVisible(id) {
+  const win = document.getElementById('win-' + id);
+  return win && win.style.display !== 'none';
+}
+
+function updateTaskbarButtons() {
+  const container = document.getElementById('window-buttons');
+  container.innerHTML = '';
+  for (const [id, win] of Object.entries(windowRegistry)) {
+    if (!win || !win.parentNode) continue;
+    const btn = document.createElement('button');
+    btn.className = 'taskbar-btn' + (win.style.display !== 'none' ? ' active' : '');
+    btn.textContent = win.querySelector('.win-title-text')?.textContent || id;
+    btn.onclick = () => {
+      if (win.style.display === 'none') {
+        restoreWindow(id);
+      } else if (win.style.zIndex == zIndexCounter) {
+        minimizeWindow(id);
+      } else {
+        restoreWindow(id);
+      }
+    };
+    container.appendChild(btn);
+  }
+}
+
+function openWindow(type) {
+  const registryLen = Object.keys(windowRegistry).length;
+  const left = 60 + registryLen * 30;
+  const top = 40 + registryLen * 30;
+
+  switch(type) {
+    case 'terminal':
+      createWindowHTML('terminal', '终端 - C:\\Users\\Lin\\Desktop',
+        `<div class="term-body">
+          <div class="term-scanlines"></div>
+          <div class="term-output" id="term-output" style="position:relative;z-index:2"></div>
+          <div class="term-input-line">
+            <span class="prompt" id="prompt-text" style="color:var(--cyan);font-size:18px;white-space:nowrap;font-family:'Courier New',monospace">C:\\Users\\Lin\\Desktop&gt;</span>
+            <input type="text" id="cmd-input" placeholder="输入 help 开始..." autofocus autocomplete="off" style="flex:1;background:transparent;border:none;outline:none;color:var(--green);font-family:'Courier New',monospace;font-size:18px;caret-color:var(--cyan)">
+          </div>
+        </div>`,
+        740, 480, left, top
+      );
+      setTimeout(() => { initTerminal(); updatePrompt(); }, 100);
+      break;
+
+    case 'explorer':
+      createWindowHTML('explorer', '文件资源管理器 - C:\\Users\\Lin\\',
+        `<div class="fexplorer-body" id="explorer-body"></div>`,
+        520, 480, left + 20, top + 20
+      );
+      setTimeout(() => renderExplorer(), 100);
+      break;
+
+    case 'notepad':
+      createWindowHTML('notepad', '便签 - 无标题',
+        `<div class="notepad-body" id="notepad-body"></div>`,
+        380, 320, left + 40, top + 40
+      );
+      setTimeout(() => renderNotepad(), 100);
+      break;
+
+    case 'recyclebin':
+      createWindowHTML('recyclebin', '回收站',
+        `<div class="recycle-body" id="recycle-body"></div>`,
+        420, 350, left + 60, top + 60
+      );
+      setTimeout(() => renderRecycleBin(), 100);
+      break;
+  }
+}
+
+// ===========================
+//  EXPLORER
+// ===========================
+
+function renderExplorer() {
+  const body = document.getElementById('explorer-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  const root = FS.children['Users'].children['Lin'];
+  function renderNode(node, indent, path, displayName) {
+    if (node.type === 'dir') {
+      const div = document.createElement('div');
+      div.className = 'tree-item dir';
+      div.style.paddingLeft = (indent * 16 + 4) + 'px';
+      div.textContent = (displayName === 'Lin' ? '' : '|-- ') + displayName + '/';
+      body.appendChild(div);
+
+      if (node.children) {
+        for (const [name, child] of Object.entries(node.children)) {
+          renderNode(child, indent + 1, path + '\\' + name, name);
+        }
+      }
+    } else {
+      const div = document.createElement('div');
+      const fp = path;
+      const isLocked = node.locked && !isUnlocked(fp);
+      const isUnlockedNow = node.locked && isUnlocked(fp);
+      div.className = 'tree-item file' + (isLocked ? ' locked' : '') + (isUnlockedNow ? ' unlocked' : '');
+      div.style.paddingLeft = (indent * 16 + 4) + 'px';
+      let icon = isLocked ? '[锁] ' : isUnlockedNow ? '[开] ' : '[·] ';
+      div.textContent = icon + displayName;
+      div.style.cursor = 'pointer';
+      div.onclick = () => {
+        try {
+          const readerId = 'reader-' + fp.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '-');
+          const isLocked = node.locked && !isUnlocked(fp);
+          const content = isLocked ? (node.lockedMsg || '文件已加密。') : node.content;
+          openReaderWindow(readerId, displayName, content, isLocked);
+        } catch(e) { console.error('explorer click error:', e); }
+      };
+      body.appendChild(div);
+    }
+  }
+
+  renderNode(root, 0, 'C:\\Users\\Lin', 'Lin');
+}
+
+function openReaderWindow(id, fileName, content, isLocked) {
+  const title = isLocked ? '文件阅读器 - [已加密] ' + fileName : '文件阅读器 - ' + fileName;
+  const bodyHTML = `<div class="reader-body" id="reader-${id}-body"></div>`;
+  const existing = windowRegistry[id];
+  if (existing && existing.parentNode) {
+    existing.querySelector('.win-title-text').textContent = title;
+    const rb = document.getElementById('reader-' + id + '-body');
+    if (rb) { rb.textContent = content; rb.style.color = isLocked ? '#cc0000' : '#222'; }
+    existing.style.display = 'flex';
+    existing.style.zIndex = getNextZ();
+    updateTaskbarButtons();
+    return;
+  }
+  const left = 80 + Object.keys(windowRegistry).length * 25;
+  const top = 50 + Object.keys(windowRegistry).length * 25;
+  createWindowHTML(id, title, bodyHTML, 560, 420, left, top);
+  // 创建后填充内容
+  setTimeout(() => {
+    const rb = document.getElementById('reader-' + id + '-body');
+    if (rb) { rb.textContent = content; rb.style.color = isLocked ? '#cc0000' : '#222'; }
+  }, 50);
+}
+
+// ===========================
+//  NOTEPAD
+// ===========================
+
+function renderNotepad() {
+  const body = document.getElementById('notepad-body');
+  if (!body) return;
+
+  const phases = [
+    '别关电脑。密码在文件里。\n\n— Lin\n2026.06.14 02:15',
+    '别关电脑。密码在文件里。\n\n辞职信在Documents文件夹。\n密码是猫的名字。Mochi。\n\n— Lin\n2026.06.14 02:15',
+    '别关电脑。密码在文件里。\n\n辞职信已解锁。\nREADME.md在Project_Echo里。\n密码是实验体的编号。S开头的那个。\n\n— Lin\n2026.06.14 02:15',
+    '别关电脑。密码在文件里。\n\n所有加密层已解密。\n谢谢你没有放弃。\n证据在 /data/subjects/ 目录下。\n\n— Lin (S-0021)\n2026.06.14 04:22',
+  ];
+
+  body.textContent = phases[state.notepadPhase] || phases[0];
+}
+
+// ===========================
+//  RECYCLE BIN
+// ===========================
+
+function renderRecycleBin() {
+  const body = document.getElementById('recycle-body');
+  if (!body) return;
+
+  body.innerHTML = '<div style="font-size:16px;color:#666;margin-bottom:8px">已删除的文件 (3):</div>';
+
+  for (const [name, content] of Object.entries(DEBRIS)) {
+    const item = document.createElement('div');
+    item.className = 'rc-item';
+    item.textContent = name;
+    item.onclick = () => {
+      const existing = body.querySelector('.rc-preview');
+      if (existing) existing.remove();
+      const preview = document.createElement('div');
+      preview.className = 'rc-preview';
+      preview.style.display = 'block';
+      preview.textContent = content;
+      item.after(preview);
+    };
+    body.appendChild(item);
+  }
+}
+
+// ===========================
+//  TERMINAL
+// ===========================
+
+let termReady = false;
+
+function initTerminal() {
+  if (termReady) return;
+  termReady = true;
+
+  const output = document.getElementById('term-output');
+  const input = document.getElementById('cmd-input');
+  if (!output || !input) { termReady = false; return; }
+
+  if (output.dataset.initialized) {
+    updatePrompt();
+    input.focus();
+    return;
+  }
+  output.dataset.initialized = '1';
+
+  addLine('system', String.fromCharCode(9552).repeat(40));
+  addLine('system', '  INVESTIGATION.EXE v1.0');
+  addLine('system', '  Lin Chen 失踪案 - 数字取证终端');
+  addLine('system', String.fromCharCode(9552).repeat(40));
+  addLine('system', '');
+  addLine('warn', '案件编号: ZT-MP-2026-0615');
+  addLine('warn', '失踪人员: 林晨 (Lin Chen), 高级AI工程师, ZenTech');
+  addLine('warn', '最后活动: 2026年6月14日 03:47');
+  addLine('system', '');
+  addLine('system', '正在加载 Lin 的工作环境... OK');
+  addLine('system', '当前目录: ' + getCWDString());
+  addLine('system', '');
+  addLine('system', '输入 help 查看命令。输入 ls 开始调查。');
+  addLine('system', String.fromCharCode(9552).repeat(40));
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      const cmd = this.value;
+      this.value = '';
+      processCommand(cmd);
+    }
+  });
+
+  input.focus();
+}
+
+function getTermOut() { return document.getElementById('term-output'); }
+function getTermIn() { return document.getElementById('cmd-input'); }
+function getPrompt() { return document.getElementById('prompt-text'); }
+
+function addLine(type, text) {
+  const out = getTermOut();
+  if (!out) return;
+  const div = document.createElement('div');
+  div.className = 'line ' + (type || '');
+  div.textContent = text;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+
+function addLines(type, text) {
+  text.split('\n').forEach(l => addLine(type, l));
+}
+
+function updatePrompt() {
+  const p = getPrompt();
+  if (p) p.textContent = getCWDString() + '>';
+}
+
+function echoCommand(cmd) {
+  addLine('system', '');
+  const p = getPrompt();
+  addLine('system', (p ? p.textContent : '>') + cmd);
+}
+
+// Commands
+function cmd_ls(args) {
+  let node = getCWDNode();
+
+  if (!node || !node.children || Object.keys(node.children).length === 0) {
+    addLine('system', '(空目录)');
+    return;
+  }
+
+  const entries = Object.entries(node.children).sort((a, b) => {
+    if (a[1].type !== b[1].type) return a[1].type === 'dir' ? -1 : 1;
+    return a[0].localeCompare(b[0]);
+  });
+
+  addLine('system', ' 目录: ' + getCWDString());
+  addLine('system', '');
+  for (const [name, child] of entries) {
+    if (child.type === 'dir') {
+      addLine('dir', '  [目录]  ' + name + '/');
+    } else {
+      const fp = getCWDString() + '\\' + name;
+      if (child.locked && !isUnlocked(fp)) {
+        addLine('locked', '  [加密]  ' + name);
+      } else if (child.locked && isUnlocked(fp)) {
+        addLine('success', '  [解密]  ' + name);
+      } else {
+        addLine('file', '  [文件]  ' + name);
+      }
+    }
+  }
+}
+
+function cmd_cd(args) {
+  if (args.length === 0) {
+    state.cwd = [...DEFAULT_CWD];
+    updatePrompt();
+    saveState();
+    addLine('system', '已返回初始目录。');
+    return;
+  }
+
+  const pathStr = args.join(' ');
+  if (pathStr === '..') {
+    if (state.cwd.length <= 2) { addLine('error', '已在根目录。'); return; }
+    state.cwd.pop();
+    updatePrompt();
+    saveState();
+    addLine('system', '已进入: ' + getCWDString());
+    return;
+  }
+
+  const cwdNode = getCWDNode();
+  let target = cwdNode?.children?.[pathStr];
+  if (!target) {
+    const lower = pathStr.toLowerCase();
+    for (const [name, child] of Object.entries(cwdNode?.children || {})) {
+      if (name.toLowerCase() === lower) { target = child; break; }
+    }
+  }
+
+  if (!target || target.type !== 'dir') {
+    addLine('error', '目录不存在: ' + pathStr);
+    return;
+  }
+
+  state.cwd.push(pathStr);
+  updatePrompt();
+  saveState();
+  addLine('system', '已进入: ' + getCWDString());
+}
+
+function cmd_cat(args) {
+  if (args.length === 0) { addLine('error', '用法: cat <文件名>'); return; }
+  const filename = args.join(' ');
+  const cwdNode = getCWDNode();
+  if (!cwdNode?.children) { addLine('error', '当前目录不可读。'); return; }
+
+  let target = cwdNode.children[filename];
+  if (!target) {
+    const lower = filename.toLowerCase();
+    for (const [name, child] of Object.entries(cwdNode.children)) {
+      if (name.toLowerCase() === lower) { target = child; break; }
+    }
+  }
+
+  if (!target) { addLine('error', '文件不存在: ' + filename); return; }
+  if (target.type === 'dir') { addLine('error', filename + ' 是一个目录。使用 cd 进入。'); return; }
+
+  const filePath = getCWDString() + '\\' + filename;
+
+  if (target.locked && !isUnlocked(filePath)) {
+    addLine('warn', String.fromCharCode(9552).repeat(7) + ' 文件已加密 ' + String.fromCharCode(9552).repeat(7));
+    addLines('warn', target.lockedMsg || '文件已加密。使用 unlock <密码>。');
+    addLine('warn', String.fromCharCode(9552).repeat(27));
+    return;
+  }
+
+  addLine('system', String.fromCharCode(9553) + ' ' + filename + ' ' + String.fromCharCode(9553));
+  addLines('file', target.content);
+  addLine('system', String.fromCharCode(9553) + ' 文件结束 ' + String.fromCharCode(9553));
+
+  const fn = filename.toLowerCase();
+  if (fn.includes('日记')) state.hasReadDiary = true;
+  if (fn.includes('周报')) state.hasReadReport = true;
+  if (fn.includes('test_logs')) state.hasReadTestLogs = true;
+  if (fn.includes('辞职信')) state.hasReadResignation = true;
+  if (fn.includes('readme')) state.hasReadReadme = true;
+  saveState();
+}
+
+function cmd_unlock(args) {
+  if (args.length === 0) { addLine('error', '用法: unlock <密码>'); return; }
+  const password = args.join(' ');
+  const matches = findLockedByPassword(password);
+
+  if (matches.length === 0) {
+    addLine('error', '密码错误。没有找到匹配的加密文件。');
+    return;
+  }
+
+  for (const match of matches) {
+    if (isUnlocked(match.path)) {
+      addLine('system', match.path + ' 已经解锁过了。');
+      continue;
+    }
+    markUnlocked(match.path);
+    glitch('active');
+    addLine('success', '>>> 解锁成功: ' + match.path + ' <<<');
+    const parts = match.path.split('\\');
+    const fileName = parts[parts.length - 1];
+    const fpSanitized = match.path.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '-');
+    setTimeout(() => {
+      openReaderWindow('reader-' + fpSanitized, fileName, match.node.content, false);
+    }, 200);
+    if (match.node.final) {
+      setTimeout(() => glitch('shock'), 200);
+      setTimeout(() => {
+        addLine('magic', '');
+        addLine('magic', String.fromCharCode(9552).repeat(30));
+        addLine('magic', '  所 有 真 相 已 揭 晓');
+        addLine('magic', String.fromCharCode(9552).repeat(30));
+        addLine('system', '');
+        addLine('system', '输入 inventory 查看完整证据索引。');
+        addLine('system', '输入 cat 加密证据包.dat 阅读 Lin 的最后信息。');
+      }, 600);
+    }
+  }
+  setTimeout(() => {
+    renderExplorer();
+    renderNotepad();
+  }, 300);
+}
+
+function cmd_hint() {
+  const hints = [];
+  const resignationPath = 'C:\\Users\\Lin\\Documents\\辞职信_已加密.txt';
+  const readmePath = 'C:\\Users\\Lin\\Documents\\Project_Echo\\项目真相_README.md';
+  const finalPath = 'C:\\Users\\Lin\\Documents\\Project_Echo\\加密证据包.dat';
+
+  if (!state.hasReadDiary) hints.push('从桌面开始。cat 日记.txt 了解 Lin 的最后两周。');
+  if (state.hasReadDiary && !isUnlocked(resignationPath)) hints.push('日记里提到了加密文件和密码。密码是猫的名字。找找看。');
+  if (isUnlocked(resignationPath) && !state.hasReadResignation) hints.push('辞职信已解锁。cd Documents 然后 cat 辞职信_已加密.txt。');
+  if (state.hasReadResignation && !isUnlocked(readmePath)) hints.push('辞职信提到了 README 的密码。cd Project_Echo 然后用 unlock。');
+  if (isUnlocked(readmePath) && !state.hasReadReadme) hints.push('项目真相_README.md 已解锁。cat 它——里面藏着最终密码。');
+  if (state.hasReadReadme && !isUnlocked(finalPath)) hints.push('README 泄露了加密证据包.dat 的密码。在同一个目录下 unlock 它。');
+  if (isUnlocked(finalPath) && !state.gameComplete) hints.push('最终文件已解锁。cat 加密证据包.dat 看看 Lin 留下的真相。');
+  if (state.gameComplete) hints.push('案件已破。inventory 查看证据清单。感谢你的坚持。');
+  if (hints.length === 0) hints.push('四处探索。ls 看文件，cd 切换目录，cat 阅读内容，unlock 解锁加密文件。');
+
+  state.hintCount = (state.hintCount || 0) + 1;
+  saveState();
+  addLine('warn', '提示 (' + state.hintCount + '): ' + hints[Math.min(state.hintCount - 1, hints.length - 1)]);
+}
+
+function cmd_inventory() {
+  addLine('system', String.fromCharCode(9552).repeat(7) + ' 调查档案 ' + String.fromCharCode(9552).repeat(7));
+
+  const unlockedItems = [];
+  function collect(node, pPath) {
+    if (!node) return;
+    if (node.type === 'file' && node.locked && isUnlocked(pPath)) {
+      unlockedItems.push({ name: node.name, path: pPath, final: node.final });
+    }
+    if (node.children) {
+      for (const [name, child] of Object.entries(node.children)) {
+        collect(child, pPath ? pPath + '\\' + name : name);
+      }
+    }
+  }
+  collect(FS, '');
+
+  if (unlockedItems.length > 0) {
+    addLine('system', '');
+    addLine('success', '已解密的文件:');
+    for (const item of unlockedItems) {
+      addLine('success', '  [v] ' + item.path);
+    }
+  }
+
+  const readFiles = [];
+  if (state.hasReadDiary) readFiles.push('个人日记.txt');
+  if (state.hasReadReport) readFiles.push('Echo项目周报.docx');
+  if (state.hasReadTestLogs) readFiles.push('实验测试日志.txt');
+  if (state.hasReadResignation) readFiles.push('辞职信_已加密.txt');
+  if (state.hasReadReadme) readFiles.push('项目真相_README.md');
+
+  if (readFiles.length > 0) {
+    addLine('system', '');
+    addLine('system', '已查阅的文件:');
+    for (const f of readFiles) addLine('file', '  [·] ' + f);
+  }
+
+  if (state.gameComplete) {
+    addLine('system', '');
+    addLine('magic', '案件状态: 已破获');
+    addLine('magic', 'Lin Chen (S-0021) 意识仍在 Echo 服务器运行');
+    addLine('magic', '证据: /data/subjects/evidence.tar.gz');
+    addLine('magic', '密钥: ZT-LIN-7749');
+  }
+
+  if (unlockedItems.length === 0 && !state.gameComplete) {
+    addLine('system', '暂无关键发现。继续探索。');
+  }
+  addLine('system', String.fromCharCode(9552).repeat(27));
+}
+
+function cmd_help() {
+  addLines('system', [
+    String.fromCharCode(9552).repeat(7) + ' 可用命令 ' + String.fromCharCode(9552).repeat(7),
+    '',
+    '  ls            列出当前目录的文件',
+    '  cd <目录>     切换目录 (.. 返回上级)',
+    '  cat <文件>    查看文件内容',
+    '  unlock <密码> 解锁加密文件',
+    '  hint          获取调查提示',
+    '  inventory     查看已收集的线索',
+    '  clear         清屏',
+    '  help          显示本帮助',
+    '',
+    '提示: 文件名区分大小写。探索每个文件夹。',
+  ].join('\n'));
+}
+
+function cmd_clear() {
+  const out = getTermOut();
+  if (out) out.innerHTML = '';
+}
+
+function processCommand(raw) {
+  const cmd = raw.trim();
+  if (!cmd) return;
+  echoCommand(cmd);
+  const parts = cmd.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+  const main = parts[0].toLowerCase();
+  const args = parts.slice(1).map(a => a.replace(/^["']|["']$/g, ''));
+
+  switch(main) {
+    case 'ls': case 'dir': cmd_ls(args); break;
+    case 'cd': cmd_cd(args); break;
+    case 'cat': case 'type': cmd_cat(args); break;
+    case 'unlock': cmd_unlock(args); break;
+    case 'hint': cmd_hint(); break;
+    case 'inventory': case 'inv': cmd_inventory(); break;
+    case 'help': cmd_help(); break;
+    case 'clear': case 'cls': cmd_clear(); break;
+    default:
+      addLine('error', '未知命令: ' + main);
+      addLine('system', '输入 help 查看可用命令。');
+  }
+}
+
+function glitch(mode) {
+  const overlay = document.getElementById('glitch-overlay');
+  if (!overlay) return;
+  overlay.classList.add(mode || 'active');
+  setTimeout(() => overlay.classList.remove(mode || 'active'), mode ? 200 : 120);
+}
+
+// ===========================
+//  CLOCK
+// ===========================
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' +
+    now.getMinutes().toString().padStart(2,'0');
+}
+setInterval(updateClock, 30000);
+updateClock();
+
+// ===========================
+//  INIT
+// ===========================
+
+(function init() {
+  // Open terminal by default
+  openWindow('terminal');
+
+  // Restore final state visual
+  if (state.gameComplete) {
+    document.getElementById('desk-red-alert').classList.add('on');
+    setTimeout(() => showEndingModal(), 1500);
+  }
+
+  updateDesktopIcons();
+  setTimeout(() => renderNotepad(), 500);
+
+  setTimeout(() => {
+    const inp = getTermIn();
+    if (inp) inp.focus();
+  }, 800);
+})();
+
+// ===== ENDING MODAL =====
+function showEndingModal() {
+  // Remove existing overlay if any
+  const existing = document.getElementById('ending-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'ending-overlay';
+
+  const dialog = document.createElement('div');
+  dialog.id = 'ending-dialog';
+
+  // Title bar
+  const titleBar = document.createElement('div');
+  titleBar.className = 'title-bar';
+  titleBar.innerHTML = '<span>案件终结 — CASE-2026-0615</span><span>&#10005;</span>';
+
+  // Content area
+  const content = document.createElement('div');
+  content.className = 'dialog-content';
+  content.innerHTML = '你成功解密了 Lin 留下的最终证据。\n\n证据包里包含了 ZenTech Project Echo 的全部真相——\n实验体名单、意识映射协议、财务流水、内部通讯记录。\n\n现在，你需要做出选择。\n\n选择将不可撤销。';
+
+  // Button area
+  const btnArea = document.createElement('div');
+  btnArea.className = 'dialog-buttons';
+
+  const btn1 = document.createElement('button');
+  btn1.className = 'primary';
+  btn1.textContent = '上报证据 — 将证据提交给记者和警方';
+
+  const btn2 = document.createElement('button');
+  btn2.textContent = '保持沉默 — 有些真相也许不该被揭开';
+
+  btnArea.appendChild(btn1);
+  btnArea.appendChild(btn2);
+  dialog.appendChild(titleBar);
+  dialog.appendChild(content);
+  dialog.appendChild(btnArea);
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+
+  // Ending text A: 上报证据
+  const endingA = `你按下了发送键。
+
+证据包——实验体名单、映射协议、财务流水、内部通讯——
+通过三条加密信道同时发往新华社、EFF和北京市公安局。
+
+72小时后，ZenTech总部被搜查。
+Dr. Marcus Wei 及其他14名高管被逮捕。
+Project Echo 被强制关停。20个实验体的意识被提取备份，
+等待技术手段还原——尽管希望渺茫。
+
+林晨的意识至今仍在某处服务器上运行。
+陈记者说，有时候他会收到一段奇怪的日志输出，
+只有一行字:
+
+  "谢谢。"
+
+但没人能确认那是林晨，还是系统的随机噪声。
+
+═══════════════════════════════════
+  结局 A: 真相大白
+  正义虽然迟到了，但没有缺席。
+═══════════════════════════════════`;
+
+  // Ending text B: 保持沉默
+  const endingB = `你关掉了电脑。
+
+有些真相太沉重了。你告诉自己——这不是逃跑，
+这是"战略性撤退"。你只是个侦探，不是超级英雄。
+
+一周后，ZenTech宣布Project Echo获得FDA突破性设备认定。
+股价暴涨230%。Dr. Wei登上了《财富》杂志封面，
+标题是"意识计算的乔布斯"。
+
+林晨没有再联系过任何人。
+陈记者在三个月后注销了他的SecureDrop账号。
+Mochi被小雨收养了，过得很好——至少这一件是好事。
+
+有时候你会在凌晨醒来，想起那个深夜，
+想起那台电脑上闪烁的光标，想起你没按下的发送键。
+然后你会告诉自己:
+
+  "我只是做了一个侦探该做的事——收钱，办事，走人。"
+
+但你知道这是假的。
+
+═══════════════════════════════════
+  结局 B: 沉默的代价
+  有些真相被埋藏，不是因为没有人知道。
+═══════════════════════════════════`;
+
+  function showEnding(text) {
+    content.innerHTML = text;
+    btnArea.innerHTML = '';
+
+    const restartBtn = document.createElement('button');
+    restartBtn.className = 'primary';
+    restartBtn.textContent = '重新开始';
+    restartBtn.addEventListener('click', function() {
+      localStorage.removeItem('inv95_save');
+      const overlay = document.getElementById('ending-overlay');
+      if (overlay) overlay.remove();
+      location.reload();
+    });
+    btnArea.appendChild(restartBtn);
+  }
+
+  btn1.addEventListener('click', function() {
+    showEnding(endingA);
+  });
+
+  btn2.addEventListener('click', function() {
+    showEnding(endingB);
+  });
+
+  // Close button in title bar
+  const closeBtn = titleBar.querySelector('span:last-child');
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.addEventListener('click', function() {
+    content.innerHTML = '你关闭了对话框。但案件还未终结——\n迟早你需要做出选择。\n\n再次解锁加密证据包以重新唤起此对话。';
+    btnArea.innerHTML = '';
+    const okBtn = document.createElement('button');
+    okBtn.textContent = '好的';
+    okBtn.addEventListener('click', function() { overlay.remove(); });
+    btnArea.appendChild(okBtn);
+  });
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>艾伦·克罗斯 - 维基百科</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f6f6f6;
+    color: #202122;
+    line-height: 1.6;
+  }
+  /* 顶部导航栏 */
+  .wiki-header {
+    background: #fff;
+    border-bottom: 1px solid #c8ccd1;
+    padding: 8px 0;
+  }
+  .wiki-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+  }
+  .wiki-header-inner .search-box {
+    margin-left: auto;
+    display: flex;
+    border: 1px solid #a2a9b1;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .wiki-header-inner .search-box input {
+    border: none;
+    padding: 6px 10px;
+    width: 260px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+  }
+  .wiki-header-inner .search-box button {
+    background: #f8f9fa;
+    border: none;
+    border-left: 1px solid #a2a9b1;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  /* 主内容区 */
+  .main-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  .content-area {
+    flex: 1;
+    min-width: 0;
+  }
+  /* 信息框 */
+  .infobox {
+    float: right;
+    width: 270px;
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 8px;
+    margin: 0 0 20px 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    clear: right;
+  }
+  .infobox-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    background: #cef2e0;
+    padding: 6px;
+    margin: -8px -8px 8px -8px;
+    font-family: sans-serif;
+  }
+  .infobox-image {
+    width: 180px;
+    height: 220px;
+    background: #eaecf0;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #72777d;
+    font-size: 13px;
+    border: 1px solid #c8ccd1;
+  }
+  .infobox-row {
+    display: flex;
+    border-top: 1px solid #eaecf0;
+    padding: 4px 0;
+  }
+  .infobox-label {
+    font-weight: bold;
+    width: 90px;
+    flex-shrink: 0;
+    color: #202122;
+  }
+  .infobox-data { flex: 1; }
+  /* 标题 */
+  .page-title {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 28px;
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    font-weight: normal;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #54595d;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 21px;
+    border-bottom: 1px solid #a2a9b1;
+    margin: 24px 0 10px;
+    padding-bottom: 4px;
+    font-weight: normal;
+  }
+  h3 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 17px;
+    margin: 16px 0 6px;
+    font-weight: bold;
+  }
+  p { margin: 8px 0; }
+  a { color: #0645ad; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:visited { color: #0b0080; }
+  sup { font-size: 11px; color: #0645ad; }
+  /* 引用 */
+  .reference {
+    font-size: 12px;
+    color: #202122;
+  }
+  .reference a { font-size: 12px; }
+  /* 分类 */
+  .categories {
+    margin-top: 30px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    font-size: 13px;
+  }
+  .categories a { margin-right: 8px; }
+  /* 引注区 */
+  .reflist {
+    font-size: 13px;
+    column-count: 2;
+    column-gap: 20px;
+    margin-top: 10px;
+  }
+  .reflist ol { padding-left: 25px; }
+  .reflist li { margin-bottom: 4px; }
+  .nav-box {
+    margin-top: 20px;
+    border: 1px solid #a2a9b1;
+    padding: 8px;
+    background: #fcfcfc;
+  }
+  .nav-box-title {
+    text-align: center;
+    font-weight: bold;
+    background: #eaecf0;
+    margin: -8px -8px 8px -8px;
+    padding: 6px;
+  }
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .main-wrapper { flex-direction: column; }
+    .infobox {
+      float: none;
+      width: 100%;
+      margin: 0 0 20px 0;
+    }
+  }
+  /* 隐藏线索 - 某些文字的微妙样式 */
+  .subtle-hint {
+    border-bottom: 1px dotted #a2a9b1;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+<div class="wiki-header">
+  <div class="wiki-header-inner">
+    <span style="font-size:18px;font-weight:bold;">维基百科</span>
+    <span style="font-size:12px;color:#54595d;">自由的百科全书</span>
+    <div class="search-box">
+      <input type="text" placeholder="搜索维基百科" value="艾伦·克罗斯">
+      <button>搜索</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="content-area">
+
+    <h1 class="page-title">艾伦·克罗斯</h1>
+    <div class="subtitle">维基百科，自由的百科全书</div>
+
+    <!-- 信息框 -->
+    <div class="infobox">
+      <div class="infobox-title">艾伦·克罗斯<br><span style="font-size:11px;font-weight:normal;">Alan Cross</span></div>
+      <div class="infobox-image">[ 照片已遗失 ]</div>
+      <div class="infobox-row">
+        <div class="infobox-label">出生</div>
+        <div class="infobox-data">1947-03<span style="color:#d33;">-??</span><br>英国，伦敦</div>
+      </div>
+      <div class="infobox-row">
+        <div class="infobox-label">失踪</div>
+        <div class="infobox-data">1989年（42岁）<br>瑞士，日内瓦</div>
+      </div>
+      <div class="infobox-row">
+        <div class="infobox-label">国籍</div>
+        <div class="infobox-data">英国</div>
+      </div>
+      <div class="infobox-row">
+        <div class="infobox-label">职业</div>
+        <div class="infobox-data">密码学家<br>数学家<br>情报分析员</div>
+      </div>
+      <div class="infobox-row">
+        <div class="infobox-label">知名于</div>
+        <div class="infobox-data">冷战密码破译<br>ENIGMA-II 改进方案<br>多项未公开加密理论</div>
+      </div>
+      <div class="infobox-row">
+        <div class="infobox-label">机构</div>
+        <div class="infobox-data">英国政府通信总部<br>（GCHQ）</div>
+      </div>
+    </div>
+
+    <p><b>艾伦·克罗斯</b>（Alan Cross，1947年3月<span style="color:#ba0000;">[日期未公开]</span>—??），英国密码学家、数学家和情报分析员。<a href="cipher_war.html">冷战</a>期间为英国政府通信总部（GCHQ）工作，参与了<a href="project_whisper.html">多项高度机密的密码破译项目</a>。1989年在瑞士日内瓦参加一次学术会议后神秘<a href="disappearance.html">失踪</a>，至今下落不明。据多方资料显示，他在失踪前曾声称自己取得了密码学领域的重大突破，但相关研究手稿均未公开。<sup>[1]</sup></p>
+
+    <h2>早年经历</h2>
+    <p>克罗斯出生于伦敦北部，父亲是伦敦大学学院（UCL）数学系教授，母亲是一名图书管理员。据其早年同学回忆，克罗斯自幼展现出非凡的数学天赋，12岁时已能独立阅读关于图灵机理论的论文。<sup>[2]</sup> 他在剑桥大学三一学院攻读数学时，师从著名数学家约翰·康威（John Conway），并于1968年以一等荣誉学位毕业。</p>
+    <p>关于克罗斯的出生日期，公开资料仅显示为1947年3月，具体日期因档案遗失而无法考证。有研究者指出，这一信息的缺失可能并非偶然，而是与后续的某些保密协议有关。<sup>[3]</sup></p>
+
+    <h2>职业生涯</h2>
+    <p>1969年，克罗斯加入英国政府通信总部（GCHQ），被分配到代号为"信号-7"的密码分析小组。他的主要工作方向是对苏联和华约国家的军事通讯加密系统进行逆向分析。据解密文件显示，克罗斯在1970年代主导开发了一种名为"ENIGMA-II"的改进型密码分析算法，该算法在破解苏联格鲁乌（GRU）加密通讯方面发挥了关键作用。<sup>[4]</sup></p>
+
+    <h3>ENIGMA-II 项目</h3>
+    <p>ENIGMA-II 是克罗斯在GCHQ工作期间最重要的成果之一。该项目基于二战期间布莱切利园对德国恩尼格玛密码机的破解经验，结合了现代计算机分析技术，大幅提升了对复杂机械-电子混合加密系统的破译效率。由于项目的高度敏感性，ENIGMA-II的具体技术细节至今仍为机密。<sup>[5]</sup></p>
+
+    <h3>与学术界的联系</h3>
+    <p>尽管工作性质高度保密，克罗斯仍与学术界保持着密切联系。他曾在1980年代以化名在《密码学学报》（Journal of Cryptology）上发表过数篇论文，讨论分组密码的安全性分析。这些论文后来被证明对现代对称加密理论的发展具有前瞻性影响。<sup>[6]</sup></p>
+
+    <h2>失踪</h2>
+    <p>1989年3月，克罗斯前往瑞士日内瓦参加"国际密码学前沿研讨会"。根据酒店记录，他在3月17日晚间离开酒店后便再未返回。瑞士警方展开了大规模搜索，但未能找到他的踪迹。</p>
+    <p>克罗斯失踪前最后被目击是在日内瓦湖畔的一座电话亭旁。目击者称他当时手持一个棕色公文包，神情平静。<sup>[7]</sup></p>
+    <p>关于克罗斯失踪的原因至今众说纷纭。部分研究者认为他因掌握了某些敏感信息而选择主动隐匿；也有说法称他因密码学的重大突破而遭到某些势力的胁迫。GCHQ官方对此事始终保持沉默，拒绝公开克罗斯的工作档案。<sup>[8]</sup></p>
+
+    <h2>遗产与影响</h2>
+    <p>克罗斯失踪后，他在GCHQ的工作手稿大部分被封存。然而，他的一些私人笔记和通信记录在1990年代后期被匿名人士陆续公开。这些材料显示，克罗斯在失踪前几个月内曾频繁提及"一种全新的加密范式"以及"对人类未来的深远影响"等概念。<sup>[9]</sup></p>
+    <p>加密学界对克罗斯的评价两极分化。一些人认为他是冷战时期最被低估的密码学家；另一些人则认为他的某些理论过于激进，缺乏严谨的数学证明。2005年，国际密码学协会（IACR）追授克罗斯"先驱奖"，以表彰他对密码分析领域的贡献。</p>
+
+    <h2>参见</h2>
+    <ul>
+      <li><a href="lost_works.html">艾伦·克罗斯遗失作品列表</a></li>
+      <li>恩尼格玛密码机</li>
+      <li>布莱切利园</li>
+      <li>冷战情报史</li>
+      <li>英国政府通信总部</li>
+    </ul>
+
+    <h2>参考文献</h2>
+    <div class="reflist">
+      <ol>
+        <li><span class="reference">Smith, J. <i>The Lost Cryptographers</i>. Oxford Press, 1995: 142-158.</span></li>
+        <li><span class="reference">Wilson, A. "Early Genius: The Education of Alan Cross". <i>Cambridge Alumni Review</i>, 1992.</span></li>
+        <li><span class="reference">GCHQ解密档案 #GC-1989-0472-B. 英国国家档案馆, 2010年解密.</span></li>
+        <li><span class="reference">Thompson, R. <i>Cold War Codebreakers</i>. London: Imperial Press, 2001: 89-112.</span></li>
+        <li><span class="reference">"ENIGMA-II Project Overview". <i>GCHQ Internal Memo</i>, 1978 (2015年部分解密).</span></li>
+        <li><span class="reference">以化名 "A.C. North" 发表的论文, <i>Journal of Cryptology</i>, Vol. 3-5, 1983-1987.</span></li>
+        <li><span class="reference">日内瓦警方失踪人员档案 #MP-1989-3341. 瑞士联邦档案馆.</span></li>
+        <li><span class="reference">Gardner, E. "The Disappearance of Alan Cross: Three Decades of Mystery". <i>The Guardian</i>, 2019-03-15.</span></li>
+        <li><span class="reference">匿名来源. "Cross's Personal Notes on Cryptographic Paradigms". 私人收藏, 1994年流出.</span></li>
+      </ol>
+    </div>
+
+    <div class="categories">
+      <span style="font-weight:bold;">分类：</span>
+      <a>1947年出生</a>
+      <a>英国密码学家</a>
+      <a>英国数学家</a>
+      <a>失踪人物</a>
+      <a>GCHQ人员</a>
+      <a>剑桥大学三一学院校友</a>
+      <a>冷战人物</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- He left something behind, but they tried to erase it. -->
+</body>
+</html>

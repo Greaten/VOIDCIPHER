@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CR-89-ENG 档案库 - 受限访问</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f0f0f0;
+    color: #202122;
+    line-height: 1.6;
+  }
+  .wiki-header {
+    background: #2a2a2a;
+    border-bottom: 1px solid #444;
+    padding: 8px 0;
+  }
+  .wiki-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+  }
+  .wiki-header-inner .search-box {
+    margin-left: auto;
+    display: flex;
+    border: 1px solid #555;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .wiki-header-inner .search-box input {
+    border: none;
+    padding: 6px 10px;
+    width: 260px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    background: #3a3a3a;
+    color: #ccc;
+  }
+  .wiki-header-inner .search-box button {
+    background: #444;
+    color: #ccc;
+    border: none;
+    border-left: 1px solid #555;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .main-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .page-title {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 28px;
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    font-weight: normal;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #54595d;
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 21px;
+    border-bottom: 1px solid #a2a9b1;
+    margin: 24px 0 10px;
+    padding-bottom: 4px;
+    font-weight: normal;
+  }
+  p { margin: 8px 0; }
+  a { color: #0645ad; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:visited { color: #0b0080; }
+  sup { font-size: 11px; color: #0645ad; }
+
+  /* 受限访问提示 */
+  .restricted-banner {
+    background: #2a2a2a;
+    color: #ffc107;
+    padding: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    border-left: 4px solid #ffc107;
+    font-family: sans-serif;
+  }
+
+  /* 密码区域 */
+  .vault-section {
+    background: #fafafa;
+    border: 1px solid #c8ccd1;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+  }
+  .vault-section label {
+    display: block;
+    font-size: 14px;
+    color: #54595d;
+    margin-bottom: 12px;
+    font-family: sans-serif;
+  }
+  .vault-section input[type="text"] {
+    width: 280px;
+    padding: 8px 12px;
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    border: 2px solid #a2a9b1;
+    border-radius: 2px;
+    text-align: center;
+    letter-spacing: 3px;
+    outline: none;
+    text-transform: uppercase;
+  }
+  .vault-section input[type="text"]:focus {
+    border-color: #3366cc;
+  }
+  .vault-section button {
+    display: block;
+    margin: 16px auto 0;
+    padding: 8px 32px;
+    font-size: 14px;
+    background: #3366cc;
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: sans-serif;
+  }
+  .vault-section button:hover {
+    background: #2a4b8d;
+  }
+
+  /* 结果消息 */
+  .result-msg {
+    margin-top: 16px;
+    font-size: 14px;
+    min-height: 24px;
+  }
+  .error-msg {
+    color: #ba0000;
+  }
+  .error-msg sup {
+    color: #ba0000;
+    font-size: 10px;
+  }
+
+  /* 揭示内容区 - 初始隐藏 */
+  #revealed-content {
+    display: none;
+    margin-top: 30px;
+    background: #fff;
+    border: 1px solid #c8ccd1;
+    padding: 30px;
+  }
+  #revealed-content .classified-stamp {
+    text-align: right;
+    color: #ba0000;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 4px;
+  }
+  .seal {
+    width: 100px;
+    height: 100px;
+    border: 3px solid #ba0000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: #ba0000;
+    font-size: 11px;
+    text-align: center;
+    font-family: sans-serif;
+    transform: rotate(-12deg);
+    line-height: 1.3;
+  }
+
+  .categories {
+    margin-top: 30px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    font-size: 13px;
+  }
+  .categories a { margin-right: 8px; }
+
+  @media (max-width: 768px) {
+    .vault-section { padding: 20px; }
+    .vault-section input[type="text"] { width: 100%; }
+    #revealed-content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wiki-header">
+  <div class="wiki-header-inner">
+    <span style="font-size:18px;font-weight:bold;color:#ccc;">维基百科</span>
+    <span style="font-size:12px;color:#888;">· 限制访问档案</span>
+    <div class="search-box">
+      <input type="text" placeholder="搜索档案..." value="CR-89-ENG">
+      <button>搜索</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrapper">
+
+  <div class="restricted-banner">
+    ▲ <b>受限访问</b> — 此页面包含来自 GCHQ 解密档案的文件。访问需要档案授权码。
+  </div>
+
+  <h1 class="page-title">档案编号：CR-89-ENG</h1>
+  <div class="subtitle">艾伦·克罗斯未公开文件 · 加密存储区 · 安全等级：████</div>
+
+  <p>本档案库收录了艾伦·克罗斯失踪后被GCHQ封存的个人文件。根据英国《信息自由法》2015年部分解密令，以下文件被列为"有条件下可公开"，但需通过克罗斯本人设置的访问验证。<sup>[1]</sup></p>
+  <p>档案包含克罗斯在失踪前数月撰写的大量个人笔记、未完成的论文手稿以及一份被称为"最后遗嘱"的加密文档。档案的解密密码由克罗斯设计，据其同事回忆，密码是一个与他的核心研究相关的词语。<sup>[2]</sup></p>
+
+  <h2>身份验证</h2>
+  <p>请输入档案访问授权码以查看受限文件内容。授权码不区分大小写。</p>
+
+  <div class="vault-section">
+    <label for="password">档案访问授权码</label>
+    <input type="text" id="password" placeholder="输入授权码" maxlength="20" autocomplete="off">
+    <br>
+    <button onclick="verifyPassword()">验证访问</button>
+    <div id="result" class="result-msg"></div>
+  </div>
+
+  <!-- 隐藏内容 -->
+  <div id="revealed-content">
+    <div class="classified-stamp">=== 已解密 · 2024 ===</div>
+
+    <div class="seal">
+      GCHQ<br>解密<br>2024
+    </div>
+
+    <h2>艾伦·克罗斯的最后遗嘱</h2>
+    <p style="font-size:12px;color:#54595d;font-family:sans-serif;">档案编号：CR-89-ENG-PERS-001 | 原始日期：1989年3月16日 | 解密日期：2024年</p>
+    <p style="font-size:12px;color:#54595d;font-family:sans-serif;">说明：以下内容由克罗斯手写，使用个人加密方式保护。解密密钥已被本文档顶部的验证系统接受。</p>
+
+    <hr style="border:none;border-top:1px solid #a2a9b1;margin:20px 0;">
+
+    <p>致能够读到这些文字的你：</p>
+    <p>如果你正在阅读这段话，说明你已经通过了我在加密档案库中留下的考验。你追踪线索、连接碎片、发现了我藏匿的钥匙——<b>RAVEN</b>。这个名字承载了我最后的秘密，也指向了我最重要的发现。</p>
+    <p>1947年那个三月，我降生于战后的伦敦。那时恩尼格玛密码机刚被破解不久，世界沉浸在秘密被揭开的喜悦中。讽刺的是，三十多年后，我发现的秘密却无人愿意倾听。</p>
+    <p>在GCHQ的最后几年，我养了一只渡鸦，就给它取名叫 RAVEN。它是我唯一的伴侣，也是我唯一的听众。当我对着它自言自语那些不能写在纸上的公式时，它歪着头，仿佛真的能听懂。邻居们觉得我疯了——一个曾经破译过苏联顶级加密系统的密码学家，晚年却每天对着一只鸟说话。但他们不知道，RAVEN 听得懂。它每一次歪头的角度、每一声低鸣的频率，都是我在测试一种全新的信息编码方式。如果声音可以被量化，如果一只鸟的本能反应可以被用作随机数种子——那么自然的混沌本身就是完美的密钥。</p>
+    <p>我意识到一件极其不安的事实：我们所依赖的现代加密体系——RSA、椭圆曲线、乃至整个公钥基础设施——建立在一种假设之上，即某些数学问题在计算上是不可行的。但我证明了这种假设是错误的。</p>
+    <p>如果在二进制逻辑之外，存在一种完全不同的计算模型，那些"不可破解"的加密将在数秒内土崩瓦解。这不是量子计算——量子计算至少还需要实体。我发现的是一种纯粹数学层面的、不需要特殊硬件的攻击方式。</p>
+    <p>我称之为"克罗斯裂隙"（Cross's Fissure）。这是一个存在于所有已知公钥密码体系中的结构性漏洞。</p>
+    <p>我把证明和算法拆解成了碎片，分散在世界各地的几位值得信赖的同行手中。只有当他们各自的部分被拼合在一起时，完整的攻击才能生效。遗憾的是，GCHQ和另外一些组织并不希望这个发现被公开。他们宁愿让世界活在一个脆弱的、建立在假象之上的安全幻觉中。</p>
+    <p>我选择消失，不是因为恐惧，而是因为我知道，公开的代价是这篇文章被立即销毁，连同所有研究记录。我宁愿让真相沉睡，等待一个更好的时代。RAVEN 被托付给了日内瓦的一位老友——它比我更需要安稳的生活。</p>
+    <p>如果你找到了这里，说明你拥有足够的好奇心、耐心和智慧。我不要求你继承我的工作——那是沉重的负担。我只希望你知道：这个世界比你想象的更加脆弱，而真相，即使被埋藏数十年，也终将重见天日。</p>
+    <p>请记住，密码学的终极使命不是隐藏信息，而是保护人类的自由。当加密沦为控制的工具时，它就背叛了自己的灵魂。</p>
+    <p style="text-align:right;margin-top:30px;">—— 艾伦·克罗斯<br>1989年3月16日<br>日内瓦</p>
+
+    <hr style="border:none;border-top:1px solid #a2a9b1;margin:20px 0;">
+
+    <p style="font-size:12px;color:#72777d;">[文档结束] · 档案来源：GCHQ解密批次 DEFE-31-20 · 真实性验证：通过（一级验证）</p>
+
+    <h2>相关条目</h2>
+    <ul>
+      <li><a href="index.html">艾伦·克罗斯</a> — 主条目</li>
+      <li><a href="lost_works.html">遗失作品列表</a></li>
+      <li><a href="last_transmission.html">最后通讯记录</a></li>
+      <li>公钥密码学</li>
+      <li>RSA加密算法</li>
+    </ul>
+
+    <div class="categories">
+      <span style="font-weight:bold;">分类：</span>
+      <a>GCHQ解密档案</a>
+      <a>密码学突破</a>
+      <a>艾伦·克罗斯</a>
+      <a>1989年文档</a>
+    </div>
+  </div>
+
+  <div class="categories">
+    <span style="font-weight:bold;">分类：</span>
+    <a>受限档案</a>
+    <a>GCHQ文件</a>
+    <a>艾伦·克罗斯</a>
+  </div>
+
+</div>
+
+<script>
+function verifyPassword() {
+  var input = document.getElementById('password').value.trim();
+  var resultEl = document.getElementById('result');
+  var revealed = document.getElementById('revealed-content');
+
+  if (!input) {
+    resultEl.innerHTML = '<span class="error-msg">请输入访问授权码。<sup>[需要输入]</sup></span>';
+    return;
+  }
+
+  if (input.toUpperCase() === 'RAVEN') {
+    resultEl.innerHTML = '';
+    revealed.style.display = 'block';
+    revealed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (input.toUpperCase() === 'ENIGMA') {
+    resultEl.innerHTML = '<span class="error-msg">方向对了，但那是旧时代的遗物。试着想想他最后的朋友是什么。<sup>[需要引用]</sup></span>';
+    revealed.style.display = 'none';
+  } else {
+    resultEl.innerHTML = '<span class="error-msg">[权限不足] 此档案需要正确的识别码。</span>';
+    revealed.style.display = 'none';
+  }
+}
+
+// 允许回车键提交
+document.getElementById('password').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    verifyPassword();
+  }
+});
+</script>
+
+<!-- The vault awaits those who know the word. -->
+</body>
+</html>

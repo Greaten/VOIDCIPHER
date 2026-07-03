@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>低语计划 - 维基百科</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f6f6f6;
+    color: #202122;
+    line-height: 1.6;
+  }
+  .wiki-header {
+    background: #fff;
+    border-bottom: 1px solid #c8ccd1;
+    padding: 8px 0;
+  }
+  .wiki-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+  }
+  .wiki-header-inner .search-box {
+    margin-left: auto;
+    display: flex;
+    border: 1px solid #a2a9b1;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .wiki-header-inner .search-box input {
+    border: none;
+    padding: 6px 10px;
+    width: 260px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+  }
+  .wiki-header-inner .search-box button {
+    background: #f8f9fa;
+    border: none;
+    border-left: 1px solid #a2a9b1;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .main-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .page-title {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 28px;
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    font-weight: normal;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #54595d;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 21px;
+    border-bottom: 1px solid #a2a9b1;
+    margin: 24px 0 10px;
+    padding-bottom: 4px;
+    font-weight: normal;
+  }
+  h3 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 17px;
+    margin: 16px 0 6px;
+    font-weight: bold;
+  }
+  p { margin: 8px 0; }
+  a { color: #0645ad; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:visited { color: #0b0080; }
+  sup { font-size: 11px; color: #0645ad; }
+
+  /* 解密档案特有样式 */
+  .declass-banner {
+    background: #2a2a2a;
+    color: #ffc107;
+    padding: 6px 16px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .declass-banner .stamp {
+    border: 2px solid #ffc107;
+    padding: 2px 8px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 11px;
+  }
+
+  /* 涂黑块 */
+  .redacted {
+    background: #1a1a1a;
+    color: #1a1a1a;
+    padding: 2px 6px;
+    margin: 0 2px;
+    border-radius: 1px;
+    user-select: none;
+    cursor: default;
+    letter-spacing: 2px;
+  }
+  .redacted-visible {
+    background: #1a1a1a;
+    color: #ffc107;
+    padding: 2px 6px;
+    margin: 0 2px;
+    border-radius: 1px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  /* 档案信息表 */
+  .archive-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    border: 1px solid #a2a9b1;
+  }
+  .archive-table th {
+    background: #eaecf0;
+    text-align: left;
+    padding: 6px 10px;
+    border: 1px solid #a2a9b1;
+    width: 160px;
+    font-size: 13px;
+  }
+  .archive-table td {
+    padding: 6px 10px;
+    border: 1px solid #a2a9b1;
+    font-size: 13px;
+  }
+
+  .info-box {
+    border: 1px solid #a2a9b1;
+    background: #fef6e7;
+    padding: 10px 15px;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .categories {
+    margin-top: 30px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    font-size: 13px;
+  }
+  .categories a { margin-right: 8px; }
+
+  /* 底部微型导航 */
+  .micro-nav {
+    margin-top: 30px;
+    font-size: 10px;
+    color: #a2a9b1;
+    text-align: right;
+  }
+  .micro-nav a { color: #a2a9b1; }
+  .micro-nav a:hover { color: #0645ad; }
+
+  @media (max-width: 768px) {
+    .archive-table th { width: 100px; }
+    .declass-banner { flex-direction: column; gap: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wiki-header">
+  <div class="wiki-header-inner">
+    <span style="font-size:18px;font-weight:bold;">维基百科</span>
+    <span style="font-size:12px;color:#54595d;">自由的百科全书</span>
+    <div class="search-box">
+      <input type="text" placeholder="搜索维基百科" value="低语计划">
+      <button>搜索</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrapper">
+
+  <div class="declass-banner">
+    <span>GCHQ ARCHIVE · 解密文件 · DEFE-31-20 · 批次 0472-D</span>
+    <span class="stamp">2023年解密</span>
+  </div>
+
+  <h1 class="page-title">低语计划</h1>
+  <div class="subtitle">维基百科，自由的百科全书 | 来源：GCHQ解密档案 | 密级：<span style="color:#ba0000;">已解密</span>（部分涂黑）</div>
+
+  <div class="info-box">
+    <b>注意</b>：本条目基于2023年英国国家档案馆解密的GCHQ文件编写。文件中大量内容仍受保密条款约束，已被涂黑处理。涂黑内容的解密日期为████。
+  </div>
+
+  <h2>档案概要</h2>
+
+  <table class="archive-table">
+    <tr>
+      <th>项目代号</th>
+      <td>WHISPER（低语）</td>
+    </tr>
+    <tr>
+      <th>项目编号</th>
+      <td>GCHQ-PR-1985-███</td>
+    </tr>
+    <tr>
+      <th>执行时间</th>
+      <td>1985年3月 — 1989年<span style="color:#ba0000;">3月</span></td>
+    </tr>
+    <tr>
+      <th>主管单位</th>
+      <td>英国政府通信总部 · <span class="redacted">███████</span>处</td>
+    </tr>
+    <tr>
+      <th>项目负责人</th>
+      <td><span class="redacted">██████</span> 博士（1985-87）；艾伦·克罗斯（1987-89）</td>
+    </tr>
+    <tr>
+      <th>核心成员</th>
+      <td>艾伦·克罗斯 · <span class="redacted">█████████</span> · <span class="redacted">███████</span> · <span class="redacted">█████</span></td>
+    </tr>
+    <tr>
+      <th>密级（原始）</th>
+      <td><span style="color:#ba0000;">最高机密 · ULTRA-3</span></td>
+    </tr>
+    <tr>
+      <th>当前状态</th>
+      <td>项目终止（1989年）· 档案封存 · 2023年部分解密</td>
+    </tr>
+  </table>
+
+  <h2>项目目标</h2>
+  <p>低语计划的官方目标在解密文件中被大量涂黑。根据可读片段，该项目涉及：</p>
+  <ol style="padding-left:25px;margin:8px 0;">
+    <li><span class="redacted">████████████████████████████████████</span></li>
+    <li><span class="redacted">████████████████████████████████████</span></li>
+    <li>对 <span class="redacted-visible">RAVEN</span> 类密码机进行 <span class="redacted-visible">protocol</span> 理论分析，探索在 <span class="redacted-visible">6</span> 维参数空间下的 <span class="redacted">████████████████</span></li>
+    <li><span class="redacted">████████████████████████████████████</span></li>
+    <li>开发 <span class="redacted">████████████</span> 以应对 <span class="redacted">██████████████</span> 威胁</li>
+  </ol>
+
+  <h2>项目进展</h2>
+  <p>1985年项目启动后，初期进展 <span class="redacted">███████████████████</span>。1987年艾伦·克罗斯接任项目负责人后，研究方向发生重大转变。根据解密文件中的一份内部备忘录，克罗斯提出了一个名为"<span class="redacted">█████████</span>"的全新分析框架，该框架 <span class="redacted">████████████████████████████████</span>。<sup>[1]</sup></p>
+
+  <p>1988年中期，项目取得了关键突破。一份标注为"仅限项目负责人"的技术报告（编号 WHISPER-TR-88-██）显示，克罗斯成功证明了 <span class="redacted">████████████████████████████████████████████████████████</span>，但这一成果被 <span class="redacted">██████████</span> 以安全理由禁止在项目组内部传阅。<sup>[2]</sup></p>
+
+  <p>1989年初，项目突然被GCHQ高层要求终止。解密文件中的终止令仅有一行可读："鉴于<span class="redacted">████████</span>的影响评估，低语计划即刻终止，所有成果由<span class="redacted">█████████████</span>接管。"<sup>[3]</sup></p>
+
+  <h2>与克罗斯失踪的关联</h2>
+  <p>低语计划的终止日期（1989年3月）与克罗斯的失踪时间高度吻合。多位研究者指出，克罗斯在项目中的核心成果——即第3号目标中提到的 <span class="redacted-visible">ENIGMA</span> · <span class="redacted-visible">variant</span> · <span class="redacted-visible">6</span> 理论——可能是导致项目被突然关闭及克罗斯失踪的关键。<sup>[4]</sup></p>
+  <p>档案中一份注明日期为1989年3月15日的手写备忘录（笔迹经鉴定确认为克罗斯）写道："<span class="redacted">███████████████</span> 答案就在 <span class="redacted">████</span> 之中。六个面向，一个名字。"这段文字至今未能获得完整解密。<sup>[5]</sup></p>
+
+  <h2>解密争议</h2>
+  <p>2023年的解密引发了一些争议。密码学研究者指出，涂黑的密度和模式暗示了信息的核心部分被刻意保留，而非随机涂黑。第3号目标中唯一完整保留的三个英文词——<b>RAVEN</b>、<b>protocol</b>、<b>6</b>——被认为是GCHQ留下的有意暗示。<sup>[6]</sup></p>
+
+  <h2>相关条目</h2>
+  <ul>
+    <li><a href="index.html">艾伦·克罗斯</a> — 主条目</li>
+    <li><a href="cipher_war.html">冷战密码战争</a></li>
+    <li><a href="disappearance.html">艾伦·克罗斯失踪事件</a></li>
+    <li>恩尼格玛密码机</li>
+    <li>GCHQ</li>
+  </ul>
+
+  <h2>参考文献</h2>
+  <ol style="font-size:13px;padding-left:25px;">
+    <li>GCHQ解密档案. WHISPER内部备忘录 #WHISPER-MEMO-1987-042. 英国国家档案馆 DEFE-31-20, 2023年解密.</li>
+    <li>WHISPER技术报告 #TR-88-██. 同上档案批次. 仅第一页公开.</li>
+    <li>GCHQ局长办公室. 项目终止令 #TERM-1989-0071. 同上档案批次.</li>
+    <li>Reynolds, D. "Whispers of a Lost Breakthrough". <i>Crypto Quarterly</i>, Vol. 47, 2024.</li>
+    <li>克罗斯手写备忘录, 1989年3月15日. GCHQ解密档案 DEFE-31-20/0472-D.</li>
+    <li>Chen, L. "Intentional Redactions: Reading Between the Black Lines". <i>Journal of Intelligence History</i>, 2024.</li>
+  </ol>
+
+  <div class="micro-nav">
+    <a href="lost_works.html" title="更多资料">[更多资料]</a>
+  </div>
+
+  <div class="categories">
+    <span style="font-weight:bold;">分类：</span>
+    <a>GCHQ解密档案</a>
+    <a>冷战情报项目</a>
+    <a>艾伦·克罗斯</a>
+    <a>已终止项目</a>
+  </div>
+
+</div>
+
+<!-- What you seek has six faces and dark feathers. -->
+</body>
+</html>
