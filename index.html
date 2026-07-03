@@ -174,7 +174,7 @@
   </div>
 
   <footer class="footer">
-    <div class="footer-left">VOIDCIPHER v0.5.0</div>
+    <div class="footer-left">VOIDCIPHER v0.6.0</div>
     <div class="footer-right">
       <span>EST. 2026</span>
       <span>NODE: HK-03</span>
@@ -184,9 +184,7 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'voidcipher_games';
-
-  const DEFAULT_GAMES = [
+  const GAMES = [
     {
       title: 'BLACKBOX',
       path: '题库/blackbox.html',
@@ -213,26 +211,17 @@
     }
   ];
 
-  function getGames() {
-    try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (stored && stored.length > 0) return stored;
-    } catch(e) {}
-    return DEFAULT_GAMES;
-  }
-
   function renderGameLibrary() {
     const grid = document.getElementById('gameGrid');
-    const games = getGames();
 
-    if (games.length === 0) {
+    if (GAMES.length === 0) {
       grid.className = 'game-grid empty';
       grid.innerHTML = '';
       return;
     }
 
     grid.className = 'game-grid';
-    grid.innerHTML = games.map(g => `
+    grid.innerHTML = GAMES.map(g => `
       <a href="${escapeAttr(g.path)}" class="game-card" target="_blank">
         <div class="game-card-icon">${escapeHtml(g.icon || '◇')}</div>
         <div class="game-card-title">${escapeHtml(g.title)}</div>
@@ -257,18 +246,6 @@
   }
 
   renderGameLibrary();
-
-  // Hidden admin access: Ctrl+Shift+A
-  document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-      e.preventDefault();
-      var pwd = prompt('请输入管理密码');
-      if (pwd !== null) {
-        sessionStorage.setItem('voidcipher_auth', pwd);
-        location.href = 'admin.html';
-      }
-    }
-  });
 </script>
 
 </body>
