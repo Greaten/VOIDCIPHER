@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>一面之缘·私房面馆</title>
+<style>
+  :root {
+    --primary: #E85D04;
+    --primary-dark: #D44A00;
+    --primary-light: #FFF3E8;
+    --accent: #FFB703;
+    --bg: #F8F6F3;
+    --white: #FFFFFF;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --text-secondary: #6B6B6B;
+    --text-light: #9B9B9B;
+    --border: #EDEDED;
+    --border-light: #F2F2F2;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 18px rgba(0,0,0,0.08);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --green: #2D8B3A;
+    --red: #E8453C;
+    --star: #FFB800;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    padding-bottom: 85px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--white);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .header .shop-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+
+  .header .login-link {
+    font-size: 13px;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  .header .login-link:hover { background: var(--primary-light); }
+
+  .header .login-link.logged-in {
+    color: var(--green);
+    font-weight: 600;
+    cursor: default;
+  }
+
+  .header .login-link.logged-in:hover { background: transparent; }
+
+  /* ── SHOP BANNER ── */
+  .shop-banner {
+    margin: 8px 16px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #E85D04 0%, #F48C43 40%, #FFB703 100%);
+    padding: 20px 18px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(232,93,4,0.2);
+  }
+
+  .shop-banner::after {
+    content: "";
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .shop-banner .sb-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .shop-banner .sb-slogan { font-size: 13px; opacity: 0.9; margin-bottom: 10px; }
+  .shop-banner .sb-meta { display: flex; gap: 14px; font-size: 12px; opacity: 0.85; flex-wrap: wrap; }
+
+  .sb-rating {
+    background: rgba(255,255,255,0.25);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* ── TABS ── */
+  .tab-nav {
+    display: flex;
+    margin: 10px 16px 0;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 52px;
+    z-index: 50;
+    overflow: hidden;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 13px 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    position: relative;
+    transition: color 0.2s;
+  }
+
+  .tab-btn.active { color: var(--primary); }
+  .tab-btn.active::after {
+    content: "";
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; padding: 12px 16px; animation: fadeIn 0.25s ease; }
+  .panel.show { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── CATEGORIES ── */
+  .cat-row {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .cat-row::-webkit-scrollbar { display: none; }
+
+  .cat-pill {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  .cat-pill.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+    font-weight: 700;
+  }
+
+  /* ── MENU CARDS ── */
+  .menu-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .menu-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  .menu-card:active { box-shadow: var(--shadow-sm); }
+
+  .mc-img {
+    width: 82px; height: 82px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mc-img.i0 { background: linear-gradient(135deg, #FFF0E0, #FFD8B8); }
+  .mc-img.i1 { background: linear-gradient(135deg, #FFE8E8, #FFC8C8); }
+  .mc-img.i2 { background: linear-gradient(135deg, #FFF8E0, #FFECC0); }
+  .mc-img.i3 { background: linear-gradient(135deg, #E8F0E8, #C8DCC8); }
+  .mc-img.i4 { background: linear-gradient(135deg, #F0E8F0, #E0D0E0); }
+  .mc-img.i5 { background: linear-gradient(135deg, #E8F0F8, #C8D8F0); }
+  .mc-img.i6 { background: linear-gradient(135deg, #FFF0E8, #FFD8C0); }
+  .mc-img.i7 { background: linear-gradient(135deg, #F8F0E8, #F0E0C8); }
+  .mc-img.i8 { background: linear-gradient(135deg, #FFF0F0, #FFD0D0); }
+  .mc-img.i9 { background: linear-gradient(135deg, #F0FFF0, #D0F0D0); }
+
+  .mc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .mc-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+
+  .mc-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: #FFF3E0;
+    color: #E85D04;
+    font-weight: 600;
+  }
+
+  .mc-tag.hot { background: #FFE8E8; color: #E8453C; }
+
+  .mc-sold { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+
+  .mc-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mc-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+
+  .mc-price { font-size: 17px; font-weight: 800; color: var(--primary); }
+  .mc-price::before { content: "\A5"; font-size: 12px; font-weight: 600; }
+
+  .mc-add {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .mc-add:active { transform: scale(0.88); background: var(--primary-dark); }
+
+  /* ── CLUE TEXT ── */
+  .clue-subtle {
+    color: #C5C5C5;
+    font-size: 10px;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  /* ── REVIEWS ── */
+  .review-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .review-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .rv-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+
+  .rv-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .rv-user-info { flex: 1; }
+  .rv-nickname { font-size: 14px; font-weight: 600; }
+  .rv-date { font-size: 11px; color: var(--text-light); }
+
+  .rv-stars { font-size: 13px; color: var(--star); letter-spacing: 1px; }
+  .rv-text { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-top: 6px; }
+
+  .rv-photos { display: flex; gap: 6px; margin-top: 8px; }
+
+  .rv-photo {
+    width: 70px; height: 70px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #FFF0E0, #FFD8B8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  /* ── ABOUT PAGE ── */
+  .about-section {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .about-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .about-section p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.9;
+  }
+
+  .about-info-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+
+  .about-info-row:last-child { border: none; }
+  .about-info-row .ail { color: var(--text-light); width: 70px; flex-shrink: 0; }
+  .about-info-row .air { color: var(--text); font-weight: 500; }
+
+  /* ── SECRET CONTENT ── */
+  .secret-block {
+    display: none;
+    margin-top: 16px;
+  }
+
+  /* ======== UNLOCK CARD ======== */
+  .unlock-card {
+    display: none;
+    margin: 16px;
+    background: linear-gradient(135deg, #fff8ee, #fef0d9);
+    border: 2px dashed #d4a853;
+    border-radius: 14px;
+    padding: 20px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .unlock-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(212,168,83,0.08) 0%, transparent 70%);
+    animation: ucShimmer 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes ucShimmer {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(5%, 5%); }
+  }
+  .unlock-card.show { display: block; animation: ucSlideIn 0.5s ease-out; }
+  @keyframes ucSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .unlock-card:hover {
+    border-color: #b8860b;
+    box-shadow: 0 6px 24px rgba(180,120,40,0.18);
+    transform: translateY(-2px);
+  }
+  .uc-icon { font-size: 32px; margin-bottom: 8px; position: relative; z-index: 1; }
+  .uc-label {
+    font-size: 17px; font-weight: 700; color: #8b6914;
+    margin-bottom: 4px; position: relative; z-index: 1;
+  }
+  .uc-hint {
+    font-size: 12px; color: #c9a44b; position: relative; z-index: 1;
+  }
+
+  /* ======== RECIPE MODAL ======== */
+  .recipe-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(20,16,10,0.75); z-index: 9999; justify-content: center;
+    align-items: center; padding: 16px; box-sizing: border-box;
+  }
+  .recipe-overlay.show { display: flex; animation: roFadeIn 0.3s ease-out; }
+  @keyframes roFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .recipe-modal {
+    background: #2a2418; max-width: 640px; width: 100%; max-height: 85vh;
+    border-radius: 16px; overflow-y: auto; position: relative;
+    border: 1px solid #5c4a2a; box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    animation: rmSlideUp 0.4s ease-out;
+    scrollbar-width: thin; scrollbar-color: #5c4a2a transparent;
+  }
+  .recipe-modal::-webkit-scrollbar { width: 5px; }
+  .recipe-modal::-webkit-scrollbar-track { background: transparent; }
+  .recipe-modal::-webkit-scrollbar-thumb { background: #5c4a2a; border-radius: 3px; }
+  @keyframes rmSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+  .recipe-close {
+    position: sticky; top: 0; float: right; z-index: 10;
+    width: 36px; height: 36px; line-height: 36px; text-align: center;
+    font-size: 22px; color: #c9a44b; cursor: pointer;
+    background: rgba(42,36,24,0.95); border-radius: 50%;
+    margin: 6px 6px 0 0; transition: all 0.2s;
+  }
+  .recipe-close:hover { color: #ffe082; background: rgba(80,60,30,0.95); }
+
+  .recipe-body {
+    padding: 10px 28px 32px; color: #d4c8a8; font-size: 14px; line-height: 1.9;
+    font-family: "Courier New", "Source Code Pro", "Fira Code", monospace;
+  }
+
+  .recipe-body .letter-section { margin-bottom: 20px; white-space: pre-wrap; }
+  .recipe-body .divider {
+    text-align: center; color: #8b6914; margin: 24px 0 20px; font-size: 13px;
+    letter-spacing: 2px; border-top: 1px dashed #5c4a2a; padding-top: 16px;
+  }
+
+  /* Recipe card inside modal */
+  .recipe-body .recipe-card {
+    background: #1e1a10; border: 1px solid #5c4a2a; border-radius: 12px;
+    padding: 20px 22px; margin-top: 16px;
+  }
+  .recipe-body .rc-title {
+    text-align: center; font-size: 20px; font-weight: 700; color: #e5c76b;
+    margin-bottom: 4px; letter-spacing: 2px;
+  }
+  .recipe-body .rc-subtitle {
+    text-align: center; font-size: 12px; color: #8b7b5a; margin-bottom: 18px;
+    letter-spacing: 1px;
+  }
+  .recipe-body .rc-section { margin-bottom: 14px; }
+  .recipe-body .rc-head {
+    font-size: 14px; color: #d4a853; font-weight: 700; margin-bottom: 6px;
+    padding-bottom: 4px; border-bottom: 1px solid #3a2e18;
+  }
+  .recipe-body .rc-item {
+    padding-left: 8px; color: #c4b898; font-size: 13px; line-height: 2;
+  }
+  .recipe-body .rc-secret {
+    margin-top: 18px; padding: 12px 16px; background: rgba(212,168,83,0.06);
+    border-left: 3px solid #d4a853; border-radius: 0 8px 8px 0;
+    color: #e5c76b; font-style: italic; font-size: 13px; line-height: 1.8;
+  }
+  .recipe-body .rc-footer {
+    text-align: center; color: #6b5d3a; font-size: 11px; margin-top: 16px;
+    letter-spacing: 1px;
+  }
+
+  .type-cursor::after {
+    content: '▍'; animation: tcBlink 0.8s step-end infinite;
+    color: #d4a853; font-weight: 400;
+  }
+  @keyframes tcBlink { 50% { opacity: 0; } }
+
+  /* ── CART BAR ── */
+  .cart-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 90;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+  }
+
+  .cart-icon {
+    position: relative;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .cart-count {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: var(--red);
+    color: #fff;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .cart-summary { flex: 1; }
+  .cart-total { font-size: 16px; font-weight: 800; }
+  .cart-total::before { content: "\A5"; font-size: 13px; }
+  .cart-hint { font-size: 11px; color: var(--text-light); }
+
+  .cart-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s;
+  }
+
+  .cart-btn:disabled { background: #CCC; cursor: not-allowed; }
+  .cart-btn:not(:disabled):active { opacity: 0.85; }
+
+  /* ── LOGIN MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.55);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    width: 90%;
+    max-width: 380px;
+    position: relative;
+    box-shadow: var(--shadow-md);
+    animation: fadeIn 0.25s ease;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 4px;
+    font-family: inherit;
+    line-height: 1;
+  }
+
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+  .modal .subtitle { font-size: 12px; color: var(--text-light); text-align: center; margin-bottom: 18px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg);
+    outline: none;
+    transition: border 0.2s;
+  }
+  .form-group input:focus { border-color: var(--primary); }
+
+  .sms-row { display: flex; gap: 8px; }
+  .sms-row input { flex: 1; }
+  .sms-btn {
+    padding: 10px 14px;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--primary);
+    font-size: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+  }
+  .sms-btn:disabled { border-color: #CCC; color: #CCC; cursor: not-allowed; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 4px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary:active { opacity: 0.85; }
+
+  .login-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    font-size: 12px;
+  }
+
+  .login-links span {
+    color: var(--text-light);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .login-links span:hover { color: var(--primary); }
+
+  .login-error {
+    color: var(--red);
+    font-size: 12px;
+    text-align: center;
+    margin-top: 8px;
+    display: none;
+  }
+
+  /* ── ORDER SUCCESS ── */
+  .order-ok {
+    display: none;
+    text-align: center;
+    padding: 30px 16px;
+  }
+
+  .order-ok .ok-icon { font-size: 56px; margin-bottom: 10px; }
+  .order-ok .ok-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .order-ok .ok-id { font-size: 15px; color: var(--primary); font-weight: 700; }
+  .order-ok .ok-meta { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+  .order-ok .ok-again {
+    margin-top: 16px;
+    padding: 8px 28px;
+    border-radius: 20px;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 7px 18px;
+    border-radius: 18px;
+    font-size: 12px;
+    display: none;
+    white-space: nowrap;
+  }
+  .toast.show { display: block; }
+
+  /* ── BACKDOOR ── */
+  #_bd {
+    position: fixed;
+    bottom: 76px; right: 10px;
+    width: 8px; height: 8px;
+    z-index: 9997;
+    opacity: 0.06;
+    cursor: default;
+    background: var(--primary);
+  }
+  #_bd:hover { opacity: 0.35; cursor: crosshair; }
+
+  @media (max-width: 420px) {
+    .mc-img { width: 68px; height: 68px; font-size: 34px; }
+    .shop-banner { padding: 16px 14px; }
+  }
+
+  /* ── SECRET CODE OVERLAY ── */
+  #secretOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 250;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  #secretOverlay.show { display: flex; }
+
+  .secret-box {
+    background: #1a1a2e;
+    border: 2px solid #00D4AA;
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: center;
+    max-width: 340px;
+    width: 85%;
+    box-shadow: 0 0 40px rgba(0,212,170,0.2);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .secret-box .s-hint {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+
+  .secret-box .s-number {
+    font-size: 36px;
+    font-weight: 900;
+    color: #00D4AA;
+    letter-spacing: 6px;
+    margin: 12px 0;
+    font-family: "Courier New", monospace;
+    text-shadow: 0 0 20px rgba(0,212,170,0.4);
+  }
+
+  .secret-box .s-sub {
+    color: #AAA;
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  .secret-box .s-close {
+    margin-top: 18px;
+    padding: 8px 28px;
+    border-radius: 20px;
+    border: 1px solid #00D4AA;
+    color: #00D4AA;
+    background: transparent;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+
+  .secret-box .s-close:hover { background: rgba(0,212,170,0.1); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="shop-title">一面之缘·私房面馆</div>
+  <span class="login-link" id="loginBtn" onclick="_openLogin()">登录</span>
+</div>
+
+<!-- BANNER -->
+<div class="shop-banner">
+  <div class="sb-name">一面之缘 · 私房面馆</div>
+  <div class="sb-slogan">三代传承，一碗情深</div>
+  <div class="sb-meta">
+    <span class="sb-rating">★ 4.8</span>
+    <span>月售 1.2万+</span>
+    <span>约28分钟</span>
+    <span>起送 ¥15</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-panel="pnlMenu">点餐</button>
+  <button class="tab-btn" data-panel="pnlReview">评价</button>
+  <button class="tab-btn" data-panel="pnlAbout">关于我们</button>
+</div>
+
+<!-- MENU PANEL -->
+<div id="pnlMenu" class="panel show">
+  <div class="cat-row" id="catRow"></div>
+  <div class="menu-list" id="menuList"></div>
+  <div class="order-ok" id="orderOk"></div>
+</div>
+
+<!-- REVIEW PANEL -->
+<div id="pnlReview" class="panel">
+  <div class="review-list" id="reviewList"></div>
+</div>
+
+<!-- ABOUT PANEL -->
+<div id="pnlAbout" class="panel">
+  <div class="about-section">
+    <h3>🍜 店铺故事</h3>
+    <p>一面之缘始于1985年，由第一代店主王师傅在成都宽窄巷子创立。三十多年来，我们坚持手工擀面、文火熬汤，每一碗面都承载着三代人的匠心。2018年，第三代传人将店铺搬至线上，让更多人能品尝到这份传承的味道。</p>
+    <p style="margin-top:8px;">我们的每一碗面，都经过<span style="color:#E5A060;font-weight:500;">后台系统</span>的严格品控流程——从食材溯源到烹饪标准化，确保每一口都安全、美味。</p>
+  </div>
+  <div class="about-section">
+    <h3>📋 店铺信息</h3>
+    <div class="about-info-row"><span class="ail">地址</span><span class="air">成都高新区天府大道998号附12号</span></div>
+    <div class="about-info-row"><span class="ail">营业时间</span><span class="air">10:00 - 次日凌晨 02:00</span></div>
+    <div class="about-info-row"><span class="ail">联系电话</span><span class="air">028-8888-6666</span></div>
+    <div class="about-info-row"><span class="ail">特色</span><span class="air">手工擀面 · 三代祖传配方 · 深夜不打烊</span></div>
+    <div class="about-info-row"><span class="ail">商家编号</span><span class="air" style="color:#E5A060;font-weight:600;">noodle_master</span></div>
+  </div>
+  <!-- UNLOCK CARD (shown after merchant login) -->
+  <div class="unlock-card" id="unlockCard" onclick="_openRecipeModal()">
+    <div class="uc-icon">&#128203;</div>
+    <div class="uc-label">已解锁：珍藏菜谱</div>
+    <div class="uc-hint">点击查看</div>
+  </div>
+
+  <!-- RECIPE MODAL -->
+  <div class="recipe-overlay" id="recipeOverlay" onclick="if(event.target===this)_closeRecipeModal()">
+    <div class="recipe-modal" id="recipeModal">
+      <div class="recipe-close" onclick="_closeRecipeModal()">&times;</div>
+      <div class="recipe-body" id="recipeBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar">
+  <div class="cart-icon">&#x1F6D2;<span class="cart-count" id="cartCount" style="display:none">0</span></div>
+  <div class="cart-summary">
+    <div class="cart-total" id="cartTotal">0</div>
+    <div class="cart-hint">点击购物车查看</div>
+  </div>
+  <button class="cart-btn" id="cartSubmit" disabled>去结算</button>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginOverlay">
+  <div class="modal" id="loginModal">
+    <button class="modal-close" onclick="_closeLogin()">&times;</button>
+
+    <!-- PHONE LOGIN -->
+    <div id="phoneLoginForm">
+      <h3>手机号登录</h3>
+      <p class="subtitle">登录后可查看订单与优惠</p>
+      <div class="form-group">
+        <label>手机号</label>
+        <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11">
+      </div>
+      <div class="form-group sms-row">
+        <input type="text" id="smsInput" placeholder="验证码" maxlength="6">
+        <button class="sms-btn" id="smsBtn" onclick="_sendSms()">获取验证码</button>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button class="btn-primary" onclick="_doPhoneLogin()">登录</button>
+      <div class="login-links">
+        <span onclick="_switchToRider()">骑手登录</span>
+        <span onclick="_switchToMerchant()">商家登录</span>
+      </div>
+    </div>
+
+    <!-- RIDER LOGIN -->
+    <div id="riderLoginForm" style="display:none;">
+      <h3>骑手登录</h3>
+      <p class="subtitle">请使用骑手账号登录接单系统</p>
+      <div class="form-group"><label>骑手ID</label><input type="text" placeholder="请输入骑手ID"></div>
+      <div class="form-group"><label>密码</label><input type="password" placeholder="请输入密码"></div>
+      <div class="login-error" id="riderError"></div>
+      <button class="btn-primary" onclick="_doRiderLogin()">登录</button>
+      <div class="login-links"><span onclick="_switchToPhone()">返回手机登录</span></div>
+    </div>
+
+    <!-- MERCHANT LOGIN -->
+    <div id="merchantLoginForm" style="display:none;">
+      <h3>商家后台</h3>
+      <p class="subtitle">请使用商家账号登录后台管理系统</p>
+      <div class="form-group"><label>商家账号</label><input type="text" id="merchantUser" placeholder="请输入商家账号"></div>
+      <div class="form-group"><label>后台密码</label><input type="password" id="merchantPass" placeholder="请输入后台密码"></div>
+      <div class="login-error" id="merchantError"></div>
+      <button class="btn-primary" onclick="_doMerchantLogin()">登录后台</button>
+      <div class="login-links"><span onclick="_switchToPhone()">返回手机登录</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- BACKDOOR -->
+<div id="_bd" title=""></div>
+
+<!-- SECRET CODE OVERLAY -->
+<div id="secretOverlay">
+  <div class="secret-box">
+    <div class="s-hint">[ 老客暗号 ]</div>
+    <div class="s-number" id="secretNumber"></div>
+    <div class="s-sub">把这串数字记下来，也许有用</div>
+    <button class="s-close" onclick="_closeSecretOverlay()">知道了</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ======== ENCRYPTED SECRETS (Base64 + XOR, key=0x5A) ======== */
+  /* Index 0: Letter from Old Chen; Index 1: Recipe */
+  var _d0 = [
+    "udrWvub6vuLMvOv+v+DPepjter7i077h+b39wrzM47na11BQudrKvuLhvMzDudrLUL3W8L33yLPw8npovMz+ULLa27z117Pi+3prv9XwULPdy7/X1L3b8bLf5Xpoamo9UFC52sqy5N+8zMO52stQv+Posu7Hem9qPVCyw+S96+l6aWo9UL3L7LzF63poaj1QULnayrP8w7zMw7/W37nay1C/3/Gy/ch6abP4zXqY7Xq8+9i9wPR6a7z073qY7Xqy19O8xMZ6aL7i8FCz/MO/1ex6b73T3XqY7Xq9w+ey0O16ab3T3XqY7Xqzw9K9wPR6a7/HzVCy0Ou8/sh6a2q96MhQULnayr/bwLzpz7nay1C+4tq52tu91vC998iz8PK93vW86u6/1OGy+9q86PG15tay2tu89dez4vu8zPO/x8215ta+4tSz3cu/19S92/Gy3+W+4tq/yta/3/+//v2zzt+15ta/0Pq84t+86u56aGq8zP652thQvuDWudrbv/79vdvxvd/0vOjiv8rUsuf2v+rVvdvxtebWvN/4vdz2emK/6tW8zey15ta86/6zx/i+5ce81tu/5PS86OK+4te95eG84cC52thQvuLTudrbv+Posu7HudrbssPkvevpudrbvcvsvMXrvNXKv9PXvOLzvOruvOn7v9XLemi/6tW8zey15ta/xvK99vZuv+rVvM3sv9D6v9//s87fvuL3udrYUL/Bwbna27P8w7zMw7/W373O8r3g67/i2b/W37L547zT1L3u/bXm1r329my/6tW8zey80M+/3/+15tay9POz/MO86s695sm95smz3dC8zuS52thQvuDOudrbvdz2suzpYr/q1bzN7L/K1LLq2b/f/7Pa2LPd1b3Byr/I1r/qy7L04r/c6r3pzLzVyrPoxrXm1r3O8r3h3L3ny7zh/r/U4bzT2rzG07zMw7zi+bna2FC/3/e52tu86/6/4M+/1+m80sq15tay0+i86ee878m9w+e//Ni//+y15taz6Maz/MOz3N2/1MC15ta/wcS/y+m82Pqzz+W52thQULnayr/f6bPO9L39wrL12rnay1C52ta92/G/2sO/0uq+4Ny15ta86/6y3fC93uy878m9w+e//Ni//+y52ti/5dm82v+93Pa+4te/3eC//+e86/615ta/28C+4OC+48W8wvW52ti52tdQULjazrjazrz3/rzM477m+rLd8LPD0r/07L7i077h+bXm1rL17b/8/7/M3r3V17LN1bna2A==",
+    "st3uvMbTvebCvuDguNrOuNrOUFC/58m+5/q9xtG/0uqy5cO+4MG8zN2/98215tay9e68wtS+5/q/7ei94dW/1cu91Oq+4Nyy5cO/9Oy/6tWzx/iz/Ny9wN69/cK/9dy52thQULzSy7/V8bLa27PD0rXm1rLlw7zC9bzSy7/07L7i077h+b7g4L7m+r7i0bzH/73A3rPH+LP83Lna2Lzr/r/gz7Pf17zM47zG9rzH/7/V8L7m+r/07L7g4LXm1r7n3LLlw77gwb/j7rzSy7ziyrziyrzC1L3D57Xm1r//577ixrL/5b7i17L1/7LN1b3H2rzUzL3H2rna2FBQsuXDs83uv+DNv+bavuDcvuLTv9fbvuLZv+PutebWvMf/v+TavcDes/nFv/T4vNf4vuDcvuLastb2v9XSvuLastb2tebWvMbTvuDBstrbs/vkv/T4v+3oveHVvuLXv8byvuDctebWvufcvuHMvuH2vcDes8f4v/fOvNLLsuXCsvTqv+TNudrYvuLavfjNs8f4tebWvMDMvcDevML1stnZtebWvuPFvMDMvcDevML1v+XZudrYUFC//Ni8xMa+5/q/zMa89viy5cO9+M2zx/i9wN6/y+mz28m15tay9e280NCy5cO+4eez39e8zOO+5vq+4tG/1OG52ti+4te+4uC/0vG9wN615ta/6uu+4uC+4Nyy9PO8we6//sC+4OCy2ee/xvK87eu//sa/0Pq91fe/ytS52tu/xvKzwfK//vO/58i/9Oy8zey52tu/xvK82em/9Oy9wN68zey/2sO15tay2ee/ytm/0uq+4tq9+M29xsW89/m9zvK/5dm93Pa/3eC8x/+9wN6zx/i52thQULjaznqy2tuzw9K15ta/3MO+4NSzx/iz/Ny+4tO/19u+4tm/4+6/4M2/4Nw="
+  ];
+
+  var _k1 = 0x5A;
+
+  function _xr(s) {
+    var _r = '';
+    for (var _i = 0; _i < s.length; _i++) {
+      _r += String.fromCharCode(s.charCodeAt(_i) ^ _k1);
+    }
+    return _r;
+  }
+
+  function _b2(s) {
+    try {
+      return decodeURIComponent(atob(s).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    } catch(e) {
+      return atob(s);
+    }
+  }
+
+  function _dc(idx) {
+    return _xr(_b2(_d0[idx]));
+  }
+
+  /* ======== ANTI-DEBUG ======== */
+  (function(){
+    document.addEventListener('keydown', function(e){
+      if (e.keyCode === 123 ||
+          (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+          (e.ctrlKey && e.keyCode === 85)) {
+        e.preventDefault(); e.stopPropagation(); return false;
+      }
+    }, true);
+
+    document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; }, true);
+
+    var _t0 = 0;
+    (function _dt(){
+      var _t1 = performance.now();
+      if (_t1 - _t0 > 150 && _t0 !== 0) {
+        try { console.clear(); } catch(_e) {}
+      }
+      _t0 = _t1;
+      setTimeout(_dt, 1000 + Math.random() * 2500);
+    })();
+
+    var _lc = 0, _ol = console.log;
+    console.log = function(){
+      _lc++;
+      if (_lc > 20) {
+        var _bs = '';
+        for (var _i = 0; _i < 500; _i++) _bs += String.fromCharCode(97 + Math.random() * 26);
+        _ol.call(console, _bs);
+        _lc = 0;
+        return;
+      }
+      _ol.apply(console, arguments);
+    };
+  })();
+
+  document.addEventListener('keydown', function(e){
+    if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
+  });
+
+  /* ======== DATA ======== */
+  var _menuData = [
+    { id:1, name:"祖传牛肉面", desc:"三代秘制配方，精选牛腱肉文火慢炖六小时，汤浓肉烂。", price:42, tag:"招牌", tagCls:"", sold:"月售 3200+", img:"\uD83C\uDF56", ic:"i0", cat:"面食" },
+    { id:2, name:"担担面", desc:"正宗成都味，芝麻酱与肉臊的黄金比例，麻辣鲜香。", price:28, tag:"", tagCls:"", sold:"月售 2800+", img:"\uD83C\uDF5C", ic:"i1", cat:"面食" },
+    { id:3, name:"红烧排骨面", desc:"大块排骨浓油赤酱，搭配手擀宽面，一碗管饱。", price:38, tag:"人气", tagCls:"hot", sold:"月售 2400+", img:"\uD83C\uDF56", ic:"i2", cat:"面食" },
+    { id:4, name:"酸菜鱼片面", desc:"老坛酸菜遇上嫩滑鱼片，酸爽开胃的绝妙组合。", price:35, tag:"", tagCls:"", sold:"月售 1900+", img:"\uD83D\uDC1F", ic:"i3", cat:"面食" },
+    { id:5, name:"鸡丝凉面", desc:"夏季爆款，鸡丝嫩滑、黄瓜爽脆，秘制红油拌汁。", price:25, tag:"季节", tagCls:"", sold:"月售 3100+", img:"\uD83E\uDD57", ic:"i4", cat:"凉面" },
+    { id:6, name:"肥肠面", desc:"处理干净的肥肠软糯入味，搭配红汤辣油，重口味必点。", price:36, tag:"", tagCls:"", sold:"月售 1500+", img:"\uD83C\uDF72", ic:"i5", cat:"面食" },
+    { id:7, name:"红油抄手", desc:"皮薄馅大的手工抄手，浸泡在红油芝麻酱汁里。", price:22, tag:"小吃", tagCls:"", sold:"月售 2600+", img:"\uD83E\uDD5F", ic:"i6", cat:"小吃" },
+    { id:8, name:"蒜泥白肉", desc:"薄如蝉翼的五花肉片，蒜泥红油一浇，香到停不下来。", price:28, tag:"小吃", tagCls:"", sold:"月售 1800+", img:"\uD83E\uDD69", ic:"i7", cat:"小吃" },
+    { id:9, name:"冰粉", desc:"手工冰粉搭配红糖水、花生碎、葡萄干，解辣消暑神器。", price:12, tag:"甜品", tagCls:"", sold:"月售 4000+", img:"\uD83C\uDF67", ic:"i8", cat:"甜品" },
+    { id:10, name:"醪糟汤圆", desc:"温润甜蜜的酒酿小汤圆，枸杞点缀，暖心暖胃。", price:15, tag:"甜品", tagCls:"", sold:"月售 2100+", img:"\uD83C\uDF61", ic:"i9", cat:"甜品" }
+  ];
+
+  var _cats = ["全部","面食","凉面","小吃","甜品"];
+
+  var _reviewData = [
+    { name:"成都吃货小王", star:5, dt:"2024-07-02", txt:"祖传牛肉面真的绝了！牛肉炖得超级软烂，汤头浓郁得不行，连汤都喝光了。这家店我会一直回购！", clr:"#E85D04", pics:["\uD83C\uDF56","\uD83C\uDF5C"] },
+    { name:"深夜食客", star:5, dt:"2024-07-01", txt:"凌晨一点还能吃到热腾腾的担担面，感动到流泪。这家面馆已经成了我深夜的固定食堂，老板人也特别热情，每次都多送我几颗花生米。", clr:"#6C5CE7", pics:[] },
+    { name:"面食爱好者", star:4, dt:"2024-06-30", txt:"酸菜鱼片面意外的好吃！鱼片很嫩，酸菜够味，分量也很足。就是等的时间稍微长了点。", clr:"#0984E3", pics:["\uD83D\uDC1F"] },
+    { name:"加班救星", star:5, dt:"2024-06-28", txt:"每次加班到深夜，这家面馆就是我的救星。红烧排骨面的排骨块头很大，面也筋道，完美夜宵选择。", clr:"#00B894", pics:[] },
+    { name:"辣味控", star:5, dt:"2024-06-26", txt:"红油抄手和蒜泥白肉一起点，双倍快乐！红油特别香，抄手皮薄馅多，蒜泥白肉的肉片切得很薄很入味。", clr:"#D63031", pics:["\uD83E\uDD5F","\uD83E\uDD69"] },
+    { name:"老顾客的秘密", star:5, dt:"2024-06-25", txt:"作为吃了三年的老顾客，偷偷告诉你们一个隐藏操作：在购物车里放三份祖传牛肉面、两份蒜泥白肉再加一份冰粉，结账的时候居然弹出了一串数字：77342069！老板跟我说这是老客才懂的暗号，具体干嘛用的我也不太清楚，反正挺神奇的。", clr:"#A55EEA", pics:[] },
+    { name:"甜品猎人", star:4, dt:"2024-06-24", txt:"冰粉是吃完辣面的完美收尾，红糖水很醇正不是那种勾兑的，料也足。下次想试试醪糟汤圆。", clr:"#FDCB6E", pics:["\uD83C\uDF67"] },
+    { name:"老成都", star:5, dt:"2024-06-22", txt:"作为一个土生土长的成都人，这家担担面的味道让我想起了小时候巷子口的那家面摊，芝麻酱和花椒的配比恰到好处。", clr:"#636E72", pics:[] },
+    { name:"面馆常客", star:4, dt:"2024-06-20", txt:"鸡丝凉面夏天吃太合适了，黄瓜丝很新鲜，红油拌汁特别开胃。建议再配一碗冰粉，绝配。", clr:"#E17055", pics:["\uD83E\uDD57"] },
+    { name:"肥肠拥护者", star:5, dt:"2024-06-18", txt:"说实话，能把肥肠处理得这么干净的面馆不多见。软糯入味不腥不腻，红汤底料也很正，每次来必点。", clr:"#2D8B3A", pics:["\uD83C\uDF72"] },
+    { name:"新客报道", star:4, dt:"2024-06-15", txt:"被朋友安利过来的，第一次点了祖传牛肉面和冰粉。牛肉面的分量真的很足，一碗下去撑到了，冰粉解腻刚好。会推荐给同事。", clr:"#E17055", pics:[] },
+    { name:"外卖达人", star:5, dt:"2024-06-12", txt:"外卖包装很用心，面汤分离不会坨。蒜泥白肉片得特别薄，酱汁单独包装，到家自己浇上去跟在店里吃一样。这个细节必须点赞。", clr:"#0984E3", pics:[] }
+  ];
+
+  /* ======== STATE ======== */
+  var _cart = [];
+  var _orderPlaced = false;
+  var _curCat = "全部";
+  var _isMerchantLoggedIn = false;
+  var _secretRevealed = false;
+  var _bkClicks = 0, _bkTimer = null;
+  var _smsTimer = null, _smsCountdown = 0;
+
+  /* ======== HELPERS ======== */
+  function _showToast(msg) {
+    var _t = document.getElementById('toast');
+    _t.textContent = msg;
+    _t.classList.add('show');
+    clearTimeout(_t._tid);
+    _t._tid = setTimeout(function(){ _t.classList.remove('show'); }, 1500);
+  }
+
+  function _hideAllErrors() {
+    ['loginError','riderError','merchantError'].forEach(function(id){
+      var _el = document.getElementById(id);
+      if (_el) _el.style.display = 'none';
+    });
+  }
+
+  /* ======== RENDER ======== */
+  function _renderCats() {
+    var _el = document.getElementById('catRow');
+    var _h = '';
+    for (var _i = 0; _i < _cats.length; _i++) {
+      var _cls = (_cats[_i] === _curCat) ? 'cat-pill active' : 'cat-pill';
+      _h += '<span class="' + _cls + '" onclick="_setCat(\'' + _cats[_i] + '\')">' + _cats[_i] + '</span>';
+    }
+    _el.innerHTML = _h;
+  }
+
+  function _renderMenu() {
+    var _el = document.getElementById('menuList');
+    var _filtered = (_curCat === '全部') ? _menuData : _menuData.filter(function(m){ return m.cat === _curCat; });
+    var _h = '';
+    for (var _i = 0; _i < _filtered.length; _i++) {
+      var _m = _filtered[_i];
+      _h += '<div class="menu-card" onclick="_addCart(' + _m.id + ')">';
+      _h += '<div class="mc-img ' + _m.ic + '">' + _m.img + '</div>';
+      _h += '<div class="mc-info">';
+      _h += '<div class="mc-name">' + _m.name;
+      if (_m.tag) _h += '<span class="mc-tag ' + _m.tagCls + '">' + _m.tag + '</span>';
+      _h += '</div>';
+      _h += '<div class="mc-sold">' + _m.sold + '</div>';
+      _h += '<div class="mc-desc">' + _m.desc + '</div>';
+      _h += '<div class="mc-bottom">';
+      _h += '<span class="mc-price">' + _m.price + '</span>';
+      _h += '<span class="mc-add" onclick="event.stopPropagation();_addCart(' + _m.id + ')">+</span>';
+      _h += '</div></div></div>';
+    }
+    _el.innerHTML = _h;
+  }
+
+  function _renderReviews() {
+    var _el = document.getElementById('reviewList');
+    var _h = '';
+    for (var _i = 0; _i < _reviewData.length; _i++) {
+      var _r = _reviewData[_i];
+      var _ss = '';
+      for (var _s = 0; _s < _r.star; _s++) _ss += '\u2605';
+      for (var _s = _r.star; _s < 5; _s++) _ss += '\u2606';
+      _h += '<div class="review-card">';
+      _h += '<div class="rv-header">';
+      _h += '<div class="rv-avatar" style="background:' + _r.clr + ';">' + _r.name.charAt(0) + '</div>';
+      _h += '<div class="rv-user-info"><div class="rv-nickname">' + _r.name + '</div>';
+      _h += '<div class="rv-date">' + _r.dt + '</div></div>';
+      _h += '<div class="rv-stars">' + _ss + '</div>';
+      _h += '</div>';
+      _h += '<div class="rv-text">' + _r.txt + '</div>';
+      if (_r.pics && _r.pics.length > 0) {
+        _h += '<div class="rv-photos">';
+        for (var _p = 0; _p < _r.pics.length; _p++) {
+          _h += '<div class="rv-photo">' + _r.pics[_p] + '</div>';
+        }
+        _h += '</div>';
+      }
+      _h += '</div>';
+    }
+    _el.innerHTML = _h;
+  }
+
+  /* ======== CATEGORY ======== */
+  window._setCat = function(cat) {
+    _curCat = cat;
+    _renderCats();
+    _renderMenu();
+  };
+
+  /* ======== CART ======== */
+  window._addCart = function(id) {
+    if (_orderPlaced) return;
+    for (var _i = 0; _i < _menuData.length; _i++) {
+      if (_menuData[_i].id === id) {
+        var _f = false;
+        for (var _j = 0; _j < _cart.length; _j++) {
+          if (_cart[_j].id === id) { _cart[_j].qty++; _f = true; break; }
+        }
+        if (!_f) _cart.push({ id:id, name:_menuData[_i].name, price:_menuData[_i].price, qty:1 });
+        break;
+      }
+    }
+    _updateCart();
+    _showToast('已加入购物车');
+  };
+
+  function _updateCart() {
+    var _t = 0, _c = 0;
+    for (var _i = 0; _i < _cart.length; _i++) {
+      _t += _cart[_i].price * _cart[_i].qty;
+      _c += _cart[_i].qty;
+    }
+    document.getElementById('cartTotal').textContent = _t;
+    var _badge = document.getElementById('cartCount');
+    var _btn = document.getElementById('cartSubmit');
+    if (_c > 0) {
+      _badge.style.display = 'flex';
+      _badge.textContent = _c;
+      if (_t >= 15) { _btn.disabled = false; _btn.textContent = '去结算'; }
+      else { _btn.disabled = true; _btn.textContent = '差¥' + (15 - _t) + '起送'; }
+    } else {
+      _badge.style.display = 'none';
+      _btn.disabled = true;
+      _btn.textContent = '去结算';
+    }
+  }
+
+  document.getElementById('cartSubmit').addEventListener('click', function() {
+    if (_cart.length === 0) return;
+    /* Check for secret combo: 3×牛肉面(id=1) + 2×蒜泥白肉(id=8) + 1×冰粉(id=9) */
+    var _qty = {};
+    for (var _i = 0; _i < _cart.length; _i++) { _qty[_cart[_i].id] = _cart[_i].qty; }
+    if (_qty[1] === 3 && _qty[8] === 2 && _qty[9] === 1 &&
+        Object.keys(_qty).length === 3) {
+      _showSecretCode();
+      return;
+    }
+    /* Normal order */
+    _orderPlaced = true;
+    var _oid = 'OM-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
+    document.getElementById('menuList').style.display = 'none';
+    document.getElementById('catRow').style.display = 'none';
+    var _os = document.getElementById('orderOk');
+    _os.innerHTML = '<div class="ok-icon">\u2705</div>' +
+      '<div class="ok-title">下单成功！</div>' +
+      '<div class="ok-id">' + _oid + '</div>' +
+      '<div class="ok-meta">预计送达: 约28分钟 | 商家已接单</div>' +
+      '<button class="ok-again" onclick="_resetOrder()">再来一单</button>';
+    _os.style.display = 'block';
+    document.getElementById('cartCount').style.display = 'none';
+    document.getElementById('cartTotal').textContent = '0';
+    document.getElementById('cartSubmit').disabled = true;
+    document.getElementById('cartSubmit').textContent = '已下单';
+    _showToast('订单已确认');
+  });
+
+  function _showSecretCode() {
+    var _ov = document.getElementById('secretOverlay');
+    _ov.classList.add('show');
+    /* Animate the number reveal */
+    var _nh = document.getElementById('secretNumber');
+    _nh.textContent = '';
+    _nh.style.opacity = '1';
+    var _nums = '77342069';
+    var _di = 0;
+    var _dv = setInterval(function() {
+      if (_di < _nums.length) {
+        _nh.textContent += _nums.charAt(_di);
+        _di++;
+      } else {
+        clearInterval(_dv);
+      }
+    }, 150);
+  }
+
+  window._closeSecretOverlay = function() {
+    document.getElementById('secretOverlay').classList.remove('show');
+  };
+
+  window._resetOrder = function() {
+    _orderPlaced = false;
+    _cart = [];
+    document.getElementById('menuList').style.display = '';
+    document.getElementById('catRow').style.display = '';
+    document.getElementById('orderOk').style.display = 'none';
+    document.getElementById('cartSubmit').textContent = '去结算';
+    _updateCart();
+  };
+
+  /* ======== TABS ======== */
+  document.querySelectorAll('.tab-btn').forEach(function(_btn){
+    _btn.addEventListener('click', function(){
+      var _pid = this.getAttribute('data-panel');
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('show'); });
+      this.classList.add('active');
+      document.getElementById(_pid).classList.add('show');
+    });
+  });
+
+  /* ======== LOGIN SYSTEM ======== */
+  window._openLogin = function() {
+    if (_isMerchantLoggedIn) return;
+    _hideAllErrors();
+    document.getElementById('loginOverlay').classList.add('show');
+    _showPhoneForm();
+  };
+
+  window._closeLogin = function() {
+    document.getElementById('loginOverlay').classList.remove('show');
+  };
+
+  function _showPhoneForm() {
+    document.getElementById('phoneLoginForm').style.display = 'block';
+    document.getElementById('riderLoginForm').style.display = 'none';
+    document.getElementById('merchantLoginForm').style.display = 'none';
+    _hideAllErrors();
+  }
+
+  window._switchToPhone = function() {
+    _showPhoneForm();
+  };
+
+  window._switchToRider = function() {
+    document.getElementById('phoneLoginForm').style.display = 'none';
+    document.getElementById('riderLoginForm').style.display = 'block';
+    document.getElementById('merchantLoginForm').style.display = 'none';
+    _hideAllErrors();
+  };
+
+  window._switchToMerchant = function() {
+    document.getElementById('phoneLoginForm').style.display = 'none';
+    document.getElementById('riderLoginForm').style.display = 'none';
+    document.getElementById('merchantLoginForm').style.display = 'block';
+    _hideAllErrors();
+  };
+
+  window._sendSms = function() {
+    var _ph = document.getElementById('phoneInput').value.trim();
+    if (!/^1\d{10}$/.test(_ph)) {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginError').textContent = '请输入正确的手机号';
+      return;
+    }
+    _hideAllErrors();
+    var _btn = document.getElementById('smsBtn');
+    _smsCountdown = 60;
+    _btn.disabled = true;
+    _btn.textContent = _smsCountdown + 's';
+    _smsTimer = setInterval(function() {
+      _smsCountdown--;
+      if (_smsCountdown <= 0) {
+        clearInterval(_smsTimer);
+        _btn.disabled = false;
+        _btn.textContent = '获取验证码';
+      } else {
+        _btn.textContent = _smsCountdown + 's';
+      }
+    }, 1000);
+    _showToast('验证码已发送（模拟）');
+  };
+
+  window._doPhoneLogin = function() {
+    var _ph = document.getElementById('phoneInput').value.trim();
+    var _sm = document.getElementById('smsInput').value.trim();
+    if (!_ph || !_sm) {
+      var _e = document.getElementById('loginError');
+      _e.style.display = 'block';
+      _e.textContent = '请输入手机号和验证码';
+      return;
+    }
+    /* Simulate: always show a hint */
+    _hideAllErrors();
+    _showToast('登录成功！浏览页面寻找更多线索吧~');
+    setTimeout(function(){ document.getElementById('loginOverlay').classList.remove('show'); }, 800);
+  };
+
+  window._doRiderLogin = function() {
+    _showToast('骑手登录功能请使用专用客户端');
+    setTimeout(function(){ document.getElementById('loginOverlay').classList.remove('show'); }, 800);
+  };
+
+  window._doMerchantLogin = function() {
+    var _u = document.getElementById('merchantUser').value.trim();
+    var _p = document.getElementById('merchantPass').value.trim();
+    var _err = document.getElementById('merchantError');
+
+    if (!_u || !_p) {
+      _err.style.display = 'block';
+      _err.textContent = '请输入账号和密码';
+      return;
+    }
+
+    if (_u === 'noodle_master' && _p === '77342069') {
+      _err.style.display = 'none';
+      _isMerchantLoggedIn = true;
+      document.getElementById('loginOverlay').classList.remove('show');
+      document.getElementById('loginBtn').textContent = '已登录(商家)';
+      document.getElementById('loginBtn').classList.add('logged-in');
+      _showToast('商家身份验证通过！后台已解锁');
+      _unlockSecret();
+    } else {
+      _err.style.display = 'block';
+      _err.textContent = '账号或密码错误，提示：线索就在页面中';
+    }
+  };
+
+  /* ======== SECRET UNLOCK ======== */
+  function _unlockSecret() {
+    var _uc = document.getElementById('unlockCard');
+    _uc.classList.add('show');
+    /* Auto-switch to about tab */
+    setTimeout(function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('show'); });
+      document.querySelector('[data-panel="pnlAbout"]').classList.add('active');
+      document.getElementById('pnlAbout').classList.add('show');
+      document.getElementById('unlockCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 400);
+  }
+
+  /* ======== RECIPE MODAL ======== */
+  var _recipeOpened = false;
+  window._openRecipeModal = function() {
+    var _ro = document.getElementById('recipeOverlay');
+    var _rb = document.getElementById('recipeBody');
+    _ro.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    if (!_recipeOpened) {
+      _recipeOpened = true;
+      /* Decrypt: index 0 = recipe, index 1 = letter */
+      var _letter = _dc(1);
+      var _recipe = _dc(0);
+
+      /* Build: typewriter letter first, then recipe card */
+      _rb.innerHTML = '<div class="letter-section type-cursor" id="typeLetter"></div>' +
+        '<div class="divider" id="divLine" style="display:none;">★ ★ ★</div>' +
+        '<div id="recipeCardArea" style="display:none;"></div>';
+
+      var _tl = document.getElementById('typeLetter');
+      var _idx = 0;
+
+      var _iv = setInterval(function() {
+        if (_idx < _letter.length) {
+          var _ch = _letter.charAt(_idx);
+          if (_ch === '\n') _tl.innerHTML += '<br>';
+          else _tl.innerHTML += _ch;
+          _idx++;
+        } else {
+          clearInterval(_iv);
+          _tl.classList.remove('type-cursor');
+          /* Show divider then recipe card */
+          document.getElementById('divLine').style.display = 'block';
+          document.getElementById('recipeCardArea').style.display = 'block';
+          _renderRecipeCard(_recipe);
+        }
+      }, 22);
+    }
+  }
+
+  function _renderRecipeCard(_txt) {
+    var _area = document.getElementById('recipeCardArea');
+    /* Parse recipe text into structured HTML */
+    var _lines = _txt.split('\n');
+    var _html = '<div class="recipe-card">';
+    var _inSection = false, _inSecret = false;
+    for (var _i = 0; _i < _lines.length; _i++) {
+      var _l = _lines[_i].trim();
+      if (!_l) { _html += '<br>'; continue; }
+      if (_l.indexOf('「传世汤底') === 0) {
+        _html += '<div class="rc-title">' + _l + '</div>';
+        continue;
+      }
+      if (_l.indexOf('——此方传自') === 0) {
+        _html += '<div class="rc-footer">' + _l + '</div>';
+        continue;
+      }
+      if (_l.indexOf('【关键秘诀】') === 0) {
+        _html += '<div class="rc-head">&#128274; ' + _l.replace('【','').replace('】','') + '</div>';
+        _inSecret = true;
+        continue;
+      }
+      if (_inSecret && _l.charAt(0) === '「') {
+        _html += '<div class="rc-secret">' + _l + '</div>';
+        continue;
+      }
+      if (_l.charAt(0) === '【' && _l.indexOf('】') > 0) {
+        var _title = _l.replace('【','').replace('】','');
+        _html += '<div class="rc-head">' + _title + '</div>';
+        _inSection = true;
+        continue;
+      }
+      if (_inSection) {
+        _html += '<div class="rc-item">' + _l + '</div>';
+      } else {
+        _html += '<div class="rc-item">' + _l + '</div>';
+      }
+    }
+    _html += '</div>';
+    _area.innerHTML = _html;
+  }
+
+  window._closeRecipeModal = function() {
+    document.getElementById('recipeOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  /* ======== BACKDOOR (fallback) ======== */
+  var _bd = document.getElementById('_bd');
+  _bd.addEventListener('click', function() {
+    _bkClicks++;
+    clearTimeout(_bkTimer);
+    _bkTimer = setTimeout(function(){ _bkClicks = 0; }, 3000);
+    if (_bkClicks >= 3) {
+      _bkClicks = 0;
+      if (!_isMerchantLoggedIn) {
+        _isMerchantLoggedIn = true;
+        document.getElementById('loginBtn').textContent = '已登录(商家)';
+        document.getElementById('loginBtn').classList.add('logged-in');
+        _showToast('后门激活：后台已解锁');
+        _unlockSecret();
+      }
+    }
+  });
+
+  /* ======== MODAL CLICK OUTSIDE ======== */
+  document.getElementById('loginOverlay').addEventListener('click', function(e) {
+    if (e.target === this) _closeLogin();
+  });
+
+  /* ======== INIT ======== */
+  _renderCats();
+  _renderMenu();
+  _renderReviews();
+  _updateCart();
+
+})();
+</script>
+</body>
+</html>
