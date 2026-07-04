@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古墓密文 | 文字解密</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:'Terminal';src:local('Consolas'),local('Courier New'),local('monospace')}
+:root{
+  --bg:#0a0a06; --fg:#c4a94d; --fg-bright:#e8d48b;
+  --fg-dim:#8a7a4a; --accent:#d4a017; --error:#c0392b;
+  --scanline:rgba(196,169,77,0.03); --glow:0 0 8px rgba(196,169,77,0.4);
+}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:'Terminal','Courier New',monospace;
+  min-height:100vh; overflow-x:hidden;
+  cursor:text; user-select:none;
+  -webkit-user-select:none;
+}
+body::before{
+  content:''; position:fixed; inset:0;
+  background:repeating-linear-gradient(0deg,var(--scanline) 0px,var(--scanline) 2px,transparent 2px,transparent 4px);
+  pointer-events:none; z-index:999; opacity:0.6;
+}
+body::after{
+  content:''; position:fixed; inset:0;
+  background:radial-gradient(ellipse at center,rgba(10,10,6,0) 60%,rgba(10,10,6,0.7) 100%);
+  pointer-events:none; z-index:998;
+}
+#terminal{
+  max-width:900px; margin:0 auto; padding:40px 30px;
+  min-height:100vh; position:relative; z-index:1;
+}
+.header{
+  text-align:center; padding:20px 0 10px;
+  border-bottom:1px solid var(--fg-dim); margin-bottom:25px;
+}
+.header .title{
+  font-size:28px; letter-spacing:6px; color:var(--fg-bright);
+  text-shadow:0 0 15px rgba(212,160,23,0.6),0 0 30px rgba(212,160,23,0.3);
+}
+.header .subtitle{
+  font-size:12px; color:var(--fg-dim); letter-spacing:3px; margin-top:6px;
+}
+.level-bar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 14px; border:1px solid var(--fg-dim);
+  background:rgba(196,169,77,0.04); margin-bottom:18px;
+  font-size:13px;
+}
+.level-num{color:var(--accent); letter-spacing:2px}
+.level-title{color:var(--fg-bright)}
+.level-diff{color:var(--fg-dim); font-size:11px}
+.output{
+  min-height:120px; margin-bottom:15px; line-height:1.75;
+  font-size:15px; white-space:pre-wrap; word-break:break-all;
+}
+.output .prompt-line{color:var(--accent)}
+.output .dim{color:var(--fg-dim)}
+.output .bright{color:var(--fg-bright)}
+.output .error{color:var(--error)}
+.output .success{color:#6ab04c}
+.input-line{
+  display:flex; align-items:center; gap:8px;
+  border-top:1px dashed var(--fg-dim); padding-top:14px;
+}
+.prompt{color:var(--accent); font-size:15px; white-space:nowrap}
+#cmdInput{
+  flex:1; background:transparent; border:none; outline:none;
+  color:var(--fg-bright); font-family:inherit; font-size:15px;
+  caret-color:var(--accent);
+}
+#cmdInput::placeholder{color:var(--fg-dim); opacity:0.5}
+.hint-bar{
+  margin-top:12px; font-size:12px; color:var(--fg-dim);
+  border-top:1px dotted rgba(138,122,74,0.3); padding-top:8px;
+}
+.hint-bar span{color:var(--accent); cursor:pointer; margin-right:12px}
+.hint-bar span:hover{color:var(--fg-bright)}
+.progress{
+  margin-top:18px; display:flex; gap:3px; flex-wrap:wrap;
+}
+.progress .dot{
+  width:8px; height:8px; border-radius:0;
+  background:var(--fg-dim); opacity:0.3;
+}
+.progress .dot.done{background:var(--accent); opacity:0.9}
+.progress .dot.current{background:var(--fg-bright); opacity:1; box-shadow:0 0 6px var(--accent)}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.fade-in{animation:fadeIn 0.4s ease}
+.completion{
+  text-align:center; padding:40px 0;
+}
+.completion h2{
+  font-size:24px; color:var(--fg-bright);
+  text-shadow:0 0 20px rgba(212,160,23,0.8);
+  letter-spacing:4px;
+}
+.completion p{color:var(--fg-dim); margin-top:10px; font-size:13px}
+.map-overlay{
+  position:fixed; inset:0; background:rgba(10,10,6,0.92);
+  z-index:1000; display:none; align-items:center; justify-content:center;
+}
+.map-overlay.show{display:flex}
+.map-content{
+  border:1px solid var(--fg-dim); padding:30px; max-width:500px; width:90%;
+  background:var(--bg); max-height:80vh; overflow-y:auto;
+}
+.map-content h3{text-align:center;color:var(--fg-bright);margin-bottom:15px;letter-spacing:3px}
+.map-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted rgba(138,122,74,0.2)}
+.map-row .m-num{color:var(--accent)}
+.map-row .m-title{color:var(--fg)}
+.map-row .m-done{color:#6ab04c}
+.map-row .m-locked{color:var(--fg-dim)}
+.map-close{display:block;margin:15px auto 0;background:transparent;border:1px solid var(--fg-dim);color:var(--fg);padding:6px 20px;font-family:inherit;cursor:pointer;font-size:13px}
+.map-close:hover{border-color:var(--accent);color:var(--fg-bright)}
+</style>
+</head>
+<body>
+<div id="terminal">
+  <div class="header">
+    <div class="title">古 墓 密 文</div>
+    <div class="subtitle">TOMB CIPHER · 考古解密终端</div>
+  </div>
+  <div class="level-bar">
+    <span class="level-num" id="lvNum">第 1 关</span>
+    <span class="level-title" id="lvTitle">壁画初现</span>
+    <span class="level-diff" id="lvDiff">█</span>
+  </div>
+  <div class="output" id="output"></div>
+  <div class="input-line">
+    <span class="prompt">&gt;</span>
+    <input type="text" id="cmdInput" placeholder="输入答案..." autofocus autocomplete="off" spellcheck="false">
+  </div>
+  <div class="hint-bar">
+    <span id="hintBtn">[提示]</span>
+    <span id="mapBtn">[关卡地图]</span>
+    <span id="resetBtn">[重置进度]</span>
+  </div>
+  <div class="progress" id="progress"></div>
+</div>
+<div class="map-overlay" id="mapOverlay">
+  <div class="map-content" id="mapContent"></div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---- 反调试保护 ----
+  (function(){
+    document.oncontextmenu=function(){return false};
+    document.onkeydown=function(e){
+      if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='U')){
+        e.preventDefault();return false;
+      }
+    };
+    setInterval(function(){var d=new Date();debugger;if(new Date()-d>100){document.body.innerHTML='';}},1000);
+    var _c=console;
+    ['log','warn','error','info','debug','clear'].forEach(function(k){
+      var _o=_c[k];_c[k]=function(){_o.apply(_c,['\u26A0 ACCESS DENIED']);};
+    });
+  })();
+
+  // ---- 答案哈希函数（与生成端一致）----
+  function _H(s){
+    var h=0,i,c;if(!s)return'0';s=String(s).trim().toLowerCase();
+    for(i=0;i<s.length;i++){c=s.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}
+    return (h>>>0).toString(16).padStart(8,'0');
+  }
+
+  // ---- 关卡数据（答案以哈希存储，无明文）----
+  var LV=[
+    {t:'壁画初现',d:'简单符号替换',c:'仰韶考古队在一处新石器时代墓室中发现壁画，上面刻有简单的符号。考古笔记显示：\n\n  ☀ = 日   ☽ = 月\n\n壁画上写着：☀☽\n\n请输入壁画想表达的内容（2个汉字）',a:'000cbdc3',h:'两个天体，白天和夜晚各出现一个'},
+    {t:'反向咒语',d:'文字颠倒',c:'墓道石板上刻着一行奇怪的文字，教授说这是古代祭司常用的"反向咒语"——将文字反过来读才能理解真意。\n\n石板上刻着：墓古进踏\n\n请输入正确的读法（4个汉字）',a:'42ba09db',h:'从后往前读'},
+    {t:'圣甲虫印记',d:'凯撒密码 +1',c:'圣甲虫护身符背面刻着一串神秘字母。铭文记载"圣甲虫会将每个字母向前推一步"，即加密时每个字母后移1位。\n\n护身符刻字：GBMP\n\n请还原原始信息（2个汉字拼音，小写）',a:'002fd77e',h:'G-1=F, B-1=A, M-1=L, P-1=O。连起来是哪个词？'},
+    {t:'方尖碑铭文',d:'Base64 解码',c:'方尖碑底座上刻着一行奇怪的字符组合，考古学家认出这是Base64编码。\n\n铭文：5a6H5Y2a\n\n请输入隐藏的信息（2个汉字）',a:'000b9dd2',h:'使用Base64解码器'},
+    {t:'图腾柱密码',d:'数字字母映射',c:'图腾柱上有四个符号，每个符号对应一个数字：\n\n  △ = 3   ○ = 15   □ = 4   ☆ = 5\n\n图腾柱序列：△ ○ □ ☆\n\n数字对应字母表（1=A, 2=B, ..., 26=Z）。请破译出单词（4字母英文，小写）',a:'002eaded',h:'3=C, 15=O, 4=D, 5=E'},
+    {t:'楔形计数',d:'二进制转ASCII',c:'苏美尔楔形文字泥板上记录了一组数字：\n\n01001101 01000001\n\n每组8位二进制对应一个ASCII字符，请解密（2字母，大写）',a:'00000d94',h:'01001101=十进制77=M, 01000001=65=A'},
+    {t:'亡灵书残页',d:'摩斯密码',c:'《亡灵书》残页上发现点和线标记：\n\n-- ..- -- -- -.--\n\n请解密（英文单词，小写）',a:'0636d831',h:'摩斯密码表：--=M, ..-=U, --=M, --=M, -.--=Y'},
+    {t:'石门机关',d:'简单移位',c:'石门上刻着一行密文：金面金字具塔\n\n考古笔记记载："每隔一字取之，先奇后偶"。即奇数位置（1,3,5）的字在前，偶数位置（2,4,6）的字在后。\n\n奇数位：金 + 面 + 金 = 金面金\n偶数位：字 + 具 + 塔 = 字具塔\n\n请还原原始排列（奇数位与偶数位交替，6个汉字）',a:'2090265e',h:'奇[0]+偶[0]+奇[1]+偶[1]+奇[2]+偶[2]'},
+    {t:'法老诅咒',d:'Atbash 镜像替换',c:'法老棺椁上刻着警告文字。祭司用了Atbash镜像替换法——A变Z，B变Y，C变X……\n\n刻字：SLKV\n\n请解密（英文单词，小写）',a:'0030f53c',h:'S→H, L→O, K→P, V→E'},
+    {t:'水钟计时',d:'ASCII偏移 +1',c:'古埃及水钟侧面刻着神秘编码，铭文解释"将每个字符的数值加一，便是神谕"。\n\n刻字：q`bd\n\n请解密（英文单词，小写）',a:'00354ad1',h:'q(113+1=114)=r, `(96+1=97)=a, b(98+1=99)=c, d(100+1=101)=e'},
+    {t:'祭祀符文',d:'培根密码',c:'祭司密室墙上刻着一串AB序列，这是培根密码（Bacon\'s Cipher），每5位AB表示一个字母（I/J合并）。\n\n序列：BAABA BAABB ABBAA AABAA\n\n培根密码表（标准24字母）：BAABA=T, BAABB=U/V, ABBAA=N, AABAA=E\n\n请解密（4字母英文单词，大写）',a:'00367ff8',h:'BAABA=T, BAABB=U, ABBAA=N, AABAA=E'},
+    {t:'星图坐标',d:'棋盘密码',c:'墓室穹顶绘有星图，坐标网格5×5方阵（I/J合并）：\n\n    1 2 3 4 5\n  1 A B C D E\n  2 F G H I/J K\n  3 L M N O P\n  4 Q R S T U\n  5 V W X Y Z\n\n星图坐标：31 15 34 43\n\n请解密（4字母英文单词，大写）',a:'0032a11d',h:'31=L, 15=E, 34=O, 43=S → LEOS（狮子座）'},
+    {t:'泥板数列',d:'斐波那契+字母映射',c:'巴比伦泥板上刻着数列：1, 1, 2, 3, 5, 8\n\n铭文说："取第四与第五个数，分别化为字母，便是真言。"\n\n第四个数=3, 第五个数=5。字母表：3=C, 5=E。\n\n请输入（2字母，大写）',a:'00000c62',h:'3=C, 5=E'},
+    {t:'双蛇杖',d:'维吉尼亚密码',c:'赫尔墨斯双蛇杖上缠绕着密码带。密文和密钥分别刻在两条蛇身上。\n\n密文：RIJV\n密钥：KEY\n\n用维吉尼亚密码解密。解密公式：(密文序号 - 密钥序号) mod 26，A=0。\n\n请解密（4字母英文单词，大写）',a:'0030cf3d',h:'R(17)-K(10)=7=H, I(8)-E(4)=4=E, J(9)-Y(24)=11=L, V(21)-K(10)=11=L → HELL'},
+    {t:'阿努比斯天平',d:'序号替换',c:'阿努比斯神殿壁画描绘了心脏称重仪式。壁画下方有数字，每个数字对应字母表位置。\n\n数字序列：8-1-12-12\n\n请输入解密后的英文单词（4字母，大写）',a:'0030c039',h:'8=H, 1=A, 12=L, 12=L → HALL'},
+    {t:'尼罗河水位',d:'凯撒密码 -7',c:'尼罗河水位石碑上刻着一串密文。铭文说明"倒退七步可见真相"——即凯撒密码偏移-7。\n\n密文：AOLZL\n\n请解密（5字母英文单词，小写）',a:'06937683',h:'A→T, O→H, L→E, Z→S, L→E → THESE'},
+    {t:'罗塞塔石碑',d:'双层凯撒',c:'罗塞塔石碑复制品上有一段密文，经两次加密：先用凯撒+3加密，再对结果用凯撒-5加密。\n\n密文：VJGT\n\n请还原明文（4字母英文单词，大写）',a:'0035814f',h:'先逆操作凯撒-5(+5)→再逆操作凯撒+3(-3)'},
+    {t:'圣猫芭丝特',d:'ROT13',c:'芭丝特女神神庙中刻着一段密文，使用ROT13加密（字母旋转13位，加解密相同）。\n\n密文：PHEFR\n\n请解密（5字母英文单词，小写）',a:'05aa0092',h:'P→C, H→U, E→R, F→S, R→E → CURSE'},
+    {t:'蝎子王权杖',d:'字母数字交替',c:'蝎子王权杖上刻着字母和数字交替的序列：\n\nA1 B2 C3 D4 E5\n\n规则：字母在字母表中的位置加对应数字，得到新字母。\nA(1)+1=2=B, B(2)+2=4=D, C(3)+3=6=F, D(4)+4=8=H, E(5)+5=10=J\n\n请输入结果（5字母，大写）',a:'05940066',h:'逐个计算：A+1=B, B+2=D, C+3=F, D+4=H, E+5=J'},
+    {t:'帝王谷',d:'维吉尼亚密码 II',c:'帝王谷墓室入口刻着维吉尼亚密码。\n\n密文：LCEE\n密钥：KING\n\n请解密（4字母英文单词，大写）',a:'002e51da',h:'L(11)-K(10)=1=B, C(2)-I(8)+26=20=U, E(4)-N(13)+26=17=R, E(4)-G(6)+26=24=Y → BURY'},
+    {t:'荷鲁斯之眼',d:'多步加密',c:'荷鲁斯之眼壁画中隐藏着一段密文，经过三步加密：\n1. 凯撒-1\n2. 反转\n3. ROT13\n\n密文：WZUTF\n\n请解密（5字母英文单词，大写）',a:'069384f2',h:'WZUTF→ROT13→JMHGS→反转→SGHMJ→凯撒+1→THINK'},
+    {t:'狮身人面像',d:'奇偶换位密码',c:'狮身人面像底座刻着一段密文。加密方法：将明文第1位与第3位交换，第2位与第4位交换。\n\n密文：VLEO\n\n请还原明文（4字母英文单词，大写）',a:'0032c772',h:'VLEO→1↔3→L, 2↔4→O, 3↔1→V, 4↔2→E → LOVE'},
+    {t:'甲骨占卜',d:'符号映射',c:'殷墟甲骨上刻着占卜记录，考古学家破译了符号对应：\n\n  ▲ = 天   ■ = 地   ◆ = 人   ★ = 神\n\n一段完整卜辞：▲ ■ ◆ ★\n\n请翻译（4个汉字）',a:'29d8f74b',h:'直接翻译四个符号'},
+    {t:'诅咒解除',d:'三重凯撒',c:'法老棺椁内侧用朱砂写着最后一道诅咒，经鉴定为三重凯撒加密，加密顺序：凯撒+3 → 凯撒+5 → 凯撒-2。\n\n密文：MUWJ\n\n请还原最初的真言（4字母英文单词，大写）',a:'00308060',h:'MUWJ→+2→OWTL→-5→JROG→-3→GOLD'},
+    {t:'玉俑密码',d:'Rot5',c:'汉代玉俑上刻着一个单词，经Rot5加密（字母旋转5位）。\n\n密文：Htijw\n\n请解密（5字母英文单词，小写）',a:'05a71025',h:'H→C, t→o, i→d, j→e, w→r → coder'},
+    {t:'拉美西斯印章',d:'多重栅栏（3行）',c:'拉美西斯二世印章上刻着密文，采用3行栅栏加密。\n\n密文：TAURSREE\n\n请用3行栅栏解密还原明文（8字母英文单词，大写）',a:'527522af',h:'8字母分3行：行1(前3)=TAU, 行2(中3)=RSR, 行3(后2)=EE。交替：T+R+E+A+S+U+R+E'},
+    {t:'玛雅历法',d:'日期数学',c:'玛雅金字塔内发现一组数字。玛雅历法中卓尔金历260天与太阳历365天结合，每52年为一个历法循环。\n\n石板上刻着：4 × 13\n\n4×13=52。铭文补充道："取其半数，化为字母。"\n\n52的一半是26，字母表第26个字母是Z。\n\n请输入这个字母（大写）',a:'0000007a',h:'52/2=26=Z'},
+    {t:'地宫迷宫',d:'字谜+凯撒',c:'地宫墙壁上刻着谜题：\n\n"我是开始也是结束，我是一切的首位，我是字母的起点。"\n\n猜一个字母（大写），以其在字母表中的序号作为凯撒偏移量，解密下方密文。\n\n密文：CPOF\n\n请解密（4字母英文单词，大写）',a:'002e3ac4',h:'谜底=A(序号1)。密文CPOF凯撒-1→BONE'},
+    {t:'图坦卡蒙',d:'混合加密',c:'图坦卡蒙黄金面具内侧刻着最后的密文，这是古埃及最高级别的加密：\n\n第一步：反转密文\n第二步：凯撒密码+4\n第三步：奇数位字母+2，偶数位字母-2\n\n密文：EQUK\n\n请一步步解密，输入最终真言（4字母英文单词，大写）',a:'003306ec',h:'EQUK→反转→KUQE→凯撒+4→OYUI→奇+2偶-2→MASK'},
+    {t:'永生之门',d:'终极谜题',c:'最终墓室门上刻着："穿越所有关卡之人，须以一路所学的全部智慧解开此锁。"\n\n密文使用了三重加密：凯撒+7 → 反转 → ROT13\n\n密文：YZCF\n\n请解密，这是古墓的终极秘密（4字母英文单词，大写）',a:'0032aefc',h:'YZCF→ROT13→LMPS→反转→SPML→凯撒-7→LIFE'}
+  ];
+
+  // ---- 游戏状态 ----
+  var _cur=0, _hints=0, _unlocked=[];
+  var _el={};
+
+  function _load(){
+    try{
+      var d=localStorage.getItem('__tomb_cipher_save');
+      if(d){
+        var j=JSON.parse(atob(d));
+        _unlocked=j.u||[]; _cur=j.c||0; _hints=j.h||0;
+        if(_cur<0) _cur=0;
+        if(_cur>=LV.length) _cur=LV.length-1;
+      }else{_unlocked=[0];_cur=0;_hints=0;}
+    }catch(e){_unlocked=[0];_cur=0;_hints=0;}
+  }
+
+  function _save(){
+    try{
+      localStorage.setItem('__tomb_cipher_save',btoa(JSON.stringify({u:_unlocked,c:_cur,h:_hints})));
+    }catch(e){}
+  }
+
+  function _diff(n){
+    if(n<6) return '\u2588';
+    if(n<11) return '\u2588\u2588';
+    if(n<16) return '\u2588\u2588\u2588';
+    if(n<21) return '\u2588\u2588\u2588\u2588';
+    if(n<26) return '\u2588\u2588\u2588\u2588\u2588';
+    return '\u2588\u2588\u2588\u2588\u2588\u2588';
+  }
+
+  function _render(){
+    var lv=LV[_cur];
+    _el.lnum.textContent='第 '+(_cur+1)+' 关';
+    _el.ltitle.textContent=lv.t;
+    _el.ldiff.textContent=_diff(_cur);
+
+    var html='<p class="dim">'+lv.d+'</p>\n';
+    html+='<p style="margin-top:12px">'+lv.c.replace(/\n/g,'<br>')+'</p>';
+    _el.out.innerHTML=html;
+    _el.out.classList.add('fade-in');
+    setTimeout(function(){_el.out.classList.remove('fade-in')},500);
+
+    _el.inp.value='';
+    _el.inp.disabled=false;
+    _el.inp.placeholder='输入答案...';
+    _el.inp.focus();
+    _hints=0;
+    _drawProgress();
+    _save();
+  }
+
+  function _drawProgress(){
+    var html='';
+    for(var i=0;i<LV.length;i++){
+      var cls='dot';
+      if(i===_cur) cls+=' current';
+      if(_unlocked.indexOf(i)!==-1 && i!==_cur) cls+=' done';
+      html+='<span class="'+cls+'" title="'+(i+1)+'. '+LV[i].t+'"></span>';
+    }
+    _el.prog.innerHTML=html;
+  }
+
+  function _check(){
+    var inp=_el.inp.value;
+    if(!inp.trim()) return;
+    var hash=_H(inp);
+    var target=LV[_cur].a;
+
+    if(hash===target){
+      if(_unlocked.indexOf(_cur)===-1) _unlocked.push(_cur);
+
+      if(_cur>=LV.length-1){
+        var msg='<p class="success">\u2713 解密成功！</p>';
+        msg+='<div class="completion" style="margin-top:20px"><h2>\u53E4\u5893\u4E4B\u8C1C\u5DF2\u5168\u90E8\u7834\u89E3</h2>';
+        msg+='<p>你成功破解了全部 '+LV.length+' 道古墓密文！永生之门为你敞开！</p></div>';
+        _el.out.innerHTML+=msg;
+        _el.inp.disabled=true;
+        _el.inp.placeholder='所有谜题已完成';
+        _drawProgress(); _save();
+      }else{
+        var msg='<p class="success">\u2713 解密成功！</p>';
+        msg+='<p class="bright" style="margin-top:8px">\u2192 下一关：'+LV[_cur+1].t+'</p>';
+        msg+='<p class="dim">按 Enter 继续挑战...</p>';
+        _el.out.innerHTML+=msg;
+        _cur++; _drawProgress(); _save();
+        _el.inp.value='';
+        _el.inp.placeholder='按 Enter 进入下一关...';
+        _el.inp._next=true;
+      }
+    }else{
+      _el.out.innerHTML+='<p class="error">\u2717 解密失败，请重试</p>';
+      _el.inp.value='';
+      _el.inp.focus();
+    }
+  }
+
+  function _hintFn(){
+    var lv=LV[_cur];
+    if(!lv.h) return;
+    _hints++;
+    if(_hints===1){
+      _el.out.innerHTML+='<p class="dim" style="color:#d4a017">\u25B6 提示：'+lv.h+'</p>';
+    }else if(_hints===2){
+      _el.out.innerHTML+='<p class="dim" style="color:#e8d48b">\u25B6 追加提示：答案长度为 '+lv.a.length/2+' 个字符（哈希字节的一半）</p>';
+    }else{
+      _el.out.innerHTML+='<p class="dim">\u25B6 没有更多提示了，加油！</p>';
+    }
+    _el.out.scrollTop=_el.out.scrollHeight;
+  }
+
+  function _showMap(){
+    var html='<h3>\u5173\u5361\u5730\u56FE</h3>';
+    for(var i=0;i<LV.length;i++){
+      var cls='m-locked', icon='\u25CB';
+      if(_unlocked.indexOf(i)!==-1){ cls='m-done'; icon='\u25CF'; }
+      if(i===_cur){ cls=''; icon='\u25B6'; }
+      html+='<div class="map-row"><span class="m-num">'+icon+' '+(i+1)+'</span>';
+      html+='<span class="'+cls+'">'+LV[i].t+'</span></div>';
+    }
+    html+='<button class="map-close" id="mapCloseBtn">关闭</button>';
+    _el.mapC.innerHTML=html;
+    _el.mapO.classList.add('show');
+    document.getElementById('mapCloseBtn').onclick=function(){_el.mapO.classList.remove('show');};
+  }
+
+  function _resetGame(){
+    if(confirm('\u786E\u5B9A\u8981\u91CD\u7F6E\u6240\u6709\u8FDB\u5EA6\u5417\uFF1F\u6B64\u64CD\u4F5C\u4E0D\u53EF\u64A4\u9500\u3002')){
+      _unlocked=[0]; _cur=0; _hints=0; _save();
+      _el.inp.disabled=false;
+      _el.inp._next=false;
+      _el.inp.placeholder='输入答案...';
+      _render();
+    }
+  }
+
+  // ---- 初始化 ----
+  document.addEventListener('DOMContentLoaded',function(){
+    _el.out=document.getElementById('output');
+    _el.inp=document.getElementById('cmdInput');
+    _el.lnum=document.getElementById('lvNum');
+    _el.ltitle=document.getElementById('lvTitle');
+    _el.ldiff=document.getElementById('lvDiff');
+    _el.prog=document.getElementById('progress');
+    _el.mapO=document.getElementById('mapOverlay');
+    _el.mapC=document.getElementById('mapContent');
+
+    _load();
+    _render();
+
+    _el.inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){
+        if(_el.inp._next){
+          _el.inp._next=false;
+          _el.inp.placeholder='输入答案...';
+          _render();
+        }else{
+          _check();
+        }
+      }
+    });
+
+    document.getElementById('hintBtn').onclick=_hintFn;
+    document.getElementById('mapBtn').onclick=_showMap;
+    document.getElementById('resetBtn').onclick=_resetGame;
+
+    _el.mapO.addEventListener('click',function(e){
+      if(e.target===_el.mapO) _el.mapO.classList.remove('show');
+    });
+
+    document.addEventListener('click',function(e){
+      if(e.target.tagName!=='INPUT'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='SPAN'){
+        if(!_el.inp.disabled) _el.inp.focus();
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
