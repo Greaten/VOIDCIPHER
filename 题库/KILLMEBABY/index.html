@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<script>if(location.protocol==="http:")location.replace("https://www.voidcipher.cn"+location.pathname+location.search)</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>【置顶】码农老李遇害案 —— 退休前的最后一案 | 老码农论坛</title>
@@ -185,6 +187,69 @@ body {
   font-family: var(--font-mono); transition: all 0.2s; margin-top: 4px;
 }
 .accuse-btn:hover { background: var(--danger); color: #fff; }
+
+/* 指控弹出层 */
+.accuse-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;
+}
+.accuse-overlay.show { display: flex; }
+.accuse-modal {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 28px 32px; max-width: 560px; width: 92%;
+}
+.accuse-modal h2 {
+  font-family: var(--font-mono); font-size: 16px; color: var(--text);
+  margin-bottom: 20px; text-align: center; letter-spacing: 2px;
+}
+.accuse-suspects { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.suspect-card {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px;
+  cursor: pointer; transition: all 0.2s; position: relative;
+}
+.suspect-card:hover { border-color: var(--accent); background: #1a2230; }
+.suspect-card.selected {
+  border-color: var(--accent); background: #1a2a3a;
+  box-shadow: 0 0 12px rgba(88,166,255,0.15);
+}
+.suspect-card-avatar {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: bold; color: #fff; font-family: var(--font-mono);
+}
+.suspect-card-info { flex: 1; min-width: 0; }
+.suspect-card-nickname { font-size: 14px; font-weight: bold; color: var(--text); }
+.suspect-card-realname { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.suspect-card-desc {
+  font-size: 11px; color: var(--text-secondary); margin-top: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.suspect-card-check {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.suspect-card.selected .suspect-card-check { border-color: var(--accent); background: var(--accent); }
+.suspect-card.selected .suspect-card-check::after {
+  content: '\2713'; color: #fff; font-size: 13px; font-weight: bold;
+}
+.accuse-modal-actions { display: flex; gap: 12px; justify-content: center; }
+.accuse-modal-btn {
+  padding: 10px 36px; border-radius: 4px; font-size: 14px; cursor: pointer;
+  border: none; transition: all 0.2s; font-family: var(--font-mono);
+}
+.accuse-modal-btn.confirm {
+  background: var(--danger); color: #fff;
+}
+.accuse-modal-btn.confirm:disabled {
+  background: #3a1a1a; color: #666; cursor: not-allowed;
+}
+.accuse-modal-btn.confirm:not(:disabled):hover { background: #d32f2f; }
+.accuse-modal-btn.cancel {
+  background: transparent; border: 1px solid var(--border); color: var(--text-secondary);
+}
+.accuse-modal-btn.cancel:hover { border-color: #555; color: var(--text); }
 
 .case-brief { font-size: 12px; color: var(--text-secondary); line-height: 1.8; }
 .case-brief strong { color: var(--text); }
@@ -430,13 +495,25 @@ body {
     <div class="panel-section">
       <h3>&#x2696;&#xFE0F; 提出指控</h3>
       <p style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;">收集足够线索后，选择你认为的凶手：</p>
-      <div id="accuse-buttons"></div>
+      <button class="accuse-btn" onclick="showAccuseModal()" style="font-size:13px;">⚖ 提出指控 — 选择嫌疑人</button>
+      <div id="accuse-buttons" style="display:none;"></div>
     </div>
   </div>
 </div>
 
 <div class="result-modal" id="result-modal">
   <div class="result-box" id="result-box"></div>
+</div>
+
+<div class="accuse-overlay" id="accuse-overlay">
+  <div class="accuse-modal">
+    <h2>提出指控 — 请选择嫌疑人</h2>
+    <div class="accuse-suspects" id="accuse-suspects"></div>
+    <div class="accuse-modal-actions">
+      <button class="accuse-modal-btn confirm" id="accuse-confirm-btn" disabled onclick="confirmAccuseFromModal()">确认指控</button>
+      <button class="accuse-modal-btn cancel" onclick="closeAccuseModal()">取消</button>
+    </div>
+  </div>
 </div>
 <script>
 // ==================== 游戏数据 ====================
@@ -1437,12 +1514,54 @@ function renderSuspects() {
 }
 
 function renderAccuseButtons() {
-  var container = document.getElementById('accuse-buttons');
+  // 指控按钮已在HTML中固定渲染，保留此函数以避免报错
+}
+
+var accuseSelectedSuspect = null;
+
+function showAccuseModal() {
+  if (gameState.gameOver) return;
+  accuseSelectedSuspect = null;
+  document.getElementById('accuse-confirm-btn').disabled = true;
+  var container = document.getElementById('accuse-suspects');
   var html = '';
   SUSPECTS.forEach(function(s) {
-    html += '<button class="accuse-btn" onclick="accuse(\'' + s.id + '\')">\u6307\u63a7: ' + s.name + '</button>';
+    var desc = s.info.replace(/<[^>]+>/g, '').substring(0, 40) + '...';
+    var cleared = gameState.clearedSuspects[s.id];
+    if (cleared) {
+      desc = '该嫌疑人已有不在场证明';
+    }
+    html += '<div class="suspect-card" data-suspect="' + s.id + '" onclick="selectSuspectCard(this, \'' + s.id + '\')">';
+    html += '<div class="suspect-card-avatar" style="background:' + s.avatar + ';">' + s.avatarChar + '</div>';
+    html += '<div class="suspect-card-info">';
+    html += '<div class="suspect-card-nickname">' + s.name + (s.isGuilty ? '' : '') + '</div>';
+    html += '<div class="suspect-card-realname">真实姓名：' + s.realName + '</div>';
+    html += '<div class="suspect-card-desc">' + desc + '</div>';
+    html += '</div>';
+    html += '<div class="suspect-card-check"></div>';
+    html += '</div>';
   });
   container.innerHTML = html;
+  document.getElementById('accuse-overlay').classList.add('show');
+}
+
+function closeAccuseModal() {
+  document.getElementById('accuse-overlay').classList.remove('show');
+  accuseSelectedSuspect = null;
+}
+
+function selectSuspectCard(card, suspectId) {
+  var allCards = document.querySelectorAll('.suspect-card');
+  allCards.forEach(function(c) { c.classList.remove('selected'); });
+  card.classList.add('selected');
+  accuseSelectedSuspect = suspectId;
+  document.getElementById('accuse-confirm-btn').disabled = false;
+}
+
+function confirmAccuseFromModal() {
+  if (!accuseSelectedSuspect) return;
+  closeAccuseModal();
+  accuse(accuseSelectedSuspect);
 }
 
 function accuse(suspectId) {
@@ -1466,7 +1585,13 @@ function accuse(suspectId) {
   } else {
     gameState.gameOver = false;
     box.className = 'result-box fail';
-    box.innerHTML = '<h2>\u6307\u63a7\u5931\u8d25</h2><p>' + suspect.name + '\u5e76\u975e\u771f\u51f6\u3002' + (gameState.clearedSuspects[suspectId] ? '\u4e8b\u5b9e\u4e0a\uff0c\u8be5\u5acc\u7591\u4eba\u5df2\u6709\u5145\u5206\u7684\u4e0d\u5728\u573a\u8bc1\u660e\u3002' : '\u8bf7\u91cd\u65b0\u5ba1\u89c6\u6240\u6709\u8bc1\u636e\u3002') + '</p><p style="font-size:13px;">\u771f\u6b63\u7684\u51f6\u624b\u53e6\u6709\u5176\u4eba\u3002\u7ebf\u7d22\u5c31\u85cf\u5728\u8bba\u575b\u7684\u5bf9\u8bdd\u4e4b\u4e2d\uff0c\u4ed4\u7ec6\u9605\u8bfb\u6bcf\u4e00\u5c42\u697c\u7684\u56de\u590d\u3002</p><button onclick="closeModal()">\u7ee7\u7eed\u8c03\u67e5</button>';
+    var failMessages = {
+      'suspect_2': '<h2>指控失败</h2><p><b>小兔子乖乖（赵小兔）</b>并非真凶。</p><p style="font-size:13px;text-align:left;">虽然她与老李存在50万元借贷纠纷，但案发时她正在朋友生日派对上，有多位在场人证可以确认。此外，老李的电脑被砸毁而非被盗走财物，这与债务纠纷的行凶模式不符。真正的凶手另有其人。</p><button onclick="closeModal()">继续调查</button>',
+      'suspect_3': '<h2>指控失败</h2><p><b>代码诗人（陈诗文）</b>并非真凶。</p><p style="font-size:13px;text-align:left;">陈诗文与老李存在内容抄袭纠纷，但他的不在场证明表明案发时段他在咖啡厅写代码。更重要的是，抄袭丑闻曝光对陈诗文是职业打击，但老李之死反而会让舆论将矛头指向他——这对他极为不利。凶手需要隐藏的是更直接的犯罪证据。</p><button onclick="closeModal()">继续调查</button>',
+      'suspect_4': '<h2>指控失败</h2><p><b>深海潜水员（刘海洋）</b>并非真凶。</p><p style="font-size:13px;text-align:left;">刘海洋与老李仅因追星话题有过口头争吵，这种网络矛盾远不足以构成杀人动机。他虽无明确不在场证明，但案发现场的搏斗痕迹和电脑被砸表明凶手具有明确的销毁证据目的——这不是一时冲动能解释的。</p><button onclick="closeModal()">继续调查</button>',
+      'suspect_5': '<h2>指控失败</h2><p><b>午夜咖啡（张铁柱）</b>并非真凶。</p><p style="font-size:13px;text-align:left;">张铁柱虽有入室盗窃前科，但他正是本案的报警人。案发时段便利店监控和店主证词已确认他在买酒。而且现场门锁未被破坏、贵重财物未被盗走，只砸毁了一台笔记本电脑——这完全不符合盗窃犯的行为特征。你指控了本案的报案人。</p><button onclick="closeModal()">继续调查</button>'
+    };
+    box.innerHTML = failMessages[suspectId] || ('<h2>指控失败</h2><p>' + suspect.name + '并非真凶。请重新审视所有证据。</p><p style="font-size:13px;">真正的凶手另有其人。线索就藏在论坛的对话之中，仔细阅读每一层楼的回复。</p><button onclick="closeModal()">继续调查</button>');
   }
   modal.classList.add('show');
 }
