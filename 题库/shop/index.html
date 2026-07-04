@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暗室 - 文字冒险解密</title>
+<style>
+:root {
+    --bg: #0d0d0d; --panel: #1a1a1a; --bubble-self: #2b5c2b; --bubble-other: #2a2a2a;
+    --text: #c8c8c8; --text-light: #a0a0a0; --accent: #4a9e4a; --danger: #8b3a3a;
+    --divider: #252525; --input-bg: #1e1e1e; --border: #333;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: #000; font-family: 'Microsoft YaHei','PingFang SC',sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+body::after { content: ''; position: fixed; top:0;left:0;right:0;bottom:0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px); pointer-events: none; z-index: 999; }
+body::before { content: ''; position: fixed; top:0;left:0;right:0;bottom:0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 998; opacity: 0.5; }
+.app-container { width: 520px; height: 780px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1; box-shadow: 0 0 40px rgba(0,0,0,0.6), inset 0 0 80px rgba(0,0,0,0.3); }
+.status-bar { background: #0a0a0a; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-light); border-bottom: 1px solid var(--divider); letter-spacing: 1px; flex-shrink: 0; }
+.status-bar .title { color: var(--accent); font-weight: bold; font-size: 12px; text-shadow: 0 0 8px rgba(74,158,74,0.4); }
+.status-bar .indicators span { margin-left: 8px; }
+.main-content { display: flex; flex: 1; overflow: hidden; }
+
+/* ===== 左侧联系人栏 ===== */
+.contact-sidebar { width: 85px; background: #080808; border-right: 1px solid var(--divider); display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; flex-shrink: 0; }
+.contact-sidebar::-webkit-scrollbar { width: 3px; }
+.contact-sidebar::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+.contact-sidebar .sidebar-divider { height: 1px; background: var(--divider); margin: 4px 10px; flex-shrink: 0; }
+.sidebar-tab { display: flex; flex-direction: column; align-items: center; padding: 10px 4px; cursor: pointer; position: relative; border-left: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; }
+.sidebar-tab:hover { background: #0f0f0f; }
+.sidebar-tab.active { background: #0e1a0e; border-left-color: var(--accent); }
+.sidebar-tab.locked { opacity: 0.35; cursor: not-allowed; }
+.sidebar-tab.locked:hover { background: transparent; }
+.sidebar-tab.raven-item { padding-bottom: 6px; }
+.sidebar-tab .sb-avatar { width: 36px; height: 36px; border-radius: 50%; background: #141414; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; flex-shrink: 0; }
+.sidebar-tab.raven-item .sb-avatar { border-color: #1a3a1a; background: #0d140d; }
+.sidebar-tab.active .sb-avatar { border-color: var(--accent); box-shadow: 0 0 6px rgba(74,158,74,0.25); }
+.sidebar-tab .sb-name { font-size: 10px; color: var(--text-light); margin-top: 4px; text-align: center; line-height: 1.2; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-tab.active .sb-name { color: var(--accent); }
+.sidebar-tab .sb-badge { position: absolute; top: 10px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; display: none; box-shadow: 0 0 4px rgba(139,58,58,0.5); z-index: 2; }
+.sidebar-tab .sb-badge.show { display: block; }
+
+/* ===== 右侧聊天区 ===== */
+.chat-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.header { background: var(--panel); padding: 14px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--divider); flex-shrink: 0; }
+.header .back-btn { color: var(--accent); font-size: 18px; cursor: pointer; user-select: none; transition: opacity 0.2s; }
+.header .back-btn:hover { opacity: 0.7; }
+.header .contact-name { flex: 1; font-size: 15px; font-weight: bold; color: var(--text); letter-spacing: 0.5px; }
+.header .contact-status { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.chat-area { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+.time-divider { text-align: center; font-size: 11px; color: #555; margin: 6px 0; letter-spacing: 0.5px; }
+.sys-msg { text-align: center; font-size: 11px; color: #555; font-style: italic; padding: 4px 0; }
+.sys-msg.warn { color: var(--danger); }
+.sys-msg.accent { color: var(--accent); }
+.msg-row { display: flex; flex-direction: column; max-width: 78%; animation: msgIn 0.3s ease-out; }
+.msg-row.self { align-self: flex-end; align-items: flex-end; }
+.msg-row.other { align-self: flex-start; align-items: flex-start; }
+.msg-row.raven { align-self: flex-start; align-items: flex-start; }
+.msg-sender { font-size: 10px; color: var(--text-light); margin-bottom: 2px; padding: 0 4px; }
+.msg-row.raven .msg-sender { color: #6a9e6a; letter-spacing: 1px; }
+.msg-bubble { padding: 9px 13px; border-radius: 4px; font-size: 13px; line-height: 1.65; word-break: break-word; position: relative; letter-spacing: 0.3px; }
+.msg-row.self .msg-bubble { background: var(--bubble-self); color: #b8d8b8; border: 1px solid #3a703a; }
+.msg-row.other .msg-bubble { background: var(--bubble-other); color: var(--text); border: 1px solid #333; }
+.msg-row.raven .msg-bubble { background: #0f1a0f; color: #8abf8a; border: 1px solid #1a3a1a; font-style: italic; }
+.typing-indicator { align-self: flex-start; padding: 10px 14px; background: var(--bubble-other); border-radius: 4px; border: 1px solid #333; display: flex; gap: 4px; animation: msgIn 0.2s ease-out; }
+.typing-indicator span { width: 6px; height: 6px; background: #666; border-radius: 50%; animation: typingBounce 1.2s infinite; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
+@keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.choices-area { align-self: stretch; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; animation: msgIn 0.35s ease-out; }
+.choice-btn { width: 100%; padding: 11px 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; cursor: pointer; text-align: left; transition: all 0.2s; letter-spacing: 0.3px; }
+.choice-btn:hover { background: #252525; border-color: var(--accent); color: var(--accent); }
+.choice-btn:active { background: #1a2e1a; transform: scale(0.98); }
+.choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.input-area { background: var(--panel); padding: 10px 12px; display: flex; gap: 10px; border-top: 1px solid var(--divider); align-items: center; flex-shrink: 0; }
+.input-area input { flex: 1; padding: 10px 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 13px; outline: none; transition: border-color 0.2s; }
+.input-area input:focus { border-color: var(--accent); }
+.input-area input::placeholder { color: #444; }
+.input-area button { padding: 10px 18px; background: var(--accent); border: none; border-radius: 4px; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }
+.input-area button:hover { background: #5aae5a; }
+.input-area button:active { transform: scale(0.96); }
+.input-area button:disabled { background: #2a3a2a; color: #555; cursor: not-allowed; }
+.accuse-overlay { position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.92); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
+.accuse-overlay.show { display: flex; }
+.accuse-overlay h3 { color: var(--danger); font-size: 18px; margin-bottom: 20px; letter-spacing: 2px; }
+.accuse-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 360px; }
+.accuse-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
+.accuse-card:hover { border-color: var(--accent); background: #1a1a1a; }
+.accuse-card .card-name { color: var(--text); font-size: 14px; font-weight: bold; }
+.accuse-card .card-role { color: var(--text-light); font-size: 11px; margin-top: 4px; }
+.accuse-cancel { margin-top: 16px; padding: 8px 30px; background: transparent; border: 1px solid #555; border-radius: 4px; color: #555; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+.accuse-cancel:hover { border-color: #999; color: #999; }
+@media (max-width: 540px) { .app-container { width: 100vw; height: 100vh; border-radius: 0; border: none; } }
+</style>
+</head>
+<body>
+<div class="app-container">
+    <div class="status-bar">
+        <span id="clockDisplay">22:47</span>
+        <span class="title">暗 室</span>
+        <span class="indicators"><span>▮▮▮▮</span><span id="batteryDisplay">⚡ 12%</span></span>
+    </div>
+    <div class="main-content">
+        <div class="contact-sidebar" id="contactTabs"></div>
+        <div class="chat-main">
+            <div class="header">
+                <span class="back-btn" onclick="showContactList()">‹</span>
+                <div style="flex:1"><div class="contact-name" id="contactName">未知号码</div><div class="contact-status" id="contactStatus">离线</div></div>
+            </div>
+            <div class="chat-area" id="chatArea"></div>
+            <div class="input-area">
+                <input type="text" id="msgInput" placeholder="输入消息..." onkeydown="if(event.key==='Enter')sendMessage()">
+                <button id="sendBtn" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+    <div class="accuse-overlay" id="accuseOverlay"><h3>⚠ 指认间谍</h3><div class="accuse-grid" id="accuseGrid"></div><button class="accuse-cancel" onclick="cancelAccuse()">再想想</button></div>
+</div>
+<script>
+// ============================================================
+// 暗室 v2 - 深度推理版
+// ============================================================
+const CHARACTERS = {
+    raven:{id:'raven',name:'渡鸦',short:'Raven',role:'神秘人',avatar:'🦅',color:'#6a9e6a',online:true,locked:false,desc:'加密频道',hasBadge:false},
+    linwei:{id:'linwei',name:'林薇',short:'技术部',role:'程序员·28',avatar:'👩‍💻',color:'#4a9e9e',online:true,locked:true,desc:'后端开发'},
+    chenhao:{id:'chenhao',name:'陈浩',short:'安保部',role:'安保主管·35',avatar:'👮',color:'#9e9e4a',online:true,locked:true,desc:'退伍军人'},
+    suyuqing:{id:'suyuqing',name:'苏雨晴',short:'行政部',role:'行政助理·25',avatar:'👩‍💼',color:'#9e5a9e',online:true,locked:true,desc:'社交达人'},
+    zhaomingyuan:{id:'zhaomingyuan',name:'赵明远',short:'财务部',role:'财务总监·42',avatar:'👨‍💼',color:'#9e7a4a',online:true,locked:true,desc:'严谨老派'},
+    zhouruo:{id:'zhouruo',name:'周若',short:'市场部',role:'市场经理·31',avatar:'👩‍🔬',color:'#5a8a9e',online:true,locked:true,desc:'雷厉风行'},
+    qinfeng:{id:'qinfeng',name:'秦风',short:'研发部',role:'研发工程师·27',avatar:'🧑‍💻',color:'#8a8a5a',online:true,locked:true,desc:'宅男社恐'},
+    hanbing:{id:'hanbing',name:'韩冰',short:'法务部',role:'法务顾问·36',avatar:'👩‍⚖️',color:'#8a9e9e',online:true,locked:true,desc:'冷静理性'},
+    wutian:{id:'wutian',name:'吴天',short:'实习生',role:'实习生·22',avatar:'🧒',color:'#9e8a5a',online:true,locked:true,desc:'冒失新人'}
+};
+
+const D = {
+    t:(t,d)=>({type:'time',text:t,delay:d||400}),
+    s:(t,c)=>({type:'sys',text:t,color:c||'',delay:300}),
+    ra:(t,d)=>({type:'raven',text:t,delay:d||700}),
+    ot:(t,d)=>({type:'other',text:t,delay:d||600}),
+    se:(t)=>({type:'self',text:t,delay:200}),
+    ch:(l,n,a)=>({type:'choice',label:l,next:n||'',action:a||null}),
+    ac:(v)=>({type:'action',value:v})
+};
+
+const ALL_SCRIPTS = {
+
+// ==================== 渡鸦 ====================
+raven_opening: [
+    D.t('7月4日 · 22:47'), D.s('⚠ 检测到异常加密频道接入...'), D.s('正在验证身份凭证...'), D.s('[验证通过]'),
+    D.ra('别慌。先听我说。',1200), D.ra('你可以叫我渡鸦。',800),
+    D.ra('恒宇科技内部有间谍。有人正在把核心数据卖给竞争对手。',1100),
+    D.ra('我能给你的信息有限——但足够你开始调查。',900),
+    D.ch('你怎么知道的？','raven_i1'), D.ch('有什么证据？','raven_i2'), D.ch('你到底是谁？','raven_i3')
+],
+raven_i1: [
+    D.se('你怎么知道的？'),
+    D.ra('上周五的会议纪要，当晚就出现在星辰科技的服务器上。',1300),
+    D.ra('知道那场会议内容的人不超过15个。而你通讯录里这8个人——全都在名单上。',1100),
+    D.ra('一个一个去聊。注意他们话里的自相矛盾之处。',900), D.s('[8个联系人已解锁]','accent'), D.ac('unlock_all')
+],
+raven_i2: [
+    D.se('有什么证据？'),
+    D.ra('6月28日。"天玑"项目的完整技术文档被外泄。',1200),
+    D.ra('泄密者用了公司VPN池里的IP。这意味着——要么是内部人员，要么能伪造公司IP。',1100),
+    D.ra('两种可能都指向内部。我已经标记了8个关键人物。自己去验证。',900), D.s('[8个联系人已解锁]','accent'), D.ac('unlock_all')
+],
+raven_i3: [
+    D.se('你到底是谁？'),
+    D.ra('一个知道太多的人。和你一样。',1000),
+    D.ra('你的通讯录里有8个人。其中一个是间谍。剩下的你只能靠自己判断。',1000),
+    D.ra('我建议你从最不起眼的人开始。他们往往藏得最深。',900), D.s('[8个联系人已解锁]','accent'), D.ac('unlock_all')
+],
+raven_mid: [
+    D.t('7月5日 · 01:12'), D.s('加密频道重新连接...','accent'),
+    D.ra('怎么样？',700), D.ra('我看到你跟几个人聊过了。有什么结论吗？',800),
+    D.ra('给你一个提示：注意那些看似无懈可击的人。',1000),
+    D.ra('真正的间谍不会让你轻易找到破绽。他们太擅长把自己藏起来。',900), D.ra('继续。',600)
+],
+raven_final: [
+    D.t('7月5日 · 03:44'), D.s('加密频道信号增强...','accent'),
+    D.ra('时间不多了。',1000), D.ra('你已经跟所有人聊过了。现在告诉我——',1200),
+    D.ra('谁是间谍？',1800), D.ac('trigger_accuse')
+],
+raven_accuse_correct: [
+    D.t('7月5日 · 04:12'),
+    D.ra('果然是她。',1500),
+    D.ra('韩冰——法务顾问、严谨到滴水不漏的那个人。',1200),
+    D.ra('我已经锁定了她的频道。她应该已经知道你查到了真相。',1000),
+    D.ra('去跟她对峙吧。左侧韩冰的聊天窗口已经有动静了。',1000),
+    D.ch('去韩冰的聊天窗口',null,()=>switchContact('hanbing')),
+],
+raven_final_p2: [
+    D.t('7月5日 · 04:30'),
+    D.ra('你找到了。',1800),
+    D.ra('VPN、咨询合同、门禁日志——每条单看都合法，拼在一起就是铁证。',1600),
+    D.ra('剩下的事交给该管的人。你已经做了你能做的。',1200),
+    D.s('[加密频道即将关闭]','accent'),
+    D.s('渡鸦已离线','accent'),
+    D.t('结局'),
+    D.s('韩冰因侵犯商业秘密罪被依法逮捕。','accent'),
+    D.s('渡鸦的真实身份——至今仍是一个谜。','accent'),
+    D.ch('重新开始游戏',null,()=>{document.getElementById('sendBtn').disabled=true;document.getElementById('msgInput').disabled=true;location.reload();}),
+],
+
+// ==================== 林薇 — 技术部程序员（阶段1:日常+随口一提） ====================
+linwei: {
+stage1: [
+    D.t('7月4日 · 22:52'),
+    D.se('在吗？'),
+    D.ot('刚push完代码。咋了？这个bug我复现不了，但生产环境又报错了...你重启一下试试？',700),
+    D.se('听说公司最近服务器有点状况？'),
+    D.ot('你也听说了？其实就是上月底构建服务器被人远程登了一次。凌晨三点。',800),
+    D.ot('我看到日志的时候还以为是哪个同事在加班。不过查了下，那个时间段只有秦风在线——但他用的是远程桌面，IP是他家的。',900),
+    D.ot('秦风技术那么好，想偷数据太容易了。而且他最近对新项目特别上心，不太正常。以前他社恐到连开会都不发言的。',900),
+    D.ot('说到这个，我自己终端最近也有点怪。浏览器历史记录里多了几个我不记得搜过的关键词。',800),
+    D.ot('什么"星辰科技 合同模板"啥的。我怎么可能搜这些东西，我是写后端的好吗。不过也可能是我不小心点到的...最近忙得头昏眼花。',900),
+    D.se('会不会是IT远程维护？'),
+    D.ot('不可能，IT那帮人处理工单都要催三遍。我怀疑是缓存问题——也可能是有人远程登过。',700),
+    D.ot('不过也别太在意。也可能真的是我自己搜了忘了。最近连着加班，脑子跟浆糊似的。',800),
+],
+stage2: [
+    D.se('林薇，我再问一下28号的事。那天你在哪？'),
+    D.ot('28号周五嘛，我加班到十一点多。有个线上bug必须当晚修。',700),
+    D.ot('那天晚上公司人不多。我记得秦风远程连着机器，陈浩在巡楼——他每天晚上八点半准时走一圈。',800),
+    D.ot('但我说实话，安保系统他全权负责，出事了他说不知道？你信吗？',700),
+    D.ot('还有吴天也在，实习生嘛，跟着导师加班。那小子到处问东问西，谁知道他是不是在搜集情报。',800),
+    D.ot('不过那天有个事挺奇怪的。晚上快十点的时候，我去了趟洗手间，回来发现我屏幕被锁了。',800),
+    D.ot('我明明设了15分钟才自动锁屏的。查了系统日志，有人在21:48分手动锁了屏。能物理接触到我的机器的人——就那几个在公司的。',1000),
+    D.se('你觉得是谁？'),
+    D.ot('不好说。但我走的时候看到法务部灯亮着。韩冰姐居然也加班，真少见。不过她是出了名的严谨，可能只是季度审计。',900),
+],
+stage3: [
+    D.se('你说你终端被人动过，具体是什么时候？'),
+    D.ot('我后来仔细看了日志。周五下午2点到3点之间——那段时间我在会议室开技术评审。',800),
+    D.ot('会议室就在法务部旁边。不过那天我没特别注意谁在谁不在，只顾着跟秦风争论架构方案了。',700),
+    D.ot('我跟你说，秦风那家伙，平时不说话，一说到技术架构就特别激进。他有个方案跟我完全相反，争论了一个小时。',800),
+    D.ot('现在想想，他是不是故意拖住我？好让别人动我的终端？他那脑子想搞这种计划完全有可能。',800),
+    D.ot('陈浩也有疑点。他说那天他在地下车库处理前员工纠纷——你信？我反正存疑。',700),
+],
+},
+// ==================== 陈浩 — 安保主管 ====================
+chenhao: {
+stage1: [
+    D.t('7月4日 · 23:01'),
+    D.se('陈主管，方便聊两句吗？'),
+    D.ot('说。',400),
+    D.se('最近公司安保有什么异常吗？'),
+    D.ot('为什么问这个。',800),
+    D.se('只是关心一下。毕竟我们研发区有不少敏感数据。'),
+    D.ot('...行吧。安保方面一切正常。门禁日志、监控录像我都看过了，没有异常。',800),
+    D.ot('28号那天安保系统确实做了一次升级。但全程有厂商在场，日志完整。没什么可担心的。',800),
+    D.ot('不过——你既然问了。林薇她有所有服务器root权限，而且她的加班时间跟泄密时间完全对得上。',900),
+    D.se('你怀疑林薇？'),
+    D.ot('不是我怀疑。是事实——她是最方便下手的人。技术部的人干这种事，安保系统根本拦不住。',900),
+],
+stage2: [
+    D.se('陈主管，还有谁你觉得可疑？'),
+    D.ot('苏雨晴。她收发室管着所有快递和文件，想传什么出去太方便了。',800),
+    D.ot('你以为行政助理就是端茶倒水？她手里有全公司的通讯录、访客登记和快递记录。信息集散中心。',900),
+    D.ot('还有周若。我跟你说——她跟星辰科技那边的人有来往，我查过访客记录。',700),
+    D.ot('上个月星辰科技的市场总监来过我们公司三次。三次。每次都是周若签的访客登记。',900),
+    D.ot('当然访客来访本身不犯法。但如果你在查泄密——信息传递最方便的渠道就是面对面。',800),
+],
+stage3: [
+    D.se('你之前提到过一个前员工纠纷？'),
+    D.ot('嗯。被辞退的。来公司拿私人物品，情绪比较激动。我送他出去的。',700),
+    D.ot('我知道你想问什么——他有没有可能报复公司？可能性很小。他不是技术岗，接触不到核心数据。',800),
+    D.ot('但如果你真想知道谁最有动机——去找财务部的人聊聊。被扣工资的人、被卡报销的人、觉得不公平的人。',900),
+    D.ot('赵明远是财务总监，他对每个人的财务状况最清楚。你问他，比问我管用。',700),
+],
+},
+// ==================== 苏雨晴 — 行政助理（八卦中心）====================
+suyuqing: {
+stage1: [
+    D.t('7月4日 · 23:08'),
+    D.se('雨晴，有空吗？'),
+    D.ot('有有有！刚敷完面膜。啥事呀～（贴图：敷面膜的猫.jpg）笑死，你居然主动找我聊天。',600),
+    D.se('最近公司有什么新鲜事吗？'),
+    D.ot('哈？？？你这是转行做八卦记者了吗哈哈哈哈',500),
+    D.ot('不过确实有！韩姐人超好，经常请我们喝奶茶。她说最近有个老同学帮了她一个大忙，心情特别好。',800),
+    D.ot('她这个人平时高冷得很，突然这么热情大家都不适应。不过挺好，免费的奶茶谁不爱呢～',700),
+    D.ot('还有周若姐好像被老板骂了——上次那个什么竞标，报价就差了一点点，气死了。她说肯定有人泄露了底价。',900),
+    D.se('你觉得谁会泄露？'),
+    D.ot('这我哪敢乱说！不过知道底价的人里面——赵总那人可古板了，一块钱报销都要退回重填。',800),
+    D.ot('但你说会不会太过了反而可疑？他最近花钱特别大方，上次团建直接包场，他那点工资哪够？',800),
+    D.ot('周经理自己也有可能吧？贼喊捉贼。她出差频率太高了，而且每次回来都神神秘秘的。',700),
+],
+stage2: [
+    D.se('雨晴，28号那天你在公司吗？'),
+    D.ot('不在不在，我请病假了！在家躺了一天，真的！有医院挂号记录可以证明！',700),
+    D.ot('你是不是在查什么事？安保那边也来问过我，说有人冒用我名字申请了临时工牌。我一头雾水好吧。',900),
+    D.ot('我跟你说，公司行政系统不难黑。谁要是知道我的员工编号和部门，就能用我的名义申请。',800),
+    D.ot('能接触到我员工编号的人很多——HR部门、我的直属领导、还有法务部。反正行政部就是筛子。',700),
+    D.se('你觉得谁最可疑？'),
+    D.ot('秦风！他那种闷声不响的最可怕了。我听说他在前公司就跟领导闹过矛盾，差点动手。',800),
+    D.ot('还有吴天——实习生最缺钱了，而且他实习期快到了，铤而走险也不是不可能。我爸生病要钱，他也可能缺钱。',900),
+    D.ot('周经理也怪怪的。她经常临时出差，而且不告诉任何人去哪。我有次帮她订机票，目的地跟她说的不一样。',900),
+],
+stage3: [
+    D.se('你说韩冰的老同学是做什么咨询的？'),
+    D.ot('她说就是普通的法务咨询。具体哪家公司没说。',600),
+    D.ot('不过我帮她整理名片的时候好像见过一个——星辰科技什么的。但她说只是开会认识的，交换个名片很正常。',800),
+    D.ot('说实话我给好几个人都整理过名片，大家的联系人网络都比想象中复杂。这不能说明什么。',700),
+    D.ot('对了，赵总的报销单有好几笔对不上——他经手的。也许是算错了，也许是别的。反正我懒得追问。',800),
+    D.ot('我就一个小行政，你们神仙打架别带上我。我连猎头找我我都没敢跳，还帮朋友问的，真的。',700),
+],
+},
+// ==================== 赵明远 — 财务总监 ====================
+zhaomingyuan: {
+stage1: [
+    D.t('7月4日 · 23:15'),
+    D.se('赵总，抱歉打扰。'),
+    D.ot('这么晚了还在工作？年轻人注意身体。我说句实话——你们这代人太拼了。什么事？',800),
+    D.se('想了解一下，公司最近的财务支出有没有异常？'),
+    D.ot('你问这个问题本身就很异常。（停顿）不过既然问了——',1200),
+    D.ot('法务部的外包咨询费这季度涨了不少。韩冰说是应对新合规要求，找了一家新的咨询公司叫瀚海咨询。',900),
+    D.ot('流程是合规的。合同、发票、验收单都有。虽然注册地在开曼让我有点在意——但韩冰做事向来滴水不漏。可能是我多想了。',1000),
+    D.ot('另外说一句，如果你是因为外面传我"大额进账"才来找我——那是卖房款。有合同有契税证明。',900),
+    D.ot('倒是周若的市场预算超支不少，说是为了应对星辰科技的竞争。但你换个角度想——如果竞争对手提前知道我们的方案呢？',1000),
+],
+stage2: [
+    D.se('赵总，你觉得谁最有可能泄密？'),
+    D.ot('我不是侦探。我是会计。',800),
+    D.ot('但如果你非要我说——周若她部门的预算我一向卡得紧。她有动机绕过我。',900),
+    D.ot('还有苏雨晴——她经手的报销单有好几笔对不上。金额不大，我懒得追究。但频率不低。',800),
+    D.ot('秦风工资在同级别里算高的，还抱怨。贪心不足的人最容易被人利用。',700),
+    D.se('你和星辰科技的人认识？'),
+    D.ot('他们的CFO是我大学室友。二十年的交情了。',800),
+    D.ot('上个月他还约我吃饭。我婉拒了——避嫌。但如果你去查，他可能也约过别人。周若也认识他。',900),
+    D.ot('在职场上，被老同学约饭太正常了。问题是——谁没拒绝？',800),
+],
+stage3: [
+    D.se('那笔法务咨询费——你再仔细想想有没有什么不对？'),
+    D.ot('...你比你看起来要执着。',1000),
+    D.ot('我跟你说实话——我后来私下查过这笔款项。收款方和星辰科技的一家关联公司有间接关系。',1000),
+    D.ot('但这不足以构成证据。跨境公司的股权结构本来就很复杂。韩冰一向严谨，应该是我多想了。',900),
+    D.ot('而且周若那边的情况更值得关注——她的市场预算消耗和市场实际产出完全不成比例。',800),
+    D.ot('你可以去问她。但别说是我说的。财务数据不能外泄，我已经跟你说太多了。',800),
+],
+},
+// ==================== 周若 — 市场部经理 ====================
+zhouruo: {
+stage1: [
+    D.t('7月4日 · 23:22'),
+    D.se('周经理，忙吗？'),
+    D.ot('刚改完方案。什么事？说快点。',400),
+    D.se('上次竞标的事——你觉得为什么会输？'),
+    D.ot('你问到我最不想提的事了。星辰科技的报价只比我们低了0.5%——精准到我觉得他们看过底价。',1000),
+    D.ot('你知道这意味着什么吗？意味着有人把我们的底价告诉了他们。',800),
+    D.ot('这事我怀疑是苏雨晴干的。她什么事都知道，太不正常了。一定有人在背后给她递消息。',900),
+    D.se('为什么怀疑她？'),
+    D.ot('发布会的场地是她安排的，所有参会人员名单她都有。竞标文件也经过她的手分发。信息集散中心就是最佳泄密点。',900),
+    D.ot('而且她到处八卦，表面上是话多，实际上可能是在收集信息。你细想想，她是不是对每个人都了如指掌？',800),
+],
+stage2: [
+    D.se('有人说你和星辰科技有私下联系。'),
+    D.ot('啊对，市场总监是我大学同学。上个月校友聚会聊了十分钟。就这些。',700),
+    D.ot('如果每个和竞争对手认识的人都是间谍，那整个行业可以停摆了。',700),
+    D.ot('要说联系——林薇最近换了新手机新手表，钱哪来的？技术部的人最方便下手。',800),
+    D.ot('陈浩也别想撇清。安保漏洞就是他的责任，推给别人算什么。如果一个系统能被入侵，第一个该问责的就是安保。',900),
+    D.ot('还有赵明远——他跟星辰科技的CFO是同学。别告诉我这是巧合。二十年的同学啊。',800),
+],
+stage3: [
+    D.se('你最近频繁出差去星辰科技的城市？'),
+    D.ot('客户在那边。三个客户，跟星辰科技在同一栋写字楼。',700),
+    D.ot('你可以查我的出差报销和会议记录。每一分钟都有据可查。',700),
+    D.ot('在所有嫌疑人里，我是最不可能的那个。市场部靠业绩说话。泄密损害公司就是损害我自己。',800),
+    D.ot('间谍要有动机——你想想，对谁最有利？不是对我，不是对赵明远，更不是对林薇和秦风那种技术宅。',800),
+    D.ot('你去想想苏雨晴——到处打探，什么事都知道，还经常帮人收发快递。她要想传什么东西出去，太方便了。',800),
+],
+},
+// ==================== 秦风 — 研发工程师 ====================
+qinfeng: {
+stage1: [
+    D.t('7月4日 · 23:31'),
+    D.se('秦风，打游戏呢？'),
+    D.ot('嗯...在打。什么事...(๑•́ ₃ •̀๑) 那个...你打字慢一点，我紧张。',800),
+    D.se('28号那天你在哪？'),
+    D.ot('在家啊...那天请假了...感冒发烧...',600),
+    D.ot('Steam可以作证！我从下午打到凌晨三点！我有成就时间戳的！',800),
+    D.ot('不过...中间远程连了公司的开发机...因为有个编译任务不能断...用了我自己找的VPN...',700),
+    D.se('VPN？你自己找的？'),
+    D.ot('嗯...网上找的。公司的VPN那天不好用，我就自己搜了一个。后来才知道公司不允许用非官方VPN...',800),
+    D.ot('（缩）你不会是来追责的吧...我只是想让编译跑完...',700),
+],
+stage2: [
+    D.se('秦风，你觉得公司内部谁最可疑？'),
+    D.ot('呃...（低头）我不太擅长说别人坏话...可以不说吗...',900),
+    D.ot('但是陈浩...安保日志那天有三小时空白，他说是系统升级。升级为什么恰好在那三小时？太巧了吧。',900),
+    D.ot('还有吴天...我教他的时候发现他学得特别快，而且总是问一些跟工作无关的系统架构问题。',800),
+    D.ot('比如他问过我"怎么从服务器批量导出数据不被日志记录"。我当时以为他只是好学...现在想想有点怪。',900),
+    D.ot('苏雨晴也很烦。她到处八卦，什么事都知道，还很得意地说"公司没有我不知道的事"。这话听着就吓人。',800),
+],
+stage3: [
+    D.se('你上个月在群里抱怨过工资低？'),
+    D.ot('...那是真心话。跟我同期的同学在别的公司都涨了两次了。我还被扣了工资。',800),
+    D.ot('但抱怨归抱怨，我没想过出卖公司。我连社交都社恐，哪有人脉去联系竞争对手。',700),
+    D.ot('林薇姐比我强多了，但我没觉得她会做什么。她只是比较拼。',600),
+    D.ot('吴天那家伙基础不错就是太冒失——上周把我测试数据库删了。也许他不只是冒失？',800),
+    D.ot('算了不说了...你们这些有行动力的人自己去查吧。我...我继续打游戏。（缩）',800),
+],
+},
+// ==================== 韩冰 — 法务顾问（真间谍）====================
+hanbing: {
+stage1: [
+    D.t('7月4日 · 23:38'),
+    D.se('韩冰姐，想请教你一件事。'),
+    D.ot('请讲。如果是法务相关问题，我先声明——非正式咨询不构成法律意见。',900),
+    D.se('你有没有注意到公司最近有什么异常？'),
+    D.ot('你是说哪方面的异常？技术？人事？还是合规？',700),
+    D.ot('如果是合规方面——我可以告诉你，公司最近的信息安全管理存在明显漏洞。我上个月已经提交了整改建议。',1000),
+    D.ot('但如果你问的是具体的人和事——秦风的远程登录时间异常值得关注。还有吴天入职时间与泄密时间线的高度重合。',1000),
+    D.ot('我只是建议。查不查在你。法务的职责是提醒风险，不是替你做判断。',700),
+],
+stage2: [
+    D.se('韩冰，我想跟你确认几件事。'),
+    D.ot('请说。我会在合规范围内回答。',700),
+    D.se('你觉得谁最有嫌疑？从你的专业角度分析。'),
+    D.ot('好。我来给你做一个法律视角的分析。',800),
+    D.ot('第一，秦风。他的IP和泄密来源一致，技术上也完全能做到。法律上讲，这是最直接的证据链。',1000),
+    D.ot('第二，周若。竞标失败那次，方案只有少数人看过。周若的部门跟星辰科技接触最多——这是动机和机会的结合。',1000),
+    D.ot('第三，吴天。入职时间和泄密开始时间吻合，这在司法实践中是重要的时间线证据。新人最容易被外部势力诱惑。',1000),
+    D.ot('第四，林薇。她有系统最高权限，如果她愿意，可以做到不留痕迹。技术能力加上权限——完美犯罪工具。',900),
+    D.ot('第五，苏雨晴。信息的集散中心往往是泄密的源头。她接触的人太多了，而且对每个人的信息都了如指掌——这不正常。',1000),
+    D.ot('以上是我的分析。陈浩和赵明远我没有直接证据，但不代表他们就可以排除。',800),
+    D.ot('建议你把调查重点放在那些行为模式有变化的人身上。人不会无缘无故改变习惯。',900),
+],
+stage3: [
+    D.se('韩冰，有人提到瀚海咨询这个名字。'),
+    D.ot('...谁跟你说的。赵明远？',1200),
+    D.se('不重要。回答我。'),
+    D.ot('瀚海咨询是一家合规咨询公司。我们与之签约经过了正常流程。合同是我审核的，没有问题。',1000),
+    D.se('为什么有人说这笔钱有问题？'),
+    D.ot('财务上的质疑是赵明远的职责所在，我尊重他的怀疑。但流程合规就是流程合规。',800),
+    D.ot('如果你在财务上找突破口——我建议你查一下周若的市场预算。那个数字和实际产出的差距比我的咨询费大得多。',1000),
+    D.ot('还有苏雨晴经手的报销。赵明远自己跟我提过，好几笔对不上，他只是没追究。你可以去问他。',900),
+    D.ot('你的问题越来越有攻击性了。如果你有确凿证据，请直接向CEO汇报。否则——我拒绝继续回答这种带有偏见的提问。',1200),
+],
+confront: [
+    D.se('韩冰，你27号深夜调取门禁记录，28号系统升级日志空白——你提前知道这个升级时间？'),
+    D.ot('调取门禁记录是安保主管的权限，我作为法务没有这个权限。你是不是被人利用了？',1400),
+    D.ot('有人在引导你把调查方向指向我。仔细想想谁给你的这些"证据"。',1200),
+    D.se('瀚海咨询的收款方和星辰科技的关联公司有关系。不是巧合。'),
+    D.ot('......这只能说明关联。跨境公司的股权结构本来就很复杂——你是从赵明远那听说的吧。',1600),
+    D.ot('他查账很仔细，但关联不等于有问题。如果你觉得有疑点，可以走正式举报流程。',1200),
+    D.se('6月倒数第二个周六，凌晨两点。吴天看到你办公室灯亮着。你在等什么？'),
+    D.ot('......',3000),
+    D.ot('那天...我在等一个确认电话。星辰科技那边的。合同签了，我以为一切都结束了。',2200),
+    D.ot('不要说了。',1800),
+    D.s('[韩冰不再回复。]','warn'),
+D.ac('hanbing_confront_done'),
+],
+},
+// ==================== 吴天 — 实习生 ====================
+wutian: {
+stage1: [
+    D.t('7月4日 · 23:45'),
+    D.se('吴天，睡了没？'),
+    D.ot('前辈！还没呢！在看秦哥推荐的教程视频！太深奥了看不太懂哈哈（刚才差点把咖啡洒键盘上）。',700),
+    D.se('你入职刚好一个月了吧？适应吗？'),
+    D.ot('刚满一个月！6月1号入职的！超适应的！大家都对我很好！',600),
+    D.ot('尤其是秦哥，特别耐心。虽然他不太爱说话但是技术真的好牛。不过他教的有些东西...跟工作好像没什么关系。',800),
+    D.ot('还有苏姐，教了我很多公司常识！比如"不要让韩冰姐抓到合同格式问题"、"财务赵总不喜欢电子发票截图"之类的。',900),
+    D.se('28号那天你在做什么？'),
+    D.ot('周五嘛，我在公司加班！整理测试用例文档。秦哥白天请假了，他的任务我帮忙盯着。',800),
+    D.ot('那天公司人好少。薇姐最近特别焦虑，有一次我看到她在删聊天记录——也许是隐私吧，我没好意思问。',800),
+],
+stage2: [
+    D.se('吴天，你有没有注意到什么不寻常的事？'),
+    D.ot('唔...我说了你不要觉得我多嘴。',700),
+    D.ot('上个月有个周六，我加班到凌晨两点——看到韩冰姐的办公室灯亮着。',800),
+    D.ot('我本来想打个招呼，但她在看一台银色的笔记本电脑。不是公司的ThinkPad。不过也可能是我看错了——太困了。',900),
+    D.ot('不过说真的，韩姐一直很敬业，也可能她真的在加班。她是我们公司最认真的人之一。',800),
+    D.ot('相比起来——薇姐最近特别焦虑，还删聊天记录，这不正常。还有周经理让我帮她做过一份竞品分析，里面有些数据我根本查不到来源。',1000),
+    D.ot('雨晴姐什么都知道，消息来源肯定不干净。她知道好多连HR都不知道的事。',700),
+],
+stage3: [
+    D.se('你确定那天是周六凌晨？'),
+    D.ot('确定。因为我女朋友周六要来，我周五晚上通宵加班就是为了周末空出来。',900),
+    D.ot('所以我记得特别清楚。六月的倒数第二个周六。凌晨两点多。',800),
+    D.ot('后来我旁敲侧击问韩姐周末是不是也加班，她说"没有啊，周末在家休息"。但也可能只是她忘了——谁记得清自己哪天加了班呢。',900),
+    D.ot('我没敢追问。毕竟她是法务部的前辈，我只是个实习生。',700),
+    D.ot('其实我家里经济状况不太好，爸爸生病需要钱。我很需要这份工作。但这不代表我会做傻事。',800),
+    D.ot('倒是周经理那个竞品分析的事我一直很在意——那些数据从哪来的？',700),
+],
+},};
+
+// ============================================================
+// 游戏状态
+// ============================================================
+const GameState = {
+    currentContact:'raven', currentStage:'raven_opening',
+    characterStages:{}, interactedChars:new Set(), clues:[],
+    hasUnread:{},
+    allCharsReviewed:false, ravenMidTriggered:false, ravenFinalTriggered:false,
+    gamePhase:'opening', spyRevealed:false, sequencePlaying:false,
+    accuseAttempts:0, maxAccuseAttempts:2
+};
+Object.keys(CHARACTERS).forEach(id=>{if(id!=='raven'){GameState.characterStages[id]='stage1';GameState.hasUnread[id]=false;}});
+
+// ============================================================
+// UI
+// ============================================================
+function sb(){const c=document.getElementById('chatArea');setTimeout(()=>{c.scrollTop=c.scrollHeight;},30);}
+function asm(t,cls){const c=document.getElementById('chatArea');const d=document.createElement('div');d.className='sys-msg'+(cls?' '+cls:'');d.textContent=t;c.appendChild(d);sb();}
+function atd(t){const c=document.getElementById('chatArea');const d=document.createElement('div');d.className='time-divider';d.textContent=t;c.appendChild(d);sb();}
+function am(side,t,sn){const c=document.getElementById('chatArea');const r=document.createElement('div');r.className='msg-row '+side;if(side==='other'||side==='raven'){const s=document.createElement('div');s.className='msg-sender';s.textContent=sn||CHARACTERS[GameState.currentContact]?.name||'';r.appendChild(s);}const b=document.createElement('div');b.className='msg-bubble';b.textContent=t;r.appendChild(b);c.appendChild(r);sb();}
+async function st(dur){const c=document.getElementById('chatArea');const i=document.createElement('div');i.className='typing-indicator';i.innerHTML='<span></span><span></span><span></span>';c.appendChild(i);sb();await sleep(dur||800);i.remove();}
+function sc(choices){const c=document.getElementById('chatArea');const con=document.createElement('div');con.className='choices-area';con.id='choicesContainer';choices.forEach((ch,i)=>{const b=document.createElement('button');b.className='choice-btn';b.textContent=(i+1)+'. '+ch.label;b.onclick=()=>{con.querySelectorAll('button').forEach(btn=>btn.disabled=true);con.remove();if(ch.next)playRavenSeq(ch.next);if(ch.action)ch.action();};con.appendChild(b);});c.appendChild(con);sb();}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ============================================================
+// 播放
+// ============================================================
+async function playSeq(seq){if(GameState.sequencePlaying)return;GameState.sequencePlaying=true;for(const m of seq){await sleep(m.delay||400);if(m.type==='time')atd(m.text);else if(m.type==='sys')asm(m.text,m.color);else if(m.type==='raven'){await st(Math.min(m.delay,700));am('raven',m.text,'渡鸦');}else if(m.type==='other'){await st(Math.min(m.delay,700));am('other',m.text,CHARACTERS[GameState.currentContact]?.name);}else if(m.type==='self')am('self',m.text);else if(m.type==='choice'){sc([m]);GameState.sequencePlaying=false;return;}else if(m.type==='action')handleAction(m.value);}GameState.sequencePlaying=false;checkRavenTrigger();}
+async function playRavenSeq(name){GameState.currentContact='raven';GameState.currentStage=name;updateHeader();updateTabs();await playSeq(ALL_SCRIPTS[name]||[]);}
+async function playStageSeq(seq){GameState.sequencePlaying=true;for(const m of seq){await sleep(m.delay||400);if(m.type==='time')atd(m.text);else if(m.type==='sys')asm(m.text,m.color);else if(m.type==='other'){await st(Math.min(m.delay,700));am('other',m.text,CHARACTERS[GameState.currentContact]?.name);}else if(m.type==='self')am('self',m.text);else if(m.type==='choice'){sc([m]);GameState.sequencePlaying=false;return;}else if(m.type==='action')handleAction(m.value);}GameState.sequencePlaying=false;checkRavenTrigger();}
+function handleAction(v){if(v==='unlock_all'){Object.keys(CHARACTERS).forEach(id=>{if(id!=='raven'){CHARACTERS[id].locked=false;GameState.hasUnread[id]=true;}});GameState.gamePhase='investigation';updateTabs();updateHeader();switchContact('linwei');}else if(v==='trigger_accuse'){GameState.gamePhase='accusation';showAccuseOverlay();}else if(v==='hanbing_confront_done'){GameState.hasUnread['raven']=true;GameState.currentStage='raven_final_p2';GameState['_h_raven_final_p2']=false;updateTabs();}}
+
+// ============================================================
+// 联系人切换
+// ============================================================
+function switchContact(charId){if(GameState.sequencePlaying)return;const char=CHARACTERS[charId];if(!char)return;if(char.locked){asm('⚠ 该联系人尚未解锁','warn');return;}GameState.currentContact=charId;if(charId!=='raven'){GameState.hasUnread[charId]=false;}updateHeader();updateTabs();document.getElementById('chatArea').innerHTML='';if(charId==='raven'){const stage=GameState.currentStage;if(stage==='raven_opening'&&!GameState._h_ro){GameState._h_ro=true;playSeq(ALL_SCRIPTS.raven_opening);}else if(ALL_SCRIPTS[stage]&&!GameState['_h_'+stage]){GameState['_h_'+stage]=true;playSeq(ALL_SCRIPTS[stage]);}else{asm('— 加密频道待命中 —','accent');asm('等待指令...');}return;}const scripts=ALL_SCRIPTS[charId];if(!scripts)return;const cs=GameState.characterStages[charId]||'stage1';const sk='_v_'+charId+'_'+cs;if(!GameState[sk]){GameState[sk]=true;const seq=scripts[cs];if(seq){playStageSeq(seq);GameState.interactedChars.add(charId);addClue(charId,cs);}}else{const ns=nextStage(charId,cs);if(ns&&scripts[ns]){asm('— 之前的对话 —','accent');const seq=scripts[cs];if(seq){seq.filter(m=>m.type==='other').forEach(m=>am('other',m.text,char.name));seq.filter(m=>m.type==='self').forEach(m=>am('self',m.text));}asm('暂时没有新消息','accent');}else{asm('— 之前的对话 —','accent');const seq=scripts[cs];if(seq){seq.filter(m=>m.type==='other').forEach(m=>am('other',m.text,char.name));seq.filter(m=>m.type==='self').forEach(m=>am('self',m.text));}asm('暂无更多线索','accent');}}}
+function nextStage(charId,stage){if(stage==='stage1')return'stage2';if(stage==='stage2'){if(charId==='hanbing')return'stage3';return'stage3';}if(stage==='stage3'&&charId==='hanbing')return'confront';return null;}
+function addClue(charId,stage){const char=CHARACTERS[charId];const ex=GameState.clues.find(c=>c.charId===charId&&c.stage===stage);if(ex)return;GameState.clues.push({charId,stage,name:char.name,time:new Date().toLocaleTimeString()});updateCluePanel();scheduleNextStage(charId,stage);checkAllReviewed();}
+function updateCluePanel(){}
+
+function scheduleNextStage(charId,cs){const next=nextStage(charId,cs);if(!next)return;const nk='_n_'+charId+'_'+next;if(GameState[nk])return;GameState[nk]=true;const hints={linwei:{stage2:'对了，我刚又翻了下日志，有点奇怪的东西。你有空看看。',stage3:'等等...我刚才重新跑了一遍那个时间段的日志——你绝对想看看。'},chenhao:{stage2:'还有一件事。刚才不方便说。',stage3:'上次说的不够清楚。有时间过来一趟。'},suyuqing:{stage2:'啊对了对了！我突然想起来一个细节！超重要的！',stage3:'完了完了，我刚又打听到一个大瓜...这次真的劲爆！'},zhaomingyuan:{stage2:'刚才我说的——你再看看，有些话不方便明说。',stage3:'我又翻了一下账簿。有个数字不太对。'},zhouruo:{stage2:'等下，我刚才想到一个人。',stage3:'我刚查了下访客记录——你想不到谁来过。'},qinfeng:{stage2:'...那个，我其实还有话没说完。',stage3:'我...我又想起一件事。可能跟你要查的有关。'},hanbing:{stage2:'补充一点。从合规角度，有个细节你需要知道。',stage3:'又发现一个问题。关于咨询合同的条款——有点意思。'},wutian:{stage2:'前辈！我刚想起来一件事！',stage3:'我又想起来一件事...这次真的！关于周六晚上的！'}};const h=hints[charId]&&hints[charId][next]?hints[charId][next]:'有新的消息';setTimeout(()=>{GameState.characterStages[charId]=next;GameState.hasUnread[charId]=true;if(!GameState.sequencePlaying){asm(CHARACTERS[charId].name+'：'+h,'accent');}updateTabs();checkAllReviewed();},3000+Math.random()*2000);}
+function checkAllReviewed(){if(GameState.allCharsReviewed)return;const ids=Object.keys(CHARACTERS).filter(i=>i!=='raven');const allReviewed=ids.every(id=>{const s=GameState.characterStages[id];if(id==='hanbing')return s==='confront'||s==='done';return s==='stage3'||s==='stage2'||s==='confront'||s==='done';});if(allReviewed){GameState.allCharsReviewed=true;if(!GameState.ravenMidTriggered){GameState.ravenMidTriggered=true;GameState.hasUnread['raven']=true;GameState.currentStage='raven_mid';updateTabs();if(!GameState.sequencePlaying){asm('渡鸦频道有新消息','accent');}}}}
+function autoMid(){const ids=Object.keys(CHARACTERS).filter(i=>i!=='raven');const allDeep=ids.every(id=>{const s=GameState.characterStages[id];return s==='stage3'||s==='confront'||s==='done';});if(allDeep&&!GameState.ravenFinalTriggered){GameState.ravenFinalTriggered=true;GameState.hasUnread['raven']=true;GameState.currentStage='raven_final';updateTabs();if(!GameState.sequencePlaying){asm('渡鸦频道信号增强...','accent');}}}
+function checkRavenTrigger(){if(GameState.allCharsReviewed&&!GameState.ravenFinalTriggered){setTimeout(()=>{if(!GameState.sequencePlaying)autoMid();},1500);}}
+
+// ============================================================
+// 指认
+// ============================================================
+function showAccuseOverlay(){const o=document.getElementById('accuseOverlay');const g=document.getElementById('accuseGrid');g.innerHTML='';Object.values(CHARACTERS).filter(c=>c.id!=='raven').forEach(char=>{const card=document.createElement('div');card.className='accuse-card';card.innerHTML=`<div class="card-name">${char.avatar} ${char.name}</div><div class="card-role">${char.role}</div>`;card.onclick=()=>makeAccuse(char.id);g.appendChild(card);});o.classList.add('show');}
+function cancelAccuse(){document.getElementById('accuseOverlay').classList.remove('show');}
+function makeAccuse(charId){document.getElementById('accuseOverlay').classList.remove('show');GameState.gamePhase='ending';GameState.accuseAttempts++;const ca=document.getElementById('chatArea');ca.innerHTML='';const char=CHARACTERS[charId];asm('⚠ 你指认了：'+char.name,'warn');am('self','我确定。间谍就是'+char.name+'。');setTimeout(async()=>{if(charId==='hanbing'){await playCorrect();}else{await playWrong(charId);}},1000);}
+
+async function playCorrect(){GameState.spyRevealed=true;GameState.currentContact='raven';GameState.currentStage='raven_accuse_correct';updateHeader();updateTabs();GameState.characterStages['hanbing']='confront';GameState.hasUnread['hanbing']=true;updateTabs();document.getElementById('chatArea').innerHTML='';playSeq(ALL_SCRIPTS.raven_accuse_correct);}
+
+async function playWrong(charId){GameState.currentContact='raven';updateHeader();updateTabs();await st(1000);
+if(GameState.accuseAttempts>=GameState.maxAccuseAttempts){
+am('raven','这是你第二次指认错误。','渡鸦');await sleep(800);await st(900);
+am('raven','算了。我直接告诉你吧。间谍是韩冰。','渡鸦');await sleep(1000);await st(1000);
+am('raven','仔细回想她跟所有人的对话——她总在把嫌疑引向别人。她从不出错。她掌握所有关键信息却永远让自己看起来只是"按流程办事"。','渡鸦');await sleep(1200);
+asm('提示：', 'accent');asm('韩冰的VPN借给秦风不是好心——是嫁祸。','accent');asm('法务咨询费流向了星辰科技的关联账户。','accent');asm('她说"周末在休息"，但有人周六凌晨看到她在办公室。','accent');asm('她调取了门禁记录，却对安保部门只字不提。','accent');
+GameState.characterStages['hanbing']='confront';GameState.hasUnread['hanbing']=true;GameState.ravenFinalTriggered=false;GameState['_h_raven_final']=false;GameState.gamePhase='investigation';updateTabs();sc([{label:'查看韩冰的最终对话',action:()=>switchContact('hanbing')}]);
+}else{
+const wrongMsgs={linwei:'她有root权限，但泄密用的是VPN——她不需要VPN就能访问。你再想想。',chenhao:'安保漏洞是事实，但他如果真想做，不会留下那么明显的日志空白。',suyuqing:'她确实知道太多。但信息多不等于信息源有问题。她只是爱打听。',zhaomingyuan:'卖房款有契税证明。真正可疑的钱不走明账。',zhouruo:'她跟星辰科技接触最多——但正因如此她才最显眼。间谍不会这么招摇。',qinfeng:'他的IP确实吻合。但太吻合了。像是故意留下的痕迹。',wutian:'入职时间吻合——但他连测试数据库都会误删。间谍不会这么冒失。'};const msg=wrongMsgs[charId]||'别急着下结论。回到对话里去找——矛盾在哪里？';const msgs=[[msg,1800],['看清楚每个人的自相矛盾之处。然后再告诉我。',1400]];
+for(const m of msgs){await st(m[1]);am('raven',m[0],'渡鸦');}
+GameState.gamePhase='investigation';GameState.ravenFinalTriggered=false;GameState['_h_raven_final']=false;
+sc([{label:'继续调查',action:()=>{}}]);
+}
+}
+
+// ============================================================
+// UI更新
+// ============================================================
+function updateHeader(){const char=CHARACTERS[GameState.currentContact];if(!char)return;document.getElementById('contactName').textContent=char.name;document.getElementById('contactStatus').textContent=char.desc||'在线';}
+function updateTabs(){const tabs=document.getElementById('contactTabs');tabs.innerHTML='';let isFirstSuspect=true;Object.values(CHARACTERS).forEach(char=>{if(char.id!=='raven'&&isFirstSuspect){const d=document.createElement('div');d.className='sidebar-divider';tabs.appendChild(d);isFirstSuspect=false;}const t=document.createElement('div');t.className='sidebar-tab';t.id='tab-'+char.id;if(char.id==='raven')t.classList.add('raven-item');if(char.locked)t.classList.add('locked');if(char.id===GameState.currentContact)t.classList.add('active');const showBadge=char.id!=='raven'&&GameState.hasUnread[char.id];const nameDisplay=char.id==='raven'?'渡鸦':char.name;t.innerHTML=`<div class="sb-avatar">${char.avatar}<span class="sb-badge" id="badge-${char.id}" style="${showBadge?'display:block':''}"></span></div><div class="sb-name">${nameDisplay}</div>`;t.onclick=()=>{if(!char.locked)switchContact(char.id);else asm('⚠ 该联系人尚未解锁','warn');};tabs.appendChild(t);});}
+
+function showContactList(){if(GameState.sequencePlaying)return;const ca=document.getElementById('chatArea');ca.innerHTML='';document.getElementById('contactName').textContent='联系人';document.getElementById('contactStatus').textContent='选择一个对话';document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.remove('active'));appendCard(CHARACTERS['raven']);asm('—— 嫌疑人 ——');Object.values(CHARACTERS).filter(c=>c.id!=='raven').forEach(c=>appendCard(c));}
+function appendCard(char){const ca=document.getElementById('chatArea');const stage=GameState.characterStages[char.id];const reviewed=stage==='stage2'||stage==='stage3'||stage==='confront'||stage==='done';const row=document.createElement('div');row.style.cssText=`display:flex;align-items:center;gap:10px;padding:11px 10px;margin:2px 0;cursor:${char.locked?'not-allowed':'pointer'};border-radius:4px;transition:background 0.2s;opacity:${char.locked?'0.4':'1'};`;if(!char.locked){row.onmouseenter=()=>row.style.background='#1a1a1a';row.onmouseleave=()=>row.style.background='transparent';row.onclick=()=>switchContact(char.id);}row.innerHTML=`<div style="width:38px;height:38px;border-radius:50%;background:#1a1a1a;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:16px;">${char.avatar}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="color:var(--text);font-size:14px">${char.name}</span>${reviewed?'<span style="color:var(--accent);font-size:10px">✓</span>':''}</div><div style="color:var(--text-light);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${char.role} · ${char.desc}</div></div>${char.locked?'<div style="font-size:11px;color:#555">🔒</div>':''}`;ca.appendChild(row);}
+
+function sendMessage(){const input=document.getElementById('msgInput');const text=input.value.trim();if(!text||GameState.sequencePlaying||GameState.spyRevealed)return;const char=CHARACTERS[GameState.currentContact];if(!char||!char.online){asm('对方当前离线');input.value='';return;}am('self',text);input.value='';setTimeout(()=>{if(GameState.currentContact==='raven'){am('raven','...继续调查。注意对话里自相矛盾的地方。','渡鸦');}else{const stage=GameState.characterStages[GameState.currentContact];if(stage==='stage1')am('other','这个嘛...我觉得你可能需要多问几个人。每个人看到的碎片都不一样。',CHARACTERS[GameState.currentContact].name);else if(stage==='stage2')am('other','我能说的已经说完了。剩下的需要你自己去比对。',CHARACTERS[GameState.currentContact].name);else am('other','（对方似乎没有更多信息了）',CHARACTERS[GameState.currentContact].name);}},1200);}
+
+function updateClock(){const n=new Date();document.getElementById('clockDisplay').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');const lvl=Math.max(5,15-Math.floor((Date.now()/60000)%15));document.getElementById('batteryDisplay').textContent='⚡ '+lvl+'%';}
+function init(){GameState.currentContact='raven';GameState.currentStage='raven_opening';updateHeader();updateTabs();updateClock();setInterval(updateClock,30000);document.getElementById('chatArea').innerHTML='';playSeq(ALL_SCRIPTS.raven_opening);}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
