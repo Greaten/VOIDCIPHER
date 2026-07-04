@@ -27,6 +27,7 @@
     font-family: var(--font-mono);
     min-height: 100vh;
     overflow-x: hidden;
+    font-size: 17px;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
   }
@@ -59,7 +60,7 @@
   }
   .header-left { display: flex; flex-direction: column; gap: 0.25rem; }
   .brand {
-    font-size: 2.2rem; letter-spacing: 0.3em; font-weight: 700; color: var(--accent);
+    font-size: 2.5rem; letter-spacing: 0.3em; font-weight: 700; color: var(--accent);
     text-shadow: 0 0 40px rgba(200,168,78,0.3), 0 0 8px rgba(200,168,78,0.2);
     line-height: 1.2;
   }
@@ -67,8 +68,8 @@
   @keyframes glitch-shift {
     0%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,1px)}80%{transform:translate(1px,-2px)}100%{transform:translate(0)}
   }
-  .tagline { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.25em; }
-  .status-line { font-size: 0.65rem; color: var(--text-secondary); letter-spacing: 0.15em; opacity: 0.7; }
+  .tagline { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.25em; }
+  .status-line { font-size: 0.72rem; color: var(--text-secondary); letter-spacing: 0.15em; opacity: 0.7; }
   .status-dot {
     display: inline-block; width: 6px; height: 6px; background: var(--accent);
     border-radius: 50%; margin-right: 0.35rem; animation: blink 2s step-end infinite;
@@ -79,7 +80,7 @@
   /* Admin btn */
   .btn-admin {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.5rem 1.2rem; font-family: var(--font-mono); font-size: 0.78rem;
+    padding: 0.5rem 1.2rem; font-family: var(--font-mono); font-size: 0.85rem;
     letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
     border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
     text-decoration: none;
@@ -112,14 +113,14 @@
     font-size: 2rem; color: var(--accent); line-height: 1;
     text-shadow: 0 0 12px rgba(200,168,78,0.3);
   }
-  .game-card-title { font-size: 1rem; font-weight: 600; letter-spacing: 0.08em; color: var(--text-primary); }
-  .game-card-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.6; }
+  .game-card-title { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.08em; color: var(--text-primary); }
+  .game-card-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
   .game-card-meta {
-    display: flex; gap: 1rem; font-size: 0.7rem; color: var(--text-muted);
+    display: flex; gap: 1rem; font-size: 0.78rem; color: var(--text-muted);
     letter-spacing: 0.1em; text-transform: uppercase;
   }
   .game-card-arrow {
-    align-self: flex-end; color: var(--accent-dim); font-size: 0.8rem;
+    align-self: flex-end; color: var(--accent-dim); font-size: 0.85rem;
     transition: transform 0.2s, color 0.2s;
   }
   .game-card:hover .game-card-arrow { transform: translateX(4px); color: var(--accent); }
@@ -128,7 +129,7 @@
   .game-grid.empty::after {
     content: '// 游戏库暂无内容 · 按 Ctrl+Shift+A 进入管理后台添加游戏';
     grid-column: 1 / -1; display: block; padding: 4rem 1.5rem; text-align: center;
-    color: var(--text-muted); font-size: 0.82rem; letter-spacing: 0.12em; background: var(--bg-primary);
+    color: var(--text-muted); font-size: 0.88rem; letter-spacing: 0.12em; background: var(--bg-primary);
   }
 
   /* Footer */
@@ -136,13 +137,13 @@
     margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
     display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
   }
-  .footer-left, .footer-right { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.1em; }
+  .footer-left, .footer-right { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.1em; }
   .footer-right span { margin-left: 1.5rem; }
 
   /* Responsive */
   @media (max-width: 640px) {
     .shell { padding: 1rem 1rem 4rem; }
-    .brand { font-size: 1.6rem; letter-spacing: 0.2em; }
+    .brand { font-size: 1.8rem; letter-spacing: 0.2em; }
     .game-grid { grid-template-columns: 1fr; }
     .header { flex-direction: column; align-items: flex-start; }
   }
