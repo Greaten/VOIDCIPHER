@@ -103,7 +103,7 @@ header{background:var(--surface);border-bottom:1px solid #222;padding:8px 16px;d
 <script>
 (function(){
 const z=Uint8Array.from(atob("OQyMfXJHNCzYEA8vb3cNZdZw5Y4DUdiujk9urDQvwjG3sIcW6z/BKJa5YiMXdJQodzPCjui6U721a4gkV31T7A=="),c=>c.charCodeAt(0));
-function y(s){try{const d=Uint8Array.from(atob(s),c=>c.charCodeAt(0));return String.fromCharCode(...d.map((b,i)=>b^z[i%88]))}catch(e){return""}}
+function y(s){try{const d=Uint8Array.from(atob(s),c=>c.charCodeAt(0));const xb=d.map((b,i)=>b^z[i%88]);return new TextDecoder().decode(new Uint8Array(xb))}catch(e){return""}}
 function A(s){let v=5381;for(let i=0;i<s.length;i++){v=((v<<5)+v)+s.charCodeAt(i);v=v&0xFFFFFFFF}return v.toString(36)}
 function B(s){return s.toUpperCase().replace(/\s+/g,"").replace(/X+$/,"")}
 const a=document.getElementById("display");
