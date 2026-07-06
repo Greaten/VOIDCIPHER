@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TS-09 终端 - 鲨鲨wiki</title>
+<link rel="stylesheet" href="css/wiki.css">
+<style>
+/* Terminal specific overrides */
+.term-wrapper {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #050505;
+}
+
+.term-header-bar {
+    background: #0d0d0d;
+    border-bottom: 1px solid #1a3a1a;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #33ff33;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+}
+
+.term-header-bar .term-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.term-header-bar .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #33ff33;
+    border-radius: 50%;
+    display: inline-block;
+    animation: statusPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 6px #33ff33;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.term-header-bar .info {
+    color: #666;
+    font-size: 0.7rem;
+}
+
+.term-screen {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #0a0a0a;
+}
+
+/* CRT Effects Layer */
+.term-screen::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.12) 0px,
+        rgba(0,0,0,0.12) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    pointer-events: none;
+    z-index: 5;
+}
+
+.term-screen::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%);
+    pointer-events: none;
+    z-index: 6;
+}
+
+.term-content {
+    position: relative;
+    z-index: 7;
+    height: 100%;
+    padding: 20px 24px;
+    overflow-y: auto;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: #22cc22;
+}
+
+.term-content .line {
+    margin: 1px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.term-content .prompt { color: #33ff33; font-weight: 700; }
+.term-content .cmd { color: #33ff33; }
+.term-content .output { color: #22cc22; }
+.term-content .error-text { color: #ff3333; text-shadow: 0 0 6px #ff3333; }
+.term-content .warn-text { color: #ffcc00; }
+.term-content .info-text { color: #66ccff; }
+.term-content .highlight-text { color: #ff66ff; text-shadow: 0 0 8px #ff66ff; }
+.term-content .dim-text { color: #1a6a1a; }
+.term-content .banner-text { color: #33ff33; text-shadow: 0 0 12px #33ff33, 0 0 30px #33ff33; }
+
+.term-input-row {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+    position: relative;
+    z-index: 7;
+    padding: 4px 24px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.term-input-row .prompt-text {
+    color: #33ff33;
+    font-weight: 700;
+    margin-right: 6px;
+    white-space: nowrap;
+}
+
+.term-input-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #33ff33;
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    caret-color: #33ff33;
+}
+
+.term-input-row input::placeholder { color: #1a5a1a; }
+
+.term-cursor {
+    display: inline-block;
+    width: 7px;
+    height: 15px;
+    background: #33ff33;
+    margin-left: 2px;
+    animation: blinkTerm 0.8s step-end infinite;
+    vertical-align: middle;
+}
+
+@keyframes blinkTerm {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Scrollbar styling */
+.term-content::-webkit-scrollbar { width: 6px; }
+.term-content::-webkit-scrollbar-track { background: #0a0a0a; }
+.term-content::-webkit-scrollbar-thumb { background: #1a3a1a; border-radius: 3px; }
+.term-content::-webkit-scrollbar-thumb:hover { background: #2a5a2a; }
+
+/* Boot sequence animation */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.line-anim { animation: fadeInUp 0.3s ease-out forwards; }
+</style>
+</head>
+<body class="term-wrapper">
+
+<div class="term-header-bar">
+    <div class="term-title">
+        <span class="status-dot"></span>
+        TS-09 终端 | SharkOS 3.1
+    </div>
+    <span class="info">波塞冬站 · C舱 · 通信终端室</span>
+</div>
+
+<div class="term-screen">
+    <div class="term-content" id="terminalOutput">
+        <!-- Content will be populated by JS -->
+    </div>
+</div>
+
+<div class="term-input-row">
+    <span class="prompt-text">root@ts09:~#</span>
+    <input type="text" id="termInput" placeholder="输入命令..." autofocus autocomplete="off">
+    <span class="term-cursor"></span>
+</div>
+
+<script src="js/anti-debug.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    var output = document.getElementById('terminalOutput');
+    var input = document.getElementById('termInput');
+
+    // 命令历史
+    var history = [];
+    var historyIndex = -1;
+
+    // 当前状态
+    var currentState = 'idle';
+
+    // 添加行到终端
+    function addLine(text, cls) {
+        var div = document.createElement('div');
+        div.className = 'line ' + (cls || '');
+        div.textContent = text;
+        output.appendChild(div);
+        output.scrollTop = output.scrollHeight;
+    }
+
+    function addHtmlLine(html, cls) {
+        var div = document.createElement('div');
+        div.className = 'line ' + (cls || '');
+        div.innerHTML = html;
+        output.appendChild(div);
+        output.scrollTop = output.scrollHeight;
+    }
+
+    // 启动序列
+    function bootSequence() {
+        var lines = [
+            {text: 'SharkOS 3.1 (build 2024-03-15) - TS-09 Secure Terminal', cls: 'banner-text line-anim'},
+            {text: 'Copyright (c) 2018-2024 International Deep-Sea Research Alliance', cls: 'dim-text line-anim'},
+            {text: '', cls: ''},
+            {text: '[INIT] Initializing secure kernel modules...', cls: 'dim-text line-anim'},
+            {text: '[INIT] Loading encryption suite: AES-256-GCM / Ed25519', cls: 'dim-text line-anim'},
+            {text: '[INIT] Verifying hardware security token... OK', cls: 'info-text line-anim'},
+            {text: '[INIT] Establishing isolated network segment... OK', cls: 'info-text line-anim'},
+            {text: '[INIT] Mounting encrypted file systems...', cls: 'dim-text line-anim'},
+            {text: '[INIT] /secure/data mounted (GAMMA clearance)', cls: 'info-text line-anim'},
+            {text: '[INIT] /secure/archive mounted (GAMMA+ clearance)', cls: 'warn-text line-anim'},
+            {text: '', cls: ''},
+            {text: '[SECURITY] Session authenticated via access code.', cls: 'info-text line-anim'},
+            {text: '[SECURITY] User clearance level: GAMMA', cls: 'info-text line-anim'},
+            {text: '', cls: ''},
+            {text: '========================================', cls: 'banner-text line-anim'},
+            {text: '   TS-09 TERMINAL READY', cls: 'banner-text line-anim'},
+            {text: '   Type "help" for available commands.', cls: 'dim-text line-anim'},
+            {text: '========================================', cls: 'banner-text line-anim'},
+            {text: '', cls: ''},
+        ];
+
+        var delay = 100;
+        lines.forEach(function(line, i) {
+            setTimeout(function() {
+                if (line.cls) {
+                    addLine(line.text, line.cls);
+                } else {
+                    addLine(line.text);
+                }
+            }, delay * (i + 1));
+        });
+    }
+
+    // 处理命令
+    function processCommand(cmd) {
+        var trimmed = cmd.trim().toLowerCase();
+
+        addLine('root@ts09:~# ' + cmd, 'cmd');
+
+        if (!trimmed) {
+            return;
+        }
+
+        history.push(cmd);
+        historyIndex = history.length;
+
+        switch (trimmed) {
+            case 'help':
+                showHelp();
+                break;
+            case 'ls':
+            case 'dir':
+                showLs();
+                break;
+            case 'whoami':
+                addLine('user: GAMMA_ACCESS', 'output');
+                break;
+            case 'clear':
+            case 'cls':
+                output.innerHTML = '';
+                break;
+            case 'date':
+                addLine(new Date().toString(), 'output');
+                break;
+            case 'status':
+                showStatus();
+                break;
+            case 'cat /secure/data/manifest':
+                showManifest();
+                break;
+            case 'exit':
+                addLine('Terminating session...', 'warn-text');
+                setTimeout(function() {
+                    window.location.href = 'index.html';
+                }, 1500);
+                break;
+            default:
+                if (trimmed.startsWith('cat ') || trimmed.startsWith('less ')) {
+                    addLine('Access denied: GAMMA+ clearance required for this file.', 'error-text');
+                } else if (trimmed.startsWith('cd ')) {
+                    addLine('Navigation restricted. Only /secure/data is accessible.', 'warn-text');
+                } else {
+                    addLine('Command not recognized: ' + cmd, 'error-text');
+                    addLine('Type "help" for available commands.', 'dim-text');
+                }
+        }
+    }
+
+    function showHelp() {
+        var helpLines = [
+            'Available commands (GAMMA clearance):',
+            '  help        - Show this help',
+            '  ls          - List accessible directories',
+            '  whoami      - Display current user clearance',
+            '  date        - Show system date/time',
+            '  status      - Show system status',
+            '  clear       - Clear terminal screen',
+            '  exit        - Terminate session and return to wiki',
+            '',
+            'File access (read-only, GAMMA+ may be required):',
+            '  cat <path>   - Display file contents',
+            '',
+            'Hint: Some files require higher clearance.',
+        ];
+        helpLines.forEach(function(l) {
+            addLine(l, 'output');
+        });
+    }
+
+    function showLs() {
+        addLine('/secure/data/', 'info-text');
+        addLine('  manifest        [GAMMA]   - File index and descriptions', 'output');
+        addLine('  project_abyss/  [GAMMA+]  - N3PTUN3 project files', 'dim-text');
+        addLine('  signal_logs/    [GAMMA+]  - Anomalous signal recordings', 'dim-text');
+        addLine('  personnel/      [GAMMA+]  - Full personnel records', 'dim-text');
+        addLine('  EXP-2023-007/   [GAMMA+]  - Dr. Lin\'s final experiment data', 'dim-text');
+        addLine('', '');
+        addLine('[LOCKED] GAMMA+ directories require additional authentication.', 'warn-text');
+    }
+
+    function showStatus() {
+        addLine('System Status Report:', 'info-text');
+        addLine('  SharkOS 3.1 ................... ONLINE', 'output');
+        addLine('  Encryption Suite .............. ACTIVE', 'output');
+        addLine('  Network Isolation ............. ENFORCED', 'output');
+        addLine('  /secure/data .................. MOUNTED', 'output');
+        addLine('  /secure/archive ............... LOCKED (GAMMA+)', 'warn-text');
+        addLine('  SCP-7 Anomaly Filter .......... ACTIVE', 'output');
+        addLine('  Last GAMMA+ Access ............ 2024-01-19 (Dr. Lin Haiyin)', 'dim-text');
+    }
+
+    function showManifest() {
+        addLine('--- /secure/data/manifest ---', 'info-text');
+        addLine('SECURE DATA MANIFEST - GAMMA CLEARANCE', 'banner-text');
+        addLine('');
+        addLine('[GAMMA] EXP-2021-034  - Challenger Deep acoustic scan', 'output');
+        addLine('[GAMMA] EXP-2022-056  - Deep-sea noise baseline', 'output');
+        addLine('[GAMMA+] EXP-2023-007 - Acoustic response analysis (SEALED)', 'dim-text');
+        addLine('[GAMMA+] EXP-2024-012 - Anomalous structure multibeam survey', 'dim-text');
+        addLine('[GAMMA+] SIG-ANOM-2022-017-FULL - Complete anomaly report', 'dim-text');
+        addLine('[GAMMA+] R07-ARCHIVE - Researcher R-07 personal archive', 'dim-text');
+        addLine('');
+        addLine('To access GAMMA+ files, type: elevate', 'warn-text');
+        addLine('Note: Elevation requires additional passphrase.', 'dim-text');
+    }
+
+    // 输入事件
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            var cmd = input.value;
+            input.value = '';
+            processCommand(cmd);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (historyIndex > 0) {
+                historyIndex--;
+                input.value = history[historyIndex];
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                input.value = history[historyIndex];
+            } else {
+                historyIndex = history.length;
+                input.value = '';
+            }
+        }
+    });
+
+    // 点击终端区域聚焦输入框（但不在点击input本身时触发）
+    document.querySelector('.term-screen').addEventListener('click', function() {
+        input.focus();
+    });
+
+    // 启动
+    bootSequence();
+})();
+</script>
+
+</body>
+</html>

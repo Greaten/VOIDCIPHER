@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信号异常事件 - 鲨鲨wiki</title>
+<link rel="stylesheet" href="css/wiki.css">
+    <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+
+<header class="wiki-header">
+    <div class="header-inner">
+        <a href="index.html" class="wiki-logo">
+            <div class="logo-icon">鲨</div>
+            <div class="logo-text"><span class="logo-title">鲨鲨wiki</span><span class="logo-subtitle">SHARKPEDIA · 深海知识库</span></div>
+        </a>
+        <div class="header-search"><input type="text" placeholder="搜索鲨鲨wiki..." disabled></div>
+    </div>
+</header>
+
+<div class="wiki-layout">
+<aside class="wiki-sidebar">
+    <div class="sidebar-section">
+        <div class="sidebar-title">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="article_deep_station.html">深海研究站</a></li>
+            <li><a href="article_shark_behavior.html">鲨鱼行为学</a></li>
+            <li><a href="article_abyss_project.html">深渊计划</a></li>
+            <li><a href="article_signal_anomaly.html" class="active">信号异常事件</a></li>
+            <li><a href="article_researcher_list.html">研究员名录</a></li>
+            <li><a href="article_experiment_log.html">实验日志</a></li>
+            <li><a href="article_comm_protocol.html">深海通信协议</a></li>
+        </ul>
+    </div>
+</aside>
+
+<main class="wiki-content">
+
+<div class="breadcrumb"><a href="index.html">首页</a> &raquo; <span>信号异常事件</span></div>
+
+<h1 class="article-title">信号异常事件</h1>
+<p class="article-subtitle">2022年9月波塞冬研究站通信系统异常事件全记录</p>
+
+<div class="infobox">
+    <div class="infobox-title">信号异常事件</div>
+    <div class="infobox-image">[信号波形截图 — 已脱敏]</div>
+    <div class="infobox-row"><span class="infobox-label">发生时间</span><span class="infobox-value">2022年9月7日—9月10日</span></div>
+    <div class="infobox-row"><span class="infobox-label">发生地点</span><span class="infobox-value"><a href="article_deep_station.html">波塞冬站</a></span></div>
+    <div class="infobox-row"><span class="infobox-label">涉及系统</span><span class="infobox-value"><a href="article_comm_protocol.html">SCP-7通信阵列</a></span></div>
+    <div class="infobox-row"><span class="infobox-label">信号特征</span><span class="infobox-value">17Hz基频 / 脉冲重复 / 未知编码</span></div>
+    <div class="infobox-row"><span class="infobox-label">事件等级</span><span class="infobox-value" style="color:#c00;">GAMMA</span></div>
+    <div class="infobox-row"><span class="infobox-label">当前状态</span><span class="infobox-value">未解决</span></div>
+</div>
+
+<div class="toc">
+    <div class="toc-title">目录</div>
+    <ul>
+        <li><span class="toc-number">1</span> <a href="#事件经过">事件经过</a></li>
+        <li><span class="toc-number">2</span> <a href="#信号特征">信号技术特征</a></li>
+        <li><span class="toc-number">3</span> <a href="#调查过程">调查过程</a></li>
+        <li><span class="toc-number">4</span> <a href="#后续影响">后续影响</a></li>
+        <li><span class="toc-number">5</span> <a href="#参见">参见</a></li>
+    </ul>
+</div>
+
+<h2 id="事件经过">1 事件经过</h2>
+<p><strong>2022年9月7日 02:17（UTC+10）：</strong>波塞冬站SCP-7主通信阵列首次接收到一段异常信号。信号表现为规律性脉冲，基频约17Hz，每段持续约47秒，间隔约8分32秒后重复。值班通信官R-04（<a href="article_researcher_list.html#赵明远">赵明远</a>）在日志中记录："非标准通信握手信号，来源方向无法三角定位，疑似来自海沟下方。"</p>
+<p><strong>9月7日—9日：</strong>信号持续72小时不间断重复。研究站尝试了所有已知通信协议进行响应，均未获得有意义的回馈。</p>
+<p><strong>9月10日 06:00：</strong>信号突然停止。同一时刻，研究站声学阵列记录到一次持续约4秒的低频振动，被12个海底地震仪同时检测到。振动源定位在挑战者深渊中心区域，深度约10,900米。</p>
+
+<h2 id="信号特征">2 信号技术特征</h2>
+<p>根据已解密的技术报告（SIG-ANOM-2022-017），异常信号具有以下特征：</p>
+<ul>
+    <li><strong>基频：</strong>17.3 Hz（极低频，适合远距离水下传播）</li>
+    <li><strong>调制方式：</strong>脉冲位置调制（PPM），每个脉冲段包含8-13个脉冲</li>
+    <li><strong>重复周期：</strong>精确的512秒（8分32秒）——这一数值恰好是2的9次方</li>
+    <li><strong>信号强度：</strong>在8,200米深度测得约-12dB SNR，推算源强度极高</li>
+    <li><strong>编码特征：</strong>初步分析暗示脉冲序列存在某种数学结构，但至今未能破译</li>
+</ul>
+
+<pre><code>/* 信号片段数据示例（已脱敏） */
+SIGNAL_SEGMENT_001:
+PULSE: [17.3Hz, 47.2s duration]
+INTERVAL: 512.0s
+PULSE: [17.3Hz, 47.2s duration]
+INTERVAL: 512.0s
+PATTERN_REPEAT: 304 times (72 hours)
+TERMINATION: Simultaneous with seismic event @ 10,900m</code></pre>
+
+<h2 id="调查过程">3 调查过程</h2>
+<p>事件发生后，IDRA成立了专项调查组。调查结论为"无法确定信号来源"，但内部报告同时排除了以下可能性：</p>
+<ul>
+    <li>已知的各国海军通信信号</li>
+    <li>地质活动产生的天然声波（频率太稳定）</li>
+    <li>海洋生物发出的声波（脉冲结构过于规整）</li>
+    <li>研究站自身设备故障（被独立的外部声学浮标同时记录）</li>
+</ul>
+<p>值得注意的是，调查组首席工程师<a href="article_researcher_list.html#林海音">林海音</a>博士在提交最终报告后不久便提出了辞职。她在离职面谈中提到"有些东西不应该被唤醒"，此言论后来被IDRA官方斥为"缺乏科学依据的个人臆测"。</p>
+
+<h2 id="后续影响">4 后续影响</h2>
+<ul>
+    <li>该事件直接推动了<a href="article_abyss_project.html">深渊计划</a>Phase III的加速审批。</li>
+    <li>波塞冬站的通信安全等级从BETA提升至GAMMA。</li>
+    <li>SCP-7协议新增了"异常信号过滤"子模块，详见<a href="article_comm_protocol.html#安全更新">深海通信协议§安全更新</a>。</li>
+    <li>编号R-07的研究员在事件后主动申请调离，随后于2023年2月失踪。详见<a href="article_researcher_list.html#失踪人员">研究员名录§失踪人员</a>。</li>
+</ul>
+
+<div class="warning-box">
+    <strong>注意：</strong>本条目中部分技术细节已依IDRA安全指令进行删节。完整的事故调查报告（文件编号 SIG-ANOM-2022-017-FULL）存储于C舱加密服务器中，需 GAMMA 级权限及TS-09终端访问。
+</div>
+
+<h2 id="参见">5 参见</h2>
+<ul>
+    <li><a href="article_abyss_project.html">深渊计划</a></li>
+    <li><a href="article_comm_protocol.html">深海通信协议 (SCP-7)</a></li>
+    <li><a href="article_researcher_list.html">研究员名录</a></li>
+</ul>
+
+<div class="references">
+    <h2>参考文献</h2>
+    <ol class="ref-list">
+        <li><span class="ref-num">[1]</span> 赵明远，《波塞冬站通信日志 2022-09-07》，IDRA内部文件。</li>
+        <li><span class="ref-num">[2]</span> IDRA技术报告 SIG-ANOM-2022-017：《2022年9月异常信号事件技术分析》（公开版）。</li>
+    </ol>
+</div>
+
+<div class="category-bar">分类：<a href="#">未解事件</a> · <a href="#">通信异常</a> · <a href="#">深海谜团</a></div>
+
+</main>
+</div>
+<footer class="wiki-footer">鲨鲨wiki &copy; 2024 — 本条目最后修订于2024年2月28日。</footer>
+<script src="js/anti-debug.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>

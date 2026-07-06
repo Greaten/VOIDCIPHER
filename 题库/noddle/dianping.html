@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>一面之缘·私房面馆 - 大众点评</title>
+<style>
+  :root {
+    --dp-orange: #FF6600;
+    --dp-orange-dark: #E55A00;
+    --dp-yellow: #FFB800;
+    --dp-bg: #F5F5F5;
+    --dp-white: #FFFFFF;
+    --dp-text: #333333;
+    --dp-text-secondary: #666666;
+    --dp-text-light: #999999;
+    --dp-border: #EDEDED;
+    --dp-star: #FFB800;
+    --dp-green: #06C160;
+    --dp-red: #E8453C;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dp-bg);
+    color: var(--dp-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: 70px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    background: var(--dp-white);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--dp-border);
+  }
+  .top-bar .back-btn {
+    font-size: 18px;
+    color: var(--dp-text);
+    cursor: pointer;
+    padding: 4px;
+    text-decoration: none;
+  }
+  .top-bar .search-box {
+    flex: 1;
+    background: #F5F5F5;
+    border-radius: 18px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--dp-text-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .top-bar .header-icons {
+    display: flex;
+    gap: 10px;
+    font-size: 18px;
+    color: var(--dp-text-secondary);
+  }
+
+  /* ── SHOP HEADER ── */
+  .shop-header {
+    background: var(--dp-white);
+    margin: 0;
+    position: relative;
+  }
+  .shop-banner {
+    height: 160px;
+    background: linear-gradient(135deg, #E85D04 0%, #F48C43 40%, #FFB703 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .shop-banner::after {
+    content: "";
+    position: absolute;
+    bottom: -30px;
+    right: -30px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .shop-banner::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .shop-banner .banner-tag {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 2;
+    letter-spacing: 1px;
+  }
+
+  .shop-info-card {
+    padding: 14px 16px;
+    position: relative;
+  }
+  .shop-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .shop-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dp-text);
+  }
+  .shop-status {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .shop-status.closed {
+    background: #FFF0F0;
+    color: #E8453C;
+    border: 1px solid #FFD0D0;
+  }
+
+  .shop-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+  }
+  .shop-score {
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--dp-orange);
+    line-height: 1;
+  }
+  .shop-stars {
+    color: var(--dp-star);
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+  .shop-review-count {
+    font-size: 12px;
+    color: var(--dp-text-light);
+  }
+
+  .shop-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .shop-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #FFF3E8;
+    color: #E85D04;
+    font-weight: 500;
+  }
+  .shop-tag.old { background: #FFF8E8; color: #B8860B; }
+  .shop-tag.night { background: #F0F0FF; color: #5B5BAA; }
+
+  /* ── ADDRESS BAR ── */
+  .address-bar {
+    background: var(--dp-white);
+    margin: 8px 0;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--dp-text-secondary);
+    border-top: 1px solid var(--dp-border);
+    border-bottom: 1px solid var(--dp-border);
+  }
+  .address-bar .addr-icon { font-size: 16px; flex-shrink: 0; }
+  .address-bar .addr-text { flex: 1; }
+  .address-bar .addr-arrow { color: var(--dp-text-light); font-size: 14px; }
+
+  .info-grid {
+    background: var(--dp-white);
+    display: flex;
+    border-bottom: 1px solid var(--dp-border);
+  }
+  .info-grid .info-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px 8px;
+    border-right: 1px solid var(--dp-border);
+  }
+  .info-grid .info-item:last-child { border: none; }
+  .info-item .info-label { font-size: 11px; color: var(--dp-text-light); margin-bottom: 2px; }
+  .info-item .info-value { font-size: 13px; color: var(--dp-text); font-weight: 600; }
+
+  /* ── REVIEW TABS ── */
+  .review-tabs {
+    background: var(--dp-white);
+    margin: 8px 0 0;
+    padding: 0;
+    border-bottom: 1px solid var(--dp-border);
+    position: sticky;
+    top: 44px;
+    z-index: 50;
+    display: flex;
+  }
+  .review-tab {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dp-text-secondary);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .review-tab.active { color: var(--dp-orange); }
+  .review-tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    background: var(--dp-orange);
+    border-radius: 2px;
+  }
+  .review-tab .tab-count {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--dp-text-light);
+    margin-left: 2px;
+  }
+
+  /* ── REVIEW LIST ── */
+  .review-panel { display: none; }
+  .review-panel.show { display: block; }
+
+  .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .review-card {
+    background: var(--dp-white);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--dp-border);
+  }
+  .review-card:last-child { border: none; }
+
+  .rv-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .rv-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .rv-user-info { flex: 1; }
+  .rv-nickname {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dp-text);
+  }
+  .rv-meta {
+    font-size: 11px;
+    color: var(--dp-text-light);
+    display: flex;
+    gap: 8px;
+  }
+  .rv-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .rv-badge.rider {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
+  }
+  .rv-badge.vip {
+    background: #FFF3E0;
+    color: #E65100;
+    border: 1px solid #FFE0B2;
+  }
+
+  .rv-stars {
+    color: var(--dp-star);
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .rv-content {
+    font-size: 14px;
+    color: var(--dp-text-secondary);
+    line-height: 1.8;
+  }
+  .rv-content .highlight-account {
+    background: #FFF3E0;
+    color: #E85D04;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: "Courier New", monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .rv-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--dp-text-light);
+  }
+  .rv-actions span {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .rv-actions span:hover { color: var(--dp-orange); }
+
+  .rv-reply {
+    background: #F8F8F8;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--dp-text-secondary);
+  }
+  .rv-reply .reply-label {
+    font-size: 11px;
+    color: var(--dp-orange);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--dp-white);
+    border-top: 1px solid var(--dp-border);
+    padding: 8px 16px;
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+    align-items: center;
+  }
+  .bottom-bar .bb-collect {
+    width: 44px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--dp-text-light);
+    cursor: pointer;
+  }
+  .bottom-bar .bb-collect .icon { font-size: 20px; }
+  .bottom-bar .bb-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .bb-btn.write-review {
+    background: var(--dp-orange);
+    color: #fff;
+  }
+  .bb-btn.closed-shop {
+    background: #E0E0E0;
+    color: #999;
+    cursor: not-allowed;
+  }
+
+  /* ── ANIMATION ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .review-panel.show .review-card {
+    animation: fadeIn 0.2s ease forwards;
+  }
+
+  /* ── CLOSED WATERMARK ── */
+  .closed-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-size: 48px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.35);
+    pointer-events: none;
+    z-index: 1;
+    letter-spacing: 8px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <span class="back-btn">&#x2190;</span>
+  <div class="search-box">&#x1F50D; 搜索大众点评</div>
+  <div class="header-icons">
+    <span>&#x1F4AC;</span>
+    <span>&#x22EE;</span>
+  </div>
+</div>
+
+<!-- SHOP HEADER -->
+<div class="shop-header">
+  <div class="shop-banner">
+    <div class="closed-watermark">已停业</div>
+    <div class="banner-tag">已停业</div>
+  </div>
+  <div class="shop-info-card">
+    <div class="shop-title-row">
+      <span class="shop-name">一面之缘·私房面馆</span>
+      <span class="shop-status closed">已停业</span>
+    </div>
+    <div style="margin-top:2px;font-size:12px;color:#999;">
+      <a href="noodle_shop.html" style="color:#FF6600;text-decoration:none;font-weight:500;">&#127860; 在线点餐（外卖页面仍可访问）&#8250;</a>
+    </div>
+    <div class="shop-rating-row">
+      <span class="shop-score">4.8</span>
+      <span class="shop-stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+      <span class="shop-review-count">(326条评价)</span>
+    </div>
+    <div class="shop-tags">
+      <span class="shop-tag">&#128205; 老店</span>
+      <span class="shop-tag old">&#127775; 三代传承</span>
+      <span class="shop-tag night">&#127769; 深夜食堂</span>
+      <span class="shop-tag">&#127837; 手工擀面</span>
+      <span class="shop-tag">&#128176; 人均 ¥35</span>
+    </div>
+  </div>
+</div>
+
+<!-- ADDRESS BAR -->
+<div class="address-bar">
+  <span class="addr-icon">&#128205;</span>
+  <span class="addr-text">成都高新区天府大道998号附12号</span>
+  <span class="addr-arrow">&#10095;</span>
+</div>
+<div class="info-grid">
+  <div class="info-item">
+    <div class="info-label">营业时间</div>
+    <div class="info-value">10:00-02:00</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">电话</div>
+    <div class="info-value">028-8888-6666</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">特色</div>
+    <div class="info-value">深夜不打烊</div>
+  </div>
+</div>
+
+<!-- REVIEW TABS -->
+<div class="review-tabs">
+  <button class="review-tab active" data-tab="all">全部 <span class="tab-count">326</span></button>
+  <button class="review-tab" data-tab="good">好评 <span class="tab-count">289</span></button>
+  <button class="review-tab" data-tab="bad">差评 <span class="tab-count">12</span></button>
+  <button class="review-tab" data-tab="rider">骑手评价 <span class="tab-count">25</span></button>
+</div>
+
+<!-- REVIEW PANELS -->
+<div id="pnlAll" class="review-panel show">
+  <div class="review-list" id="allReviews"></div>
+</div>
+<div id="pnlGood" class="review-panel">
+  <div class="review-list" id="goodReviews"></div>
+</div>
+<div id="pnlBad" class="review-panel">
+  <div class="review-list" id="badReviews"></div>
+</div>
+<div id="pnlRider" class="review-panel">
+  <div class="review-list" id="riderReviews"></div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="bb-collect">
+    <div class="icon">&#9734;</div>
+    <div>收藏</div>
+  </div>
+  <button class="bb-btn closed-shop">该店铺已停业</button>
+  <button class="bb-btn write-review" style="opacity:0.5;">写评价</button>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ======== ANTI-DEBUG ======== */
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; }, true);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')) {
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+
+  (function(){
+    var _threshold = 160;
+    setInterval(function(){
+      if (
+        window.outerWidth - window.innerWidth > _threshold ||
+        window.outerHeight - window.innerHeight > _threshold
+      ) {
+        console.clear();
+        console.log('%c大众点评 · 发现品质生活', 'color:#FF6600;font-size:16px;');
+      }
+    }, 1000);
+  })();
+
+  /* ======== REVIEW DATA ======== */
+  var _allReviews = [
+    /* Regular reviews */
+    {
+      name: "成都吃货小王", avatarClr: "#E85D04", badge: "", badgeCls: "",
+      stars: 5, date: "2024-07-02", taste: "5", env: "4", service: "5",
+      content: "祖传牛肉面真的绝了！牛肉炖得超级软烂，汤头浓郁得不行，连汤都喝光了。这家店我会一直回购！可惜现在停业了，什么时候重新开业啊……",
+      reply: "商家回复：感谢您的喜爱！我们会尽快恢复营业，敬请期待。",
+      isGood: true
+    },
+    {
+      name: "深夜食客", avatarClr: "#6C5CE7", badge: "VIP", badgeCls: "vip",
+      stars: 5, date: "2024-07-01", taste: "5", env: "4", service: "5",
+      content: "凌晨一点还能吃到热腾腾的担担面，感动到流泪。老板人也特别热情，每次都多送我几颗花生米。深夜食堂名副其实，就是不知道为什么不开了……",
+      reply: "",
+      isGood: true
+    },
+    {
+      name: "面食爱好者", avatarClr: "#0984E3", badge: "", badgeCls: "",
+      stars: 4, date: "2024-06-30", taste: "4", env: "4", service: "3",
+      content: "酸菜鱼片面意外的好吃！鱼片很嫩，酸菜够味，分量也很足。就是等的时间稍微长了点，可能因为生意太好了吧。",
+      reply: "",
+      isGood: true
+    },
+    {
+      name: "老成都土著", avatarClr: "#636E72", badge: "", badgeCls: "",
+      stars: 5, date: "2024-06-22", taste: "5", env: "3", service: "4",
+      content: "作为一个土生土长的成都人，这家担担面的味道让我想起了小时候巷子口的那家面摊，芝麻酱和花椒的配比恰到好处。可惜了，成都又少了一家好面馆。",
+      reply: "",
+      isGood: true
+    },
+    {
+      name: "不爱吃辣星人", avatarClr: "#00B894", badge: "", badgeCls: "",
+      stars: 2, date: "2024-05-14", taste: "2", env: "3", service: "2",
+      content: "被朋友拉来的，味道太辣了受不了。跟服务员说少放辣，结果端上来还是红通通一片。可能我不适合吃成都面吧，告辞。",
+      reply: "商家回复：抱歉给您带来了不好的体验！我们的辣度可以根据需求调整，下次请提前告知，我们一定注意。",
+      isGood: false
+    },
+    {
+      name: "甜品猎人", avatarClr: "#FDCB6E", badge: "", badgeCls: "",
+      stars: 4, date: "2024-06-24", taste: "4", env: "4", service: "4",
+      content: "冰粉是吃完辣面的完美收尾，红糖水很醇正不是那种勾兑的，料也足。不过有一说一，店里空调不太给力，夏天吃着有点热。",
+      reply: "",
+      isGood: true
+    },
+    /* Rider reviews */
+    {
+      name: "外卖小哥老张", avatarClr: "#2E7D32", badge: "骑手", badgeCls: "rider",
+      stars: 5, date: "2024-06-15", taste: "5", env: "4", service: "5",
+      content: "给这家店送了两年外卖，老板人很好。有一次下雨天我迟到了，老板还给我煮了碗面。想接这家单的新兄弟后台直接搜 rider 前缀就行，老骑手编号都是 0192 这种格式。这家单子多，跑得过来，老板定期换登录密码搞不懂。",
+      reply: "",
+      isGood: true, isRider: true
+    },
+    {
+      name: "飞毛腿小王", avatarClr: "#1565C0", badge: "骑手", badgeCls: "rider",
+      stars: 5, date: "2024-06-10", taste: "5", env: "4", service: "5",
+      content: "这家店深夜单特别多，凌晨一两点还有订单，跑了半年也习惯了。不过现在停业可惜了。对了取餐记得走侧门，正门那会儿可能关了。",
+      reply: "",
+      isGood: true, isRider: true
+    },
+    {
+      name: "夜班专业户", avatarClr: "#6A1B9A", badge: "骑手", badgeCls: "rider",
+      stars: 4, date: "2024-05-28", taste: "4", env: "3", service: "5",
+      content: "半年没接到这家单了。他们家的地址其实挺好找的，天府大道998号附12号，每次取餐走侧门。不过配送备注经常有奇奇怪怪的要求，有的客户写「别按门铃」，有的要求「放门口敲三下」。老板说有的是老客暗号，让照做就行。",
+      reply: "",
+      isGood: true, isRider: true
+    },
+    {
+      name: "单王阿强", avatarClr: "#BF360C", badge: "骑手", badgeCls: "rider",
+      stars: 5, date: "2024-05-20", taste: "5", env: "4", service: "5",
+      content: "我在城北跑单都听说过这家面馆。听南边的兄弟说，这家有个老顾客的订单特别有意思，每次都是固定的搭配，配送备注老长了。老板说这是暗号单，照做就行别多问。可惜现在没得跑了，城南少了个好去处。",
+      reply: "",
+      isGood: true, isRider: true
+    },
+    {
+      name: "赶时间别催我", avatarClr: "#455A64", badge: "", badgeCls: "",
+      stars: 3, date: "2024-05-05", taste: "3", env: "2", service: "3",
+      content: "味道还行吧，就是店面太小了，排队排了四十分钟。而且只收现金，这年头谁还带现金出门啊？只好跑去隔壁便利店换钱，折腾死了。",
+      reply: "",
+      isGood: false
+    }
+  ];
+
+  function _renderStars(n) {
+    var s = '';
+    for (var i = 0; i < 5; i++) { s += (i < n ? '&#9733;' : '&#9734;'); }
+    return s;
+  }
+
+  function _renderReviewCard(r) {
+    var h = '<div class="review-card">';
+    h += '<div class="rv-user">';
+    h += '<div class="rv-avatar" style="background:' + r.avatarClr + ';">' + r.name.charAt(0) + '</div>';
+    h += '<div class="rv-user-info">';
+    h += '<div class="rv-nickname">' + r.name;
+    if (r.badge) h += ' <span class="rv-badge ' + r.badgeCls + '">' + r.badge + '</span>';
+    h += '</div>';
+    h += '<div class="rv-meta"><span>' + r.date + '</span><span>口味:' + r.taste + '</span><span>环境:' + r.env + '</span><span>服务:' + r.service + '</span></div>';
+    h += '</div></div>';
+    h += '<div class="rv-stars">' + _renderStars(r.stars) + '</div>';
+    h += '<div class="rv-content">' + r.content + '</div>';
+    if (r.reply) {
+      h += '<div class="rv-reply"><div class="reply-label">商家回复：</div>' + r.reply + '</div>';
+    }
+    h += '<div class="rv-actions"><span>&#128077; ' + Math.floor(Math.random() * 50 + 3) + '</span><span>&#128172; 回复</span><span>&#9872; 举报</span></div>';
+    h += '</div>';
+    return h;
+  }
+
+  function _renderAll() {
+    var h = '';
+    for (var i = 0; i < _allReviews.length; i++) {
+      h += _renderReviewCard(_allReviews[i]);
+    }
+    document.getElementById('allReviews').innerHTML = h;
+  }
+
+  function _renderGood() {
+    var h = '';
+    for (var i = 0; i < _allReviews.length; i++) {
+      if (_allReviews[i].isGood) h += _renderReviewCard(_allReviews[i]);
+    }
+    document.getElementById('goodReviews').innerHTML = h;
+  }
+
+  function _renderBad() {
+    var h = '';
+    for (var i = 0; i < _allReviews.length; i++) {
+      if (!_allReviews[i].isGood) h += _renderReviewCard(_allReviews[i]);
+    }
+    document.getElementById('badReviews').innerHTML = h;
+  }
+
+  function _renderRider() {
+    var h = '';
+    for (var i = 0; i < _allReviews.length; i++) {
+      if (_allReviews[i].isRider) h += _renderReviewCard(_allReviews[i]);
+    }
+    document.getElementById('riderReviews').innerHTML = h;
+  }
+
+  /* ======== TAB SWITCHING ======== */
+  document.querySelectorAll('.review-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var tab = this.getAttribute('data-tab');
+      document.querySelectorAll('.review-tab').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      document.querySelectorAll('.review-panel').forEach(function(p){ p.classList.remove('show'); });
+
+      var panelMap = { all: 'pnlAll', good: 'pnlGood', bad: 'pnlBad', rider: 'pnlRider' };
+      document.getElementById(panelMap[tab]).classList.add('show');
+    });
+  });
+
+  /* ======== INIT ======== */
+  _renderAll();
+  _renderGood();
+  _renderBad();
+  _renderRider();
+
+})();
+</script>
+</body>
+</html>

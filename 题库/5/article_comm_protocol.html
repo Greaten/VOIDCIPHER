@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深海通信协议 - 鲨鲨wiki</title>
+<link rel="stylesheet" href="css/wiki.css">
+    <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+
+<header class="wiki-header">
+    <div class="header-inner">
+        <a href="index.html" class="wiki-logo">
+            <div class="logo-icon">鲨</div>
+            <div class="logo-text"><span class="logo-title">鲨鲨wiki</span><span class="logo-subtitle">SHARKPEDIA · 深海知识库</span></div>
+        </a>
+        <div class="header-search"><input type="text" placeholder="搜索鲨鲨wiki..." disabled></div>
+    </div>
+</header>
+
+<div class="wiki-layout">
+<aside class="wiki-sidebar">
+    <div class="sidebar-section">
+        <div class="sidebar-title">导航</div>
+        <ul class="sidebar-nav">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="article_deep_station.html">深海研究站</a></li>
+            <li><a href="article_shark_behavior.html">鲨鱼行为学</a></li>
+            <li><a href="article_abyss_project.html">深渊计划</a></li>
+            <li><a href="article_signal_anomaly.html">信号异常事件</a></li>
+            <li><a href="article_researcher_list.html">研究员名录</a></li>
+            <li><a href="article_experiment_log.html">实验日志</a></li>
+            <li><a href="article_comm_protocol.html" class="active">深海通信协议</a></li>
+        </ul>
+    </div>
+</aside>
+
+<main class="wiki-content">
+
+<div class="breadcrumb"><a href="index.html">首页</a> &raquo; <span>深海通信协议</span></div>
+
+<h1 class="article-title">深海通信协议</h1>
+<p class="article-subtitle">Submarine Communication Protocol, Version 7 (SCP-7)</p>
+
+<div class="infobox">
+    <div class="infobox-title">SCP-7</div>
+    <div class="infobox-row"><span class="infobox-label">全称</span><span class="infobox-value">Submarine Communication Protocol, Version 7</span></div>
+    <div class="infobox-row"><span class="infobox-label">发布机构</span><span class="infobox-value">IDRA 通信标准委员会</span></div>
+    <div class="infobox-row"><span class="infobox-label">当前版本</span><span class="infobox-value">7.4.1（2024年3月）</span></div>
+    <div class="infobox-row"><span class="infobox-label">传输介质</span><span class="infobox-value">海底光缆 / VLF声学</span></div>
+    <div class="infobox-row"><span class="infobox-label">加密标准</span><span class="infobox-value">AES-256-GCM + 量子密钥分发(QKD)</span></div>
+    <div class="infobox-row"><span class="infobox-label">最大深度</span><span class="infobox-value">12,000米</span></div>
+    <div class="infobox-row"><span class="infobox-label">前代协议</span><span class="infobox-value">SCP-6（已停用）</span></div>
+</div>
+
+<div class="toc">
+    <div class="toc-title">目录</div>
+    <ul>
+        <li><span class="toc-number">1</span> <a href="#概述">概述</a></li>
+        <li><span class="toc-number">2</span> <a href="#技术架构">技术架构</a></li>
+        <li><span class="toc-number">3</span> <a href="#安全更新">安全更新</a></li>
+        <li><span class="toc-number">4</span> <a href="#终端配置">终端配置参考</a></li>
+        <li><span class="toc-number">5</span> <a href="#参见">参见</a></li>
+    </ul>
+</div>
+
+<h2 id="概述">1 概述</h2>
+<p>深海通信协议（SCP-7）是国际深海研究联盟（IDRA）制定的标准化水下通信协议，用于支持深海研究设施之间以及设施与地面站之间的数据传输。该协议自2017年发布初版以来，已历经7个大版本的迭代，目前最新稳定版本为7.4.1。</p>
+<p>SCP-7的主要应用场景包括<a href="article_deep_station.html">波塞冬深海研究站</a>与关岛地面站之间的日常数据交换、遥控潜水器（ROV）的实时遥测，以及<a href="article_abyss_project.html">深渊计划</a>中全海深载人潜水器的通信保障。</p>
+
+<h2 id="技术架构">2 技术架构</h2>
+<h3>2.1 物理层</h3>
+<p>SCP-7支持双模物理层：</p>
+<ul>
+    <li><strong>主通道：</strong>海底光缆（光纤），带宽可达10Gbps，通过中继器每80公里进行一次信号再生。</li>
+    <li><strong>备用通道：</strong>极低频（VLF）声学调制解调器，工作频率3-30Hz，数据速率约4bps，最大通信距离500公里。</li>
+</ul>
+
+<h3>2.2 链路层帧结构</h3>
+<p>SCP-7的帧结构如下：</p>
+<pre><code>+----------+--------+----------+--------+---------+----------+
+| Preamble | Src ID | Dest ID  |  Seq#  | Payload |   CRC    |
+|  16 bit  | 32 bit |  32 bit  | 16 bit | 0-8KB   |  32 bit  |
++----------+--------+----------+--------+---------+----------+</code></pre>
+<p>其中 Preamble 的默认值为 <code>0xA7F3</code>，但在2024年3月的修订中，针对<a href="article_signal_anomaly.html">异常信号事件</a>后的安全升级，<a href="article_deep_station.html">波塞冬站</a>的TS-09终端使用了修改后的 Preamble 值 <code>0xD34F</code>（即"<strong>D34F</strong>"——"<strong>DEAF</strong>"的变体，意为对异常信号"充耳不闻"的过滤模式）。</p>
+
+<h2 id="安全更新">3 安全更新（2024年3月修订）</h2>
+<p>2024年3月，SCP-7协议经历了一次重要修订（版本号从7.3.2跃升至7.4.1），主要新增以下安全机制：</p>
+<ul>
+    <li><strong>异常信号过滤模块（ASF）：</strong>新增基于机器学习的信号分类器，用于识别和过滤类似2022年9月事件中的异常通信尝试。</li>
+    <li><strong>TS-09独立验证通道：</strong>所有GAMMA级数据访问必须通过物理隔离的TS-09终端进行身份验证。终端密钥短语采用定期轮换制。</li>
+    <li><strong>QKD升级：</strong>量子密钥分发系统从BB84协议升级至改进型Decoy-State协议，增强了在深水环境中的抗干扰能力。</li>
+</ul>
+
+<div class="warning-box">
+    <strong>安全提示：</strong>TS-09终端的当前访问验证短语为周期性轮换。据内部安全备忘录记载，当前周期（2024-Q2）的验证短语与「鲨鱼」及「深渊」两个关键词有关。具体短语需在授权人员的指导下获取。
+</div>
+
+<h2 id="终端配置">4 终端配置参考</h2>
+<p>以下为TS-09终端的标准配置参数（公开版本，敏感参数已省略）：</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;">
+<tr style="background:#e0e8f0;">
+    <th style="padding:6px 10px;border:1px solid #a2a9b1;">参数</th>
+    <th style="padding:6px 10px;border:1px solid #a2a9b1;">值</th>
+</tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">终端编号</td><td style="padding:5px 10px;border:1px solid #eaecf0;">TS-09</td></tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">操作系统</td><td style="padding:5px 10px;border:1px solid #eaecf0;">SharkOS 3.1（基于Linux内核的定制系统）</td></tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">加密套件</td><td style="padding:5px 10px;border:1px solid #eaecf0;">AES-256-GCM / Ed25519签名</td></tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">验证方式</td><td style="padding:5px 10px;border:1px solid #eaecf0;">密码短语 + 硬件密钥</td></tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">默认波特率</td><td style="padding:5px 10px;border:1px solid #eaecf0;">115200</td></tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">物理位置</td><td style="padding:5px 10px;border:1px solid #eaecf0;"><a href="article_deep_station.html">波塞冬站</a> C舱 通信终端室</td></tr>
+<tr><td style="padding:5px 10px;border:1px solid #eaecf0;">网络隔离</td><td style="padding:5px 10px;border:1px solid #eaecf0;">物理隔离（独立网段）</td></tr>
+</table>
+
+<h2 id="参见">5 参见</h2>
+<ul>
+    <li><a href="article_deep_station.html">深海研究站「波塞冬」</a></li>
+    <li><a href="article_signal_anomaly.html">信号异常事件</a></li>
+    <li><a href="article_abyss_project.html">深渊计划</a></li>
+</ul>
+
+<div class="references">
+    <h2>参考文献</h2>
+    <ol class="ref-list">
+        <li><span class="ref-num">[1]</span> IDRA通信标准委员会，《SCP-7协议规范 v7.4.1》，2024年3月。</li>
+        <li><span class="ref-num">[2]</span> 赵明远，《TS-09独立终端操作与安全指南 v2.3》，IDRA技术手册。</li>
+    </ol>
+</div>
+
+<div class="category-bar">分类：<a href="#">通信协议</a> · <a href="#">深海技术</a> · <a href="#">IDRA标准</a></div>
+
+</main>
+</div>
+<footer class="wiki-footer">鲨鲨wiki &copy; 2024 — 本条目最后修订于2024年3月21日。</footer>
+<script src="js/anti-debug.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>锐恒集团 · OA系统</title>
+<style>
+  :root {
+    --bg-primary: #1a1d23;
+    --bg-secondary: #21242b;
+    --bg-card: #2a2d35;
+    --bg-hover: #32353e;
+    --bg-active: #1e3a5f;
+    --border: #3a3d45;
+    --text-primary: #e0e2e6;
+    --text-secondary: #a0a4ae;
+    --text-muted: #6b6f7a;
+    --accent: #4a90d9;
+    --accent-hover: #5da0e5;
+    --danger: #e0556a;
+    --warning: #d4a843;
+    --unread-dot: #4a90d9;
+    --badge: #e0556a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Helvetica Neue", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ========== Top Navbar ========== */
+  .navbar {
+    height: 52px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .navbar .logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 40px;
+    white-space: nowrap;
+  }
+  .navbar .logo .icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #4a90d9, #357abd);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #fff;
+  }
+  .nav-menu {
+    display: flex; gap: 4px; list-style: none; flex: 1;
+  }
+  .nav-menu li {
+    padding: 6px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: all 0.2s;
+    position: relative;
+    white-space: nowrap;
+  }
+  .nav-menu li:hover { color: var(--text-primary); background: var(--bg-hover); }
+  .nav-menu li.active {
+    color: var(--accent);
+    background: rgba(74,144,217,0.1);
+  }
+  .nav-menu li .badge {
+    position: absolute; top: 2px; right: 2px;
+    background: var(--badge); color: #fff; font-size: 10px;
+    min-width: 16px; height: 16px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+  }
+  .navbar-right {
+    display: flex; align-items: center; gap: 18px; margin-left: auto;
+  }
+  .navbar-right .icon-btn {
+    width: 34px; height: 34px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-secondary); position: relative;
+    transition: all 0.2s;
+  }
+  .navbar-right .icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .navbar-right .icon-btn .dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; background: var(--badge); border-radius: 50%;
+  }
+  .navbar-right .time {
+    color: var(--text-secondary); font-size: 13px;
+    font-variant-numeric: tabular-nums; font-family: "Consolas", monospace;
+  }
+
+  /* ========== Layout ========== */
+  .main-container {
+    display: flex; flex: 1; overflow: hidden;
+  }
+
+  /* ========== Sidebar ========== */
+  .sidebar {
+    width: 240px; background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; flex-shrink: 0;
+    padding: 16px 0;
+  }
+  .sidebar .user-info {
+    padding: 0 16px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .sidebar .user-info .avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #5da0e5, #4a90d9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #fff; margin-bottom: 10px;
+  }
+  .sidebar .user-info .name {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+  }
+  .sidebar .user-info .role {
+    font-size: 12px; color: var(--text-muted); margin-top: 2px;
+  }
+  .sidebar .sidebar-section {
+    padding: 8px 16px;
+    font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .sidebar .sidebar-menu {
+    list-style: none; padding: 0 8px;
+  }
+  .sidebar .sidebar-menu li {
+    padding: 9px 12px; border-radius: 6px; cursor: pointer;
+    color: var(--text-secondary); font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    transition: all 0.2s; margin-bottom: 2px;
+  }
+  .sidebar .sidebar-menu li:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .sidebar .sidebar-menu li.active { background: var(--bg-active); color: var(--accent); }
+  .sidebar .sidebar-menu li .count {
+    margin-left: auto; font-size: 12px;
+    background: var(--badge); color: #fff;
+    min-width: 20px; height: 20px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 6px;
+  }
+  .sidebar .sidebar-menu li .count.dim {
+    background: var(--bg-hover); color: var(--text-secondary);
+  }
+
+  /* ========== Content ========== */
+  .content {
+    flex: 1; overflow-y: auto; padding: 24px;
+    background: var(--bg-primary);
+  }
+  .content-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .content-header h2 {
+    font-size: 18px; font-weight: 600; color: var(--text-primary);
+  }
+  .content-header .actions {
+    display: flex; gap: 10px;
+  }
+  .btn {
+    padding: 7px 16px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-secondary);
+    cursor: pointer; font-size: 13px; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent-hover); }
+
+  /* ========== Mail List ========== */
+  .mail-toolbar {
+    display: flex; gap: 8px; margin-bottom: 12px;
+  }
+  .mail-list {
+    background: var(--bg-card); border-radius: 8px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .mail-item {
+    display: flex; align-items: center; padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+    gap: 14px;
+  }
+  .mail-item:last-child { border-bottom: none; }
+  .mail-item:hover { background: var(--bg-hover); }
+  .mail-item.unread { background: rgba(74,144,217,0.04); }
+  .mail-item .unread-indicator {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--unread-dot); flex-shrink: 0;
+  }
+  .mail-item.read .unread-indicator { background: transparent; }
+  .mail-item .sender {
+    width: 100px; font-weight: 500; color: var(--text-primary);
+    flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .mail-item .subject {
+    flex: 7; color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0;
+  }
+  .mail-item.read .subject { color: var(--text-secondary); font-weight: 400; }
+  .mail-item .subject .tag {
+    display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 2px;
+    margin-right: 6px; font-weight: 400;
+  }
+  .mail-item .subject .tag.system { background: rgba(74,144,217,0.2); color: #4a90d9; }
+  .mail-item .subject .tag.urgent { background: rgba(224,85,106,0.2); color: #e0556a; }
+  .mail-item .subject .tag.notice { background: rgba(212,168,67,0.2); color: #d4a843; }
+  .mail-item .time {
+    width: 110px; text-align: right; color: var(--text-muted);
+    flex-shrink: 0; font-size: 12px;
+  }
+  .mail-item .attachment-icon {
+    color: var(--text-muted); font-size: 14px; flex-shrink: 0;
+  }
+
+  /* ========== Modal ========== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; width: 660px; max-width: 90vw; max-height: 80vh;
+    display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header h3 { font-size: 16px; font-weight: 600; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 4px; border: none;
+    background: transparent; color: var(--text-secondary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .modal-body .mail-meta {
+    display: flex; gap: 24px; margin-bottom: 16px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;
+  }
+  .modal-body .mail-meta span strong { color: var(--text-primary); margin-right: 4px; }
+  .modal-body .mail-content { color: var(--text-primary); font-size: 14px; line-height: 1.8; }
+
+  /* ========== Scrollbar ========== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ========== Tooltip-ish ========== */
+  .search-box {
+    background: var(--bg-primary); border: 1px solid var(--border);
+    border-radius: 4px; padding: 6px 12px; color: var(--text-secondary);
+    font-size: 13px; width: 220px; outline: none; font-family: inherit;
+  }
+  .search-box:focus { border-color: var(--accent); color: var(--text-primary); }
+
+  /* ========== Page sections (hidden by default) ========== */
+  .page-section { display: none; }
+  .page-section.active { display: block; }
+
+  /* Quick access cards */
+  .quick-access {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 24px;
+  }
+  .quick-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s;
+  }
+  .quick-card:hover { border-color: var(--accent); background: var(--bg-hover); }
+  .quick-card .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .quick-card .card-desc { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ==================== Navbar ==================== -->
+<nav class="navbar">
+  <div class="logo">
+    <div class="icon">锐</div>
+    锐恒集团 · OA系统
+  </div>
+  <ul class="nav-menu" id="navMenu">
+    <li data-page="mail" class="active">公告与邮件</li>
+    <li data-page="approval">审批流程</li>
+    <li data-page="docs">文档库</li>
+    <li data-page="report">举报信箱<span class="badge">1</span></li>
+    <li data-page="settings">系统设置</li>
+  </ul>
+  <div class="navbar-right">
+    <span class="time" id="clock">--</span>
+    <div class="icon-btn" title="消息通知">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div class="icon-btn" title="个人中心">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== Main Layout ==================== -->
+<div class="main-container">
+
+  <!-- ==================== Sidebar ==================== -->
+  <aside class="sidebar">
+    <div class="user-info">
+      <div class="avatar">林</div>
+      <div class="name">林深</div>
+      <div class="role">风控合规部 · 实习生</div>
+    </div>
+    <div class="sidebar-section">邮件分类</div>
+    <ul class="sidebar-menu" id="sidebarMenu">
+      <li class="active" data-filter="all">
+        全部邮件 <span class="count dim">12</span>
+      </li>
+      <li data-filter="unread">
+        未读邮件 <span class="count">3</span>
+      </li>
+      <li data-filter="system">
+        系统通知 <span class="count dim">4</span>
+      </li>
+      <li data-filter="starred">
+        星标邮件 <span class="count dim">2</span>
+      </li>
+      <li data-filter="draft">
+        草稿箱 <span class="count dim">1</span>
+      </li>
+    </ul>
+    <div class="sidebar-section" style="margin-top:8px;">快捷入口</div>
+    <ul class="sidebar-menu">
+      <li>新员工入职指引</li>
+      <li>合规制度汇编</li>
+      <li>IT报修申请</li>
+    </ul>
+  </aside>
+
+  <!-- ==================== Content ==================== -->
+  <main class="content">
+
+    <!-- Mail Page -->
+    <div class="page-section active" id="page-mail">
+      <div class="content-header">
+        <h2>收件箱</h2>
+        <div class="actions">
+          <input class="search-box" placeholder="搜索邮件..." />
+          <button class="btn">刷新</button>
+          <button class="btn primary">撰写邮件</button>
+        </div>
+      </div>
+      <div class="quick-access">
+        <div class="quick-card">
+          <div class="card-title">待办审批</div>
+          <div class="card-desc">3 项审批等待你处理</div>
+        </div>
+        <div class="quick-card">
+          <div class="card-title">合规培训</div>
+          <div class="card-desc">Q3 反舞弊培训未完成</div>
+        </div>
+        <div class="quick-card">
+          <div class="card-title">举报信箱</div>
+          <div class="card-desc">1 封匿名举报待查阅</div>
+        </div>
+      </div>
+      <div class="mail-toolbar">
+        <button class="btn">全部标为已读</button>
+        <button class="btn">筛选</button>
+      </div>
+      <div class="mail-list" id="mailList">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Placeholder pages -->
+    <div class="page-section" id="page-approval"><div class="content-header"><h2>审批流程</h2></div><p style="color:var(--text-muted);padding:20px;">审批模块 —— 风格框架预览，此处为占位区域。</p></div>
+    <div class="page-section" id="page-docs"><div class="content-header"><h2>文档库</h2></div><p style="color:var(--text-muted);padding:20px;">文档库 —— 风格框架预览，此处为占位区域。</p></div>
+    <div class="page-section" id="page-report"><div class="content-header"><h2>举报信箱</h2></div><p style="color:var(--text-muted);padding:20px;">举报信箱 —— 风格框架预览，此处为占位区域。<br><br><span style="color:var(--danger)">⚠ 1 封匿名举报待查阅</span></p></div>
+    <div class="page-section" id="page-settings"><div class="content-header"><h2>系统设置</h2></div><p style="color:var(--text-muted);padding:20px;">系统设置 —— 风格框架预览，此处为占位区域。</p></div>
+
+  </main>
+</div>
+
+<!-- ==================== Mail Detail Modal ==================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalSubject">邮件标题</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== Mail Data ==========
+const mails = [
+  {
+    id: 1,
+    sender: "系统管理员",
+    subject: "【系统通知】OA系统已升级至 v4.2.1，请查阅更新日志",
+    time: "07-04 09:30",
+    read: true,
+    tag: "system",
+    content: `<p>各位同事：</p><p>OA 系统已于今日凌晨完成 v4.2.1 版本升级，主要更新内容：</p><ul><li>审批流程节点优化，支持多级会签</li><li>文档库搜索性能提升 40%</li><li>修复若干已知 Bug</li></ul><p>如有疑问请联系 IT 支持中心（分机 8110）。</p><p style="color:var(--text-muted);margin-top:16px;">—— 信息技术中心</p>`
+  },
+  {
+    id: 2,
+    sender: "张晓薇",
+    subject: "关于Q3供应商合规审查的会议纪要",
+    time: "07-03 16:22",
+    read: true,
+    tag: "",
+    content: `<p>林深，你好：</p><p>附件是本周二供应商合规审查会议的纪要，请查收并归档至合规部文档库。</p><p>重点事项：</p><ul><li>三家供应商资质文件需在 7 月 10 日前完成复核</li><li>华南区代理商的合同续签存在合规风险，需进一步调查</li></ul><p>请尽快处理，谢谢。</p><p style="color:var(--text-muted);margin-top:16px;">张晓薇<br>风控合规部 · 高级经理</p>`
+  },
+  {
+    id: 3,
+    sender: "人力资源部",
+    subject: "【全员公告】2026年第三季度绩效考核启动通知",
+    time: "07-03 14:00",
+    read: true,
+    tag: "notice",
+    content: `<p>全体员工：</p><p>2026年第三季度绩效考核自评通道现已开启，请于 7 月 12 日前完成自评提交。</p><p>考核时间节点：</p><ul><li>7.01 - 7.12：员工自评</li><li>7.13 - 7.20：直属上级评分</li><li>7.21 - 7.25：绩效面谈</li></ul><p style="color:var(--text-muted);margin-top:16px;">—— 人力资源部</p>`
+  },
+  {
+    id: 4,
+    sender: "陈志远",
+    subject: "转发：华南区供应商合同补充协议——请审阅",
+    time: "07-03 11:08",
+    read: false,
+    tag: "urgent",
+    content: `<p>林深，请帮我审阅这份补充协议的合规条款，特别是第 4.2 条和第 7.1 条。</p><p>这个供应商的报价比市场价低了近 30%，我总觉得不太对劲，但采购部那边催得很紧。</p><p>附件：华南供应商补充协议_v3.docx</p><p style="color:var(--text-muted);margin-top:16px;">陈志远<br>风控合规部 · 合规专员</p>`
+  },
+  {
+    id: 5,
+    sender: "IT支持中心",
+    subject: "【系统通知】您的账号将于 7 月 15 日到期，请及时续期",
+    time: "07-02 17:45",
+    read: true,
+    tag: "system",
+    content: `<p>尊敬的林深：</p><p>您的 OA 账号试用期将于 2026 年 7 月 15 日到期。如需续期，请填写《账号续期申请表》并由部门负责人签字后提交至 IT 支持中心。</p><p style="color:var(--text-muted);margin-top:16px;">—— IT 支持中心</p>`
+  },
+  {
+    id: 6,
+    sender: "匿名举报",
+    subject: "【匿名举报】关于采购部供应商选择程序的异常情况",
+    time: "07-02 09:15",
+    read: false,
+    tag: "urgent",
+    content: `<p style="color:var(--danger);font-weight:600;">⚠ 此邮件来自内部匿名举报信箱</p><p>致风控合规部：</p><p>我注意到采购部最近几次供应商遴选流程存在程序违规。具体包括：</p><ol><li>至少三次招标中，最终中标方在开标前已获得内部报价信息。</li><li>项目经理与供应商之间存在未申报的利益关系。</li><li>相关审批流程被刻意绕过，部分合同没有经过合规审查。</li></ol><p>我无法提供更多细节，因为担心遭到报复。但恳请合规部对此展开调查。</p><p style="color:var(--text-muted);margin-top:16px;">—— 一名担心的员工</p>`
+  },
+  {
+    id: 7,
+    sender: "行政部",
+    subject: "【活动通知】本周五下午茶——新同事欢迎会",
+    time: "07-01 15:30",
+    read: true,
+    tag: "notice",
+    content: `<p>大家好：</p><p>为欢迎近期入职的新同事，行政部将于本周五（7月4日）下午 3:00 在 3 楼茶水间举办欢迎下午茶。</p><p>欢迎各位同事参加！</p><p style="color:var(--text-muted);margin-top:16px;">—— 行政部</p>`
+  },
+  {
+    id: 8,
+    sender: "李总",
+    subject: "关于风控合规部实习生工作安排的通知",
+    time: "06-30 10:00",
+    read: true,
+    tag: "",
+    content: `<p>张晓薇、林深：</p><p>实习生林深近期工作安排如下：</p><ul><li>协助张晓薇完成 Q3 供应商合规审查</li><li>整理归档上半年合规审查报告</li><li>配合处理匿名举报信箱的来信</li></ul><p>请张经理做好指导工作。</p><p style="color:var(--text-muted);margin-top:16px;">李国栋<br>风控合规部 · 总监</p>`
+  }
+];
+
+// ========== Render Mail List ==========
+function renderMailList(filter) {
+  const list = document.getElementById('mailList');
+  let filtered = mails;
+  if (filter === 'unread') filtered = mails.filter(m => !m.read);
+  else if (filter !== 'all') filtered = mails; // other filters just show all for preview
+
+  list.innerHTML = filtered.map(m => `
+    <div class="mail-item ${m.read ? 'read' : 'unread'}" data-id="${m.id}" onclick="openMail(${m.id})">
+      <div class="unread-indicator"></div>
+      <div class="sender">${m.sender}</div>
+      <div class="subject">
+        ${m.tag ? `<span class="tag ${m.tag === 'urgent' ? 'urgent' : m.tag === 'system' ? 'system' : 'notice'}">${m.tag === 'urgent' ? '紧急' : m.tag === 'system' ? '系统' : '公告'}</span>` : ''}
+        ${m.subject}
+      </div>
+      <div class="time">${m.time}</div>
+    </div>
+  `).join('');
+}
+
+// ========== Open Mail Modal ==========
+function openMail(id) {
+  const mail = mails.find(m => m.id === id);
+  if (!mail) return;
+  document.getElementById('modalSubject').textContent = mail.subject;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="mail-meta">
+      <span><strong>发件人：</strong>${mail.sender}</span>
+      <span><strong>时间：</strong>2026-${mail.time}</span>
+    </div>
+    <div class="mail-content">${mail.content}</div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+  // Mark as read
+  if (!mail.read) {
+    mail.read = true;
+    renderMailList(document.querySelector('.sidebar-menu li.active').dataset.filter || 'all');
+    updateBadge();
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ========== Update unread badge ==========
+function updateBadge() {
+  const unreadCount = mails.filter(m => !m.read).length;
+  const badge = document.querySelector('.sidebar-menu li[data-filter="unread"] .count');
+  if (badge) badge.textContent = unreadCount;
+}
+
+// ========== Nav Menu Switch ==========
+document.getElementById('navMenu').addEventListener('click', function(e) {
+  const li = e.target.closest('li');
+  if (!li || !li.dataset.page) return;
+
+  // Update active nav
+  this.querySelectorAll('li').forEach(l => l.classList.remove('active'));
+  li.classList.add('active');
+
+  // Show page
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + li.dataset.page);
+  if (page) page.classList.add('active');
+});
+
+// ========== Sidebar Menu Switch ==========
+document.getElementById('sidebarMenu').addEventListener('click', function(e) {
+  const li = e.target.closest('li');
+  if (!li || !li.dataset.filter) return;
+  this.querySelectorAll('li').forEach(l => l.classList.remove('active'));
+  li.classList.add('active');
+  renderMailList(li.dataset.filter);
+});
+
+// ========== Clock ==========
+function updateClock() {
+  const now = new Date();
+  const str = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0') + ' ' +
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0') + ':' +
+    String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = str;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ========== Init ==========
+renderMailList('all');
+updateBadge();
+
+// Keyboard shortcut: ESC to close modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>

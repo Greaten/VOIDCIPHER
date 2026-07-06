@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>【深夜慎入】关于那家已经停业的面馆，我发现了一些奇怪的东西 - NGA玩家社区</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #c0c0c0;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* 顶部导航 */
+  .header-top {
+    background: #141428;
+    border-bottom: 1px solid #2a2a4a;
+    padding: 0 20px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+  .header-top .logo {
+    color: #e8d5a3;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+  .header-top .user-info {
+    display: flex;
+    gap: 16px;
+    color: #888;
+  }
+  .header-top .user-info span { cursor: default; }
+
+  /* 主导航 */
+  .main-nav {
+    background: #1e1e36;
+    border-bottom: 2px solid #3a3a5c;
+    padding: 8px 20px;
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+  }
+  .main-nav a {
+    color: #aaa;
+    text-decoration: none;
+    cursor: default;
+  }
+  .main-nav a:hover { color: #e8d5a3; }
+
+  /* 面包屑 */
+  .breadcrumb {
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #888;
+  }
+  .breadcrumb a {
+    color: #aab;
+    text-decoration: none;
+    cursor: default;
+  }
+  .breadcrumb a:hover { color: #e8d5a3; }
+  .breadcrumb span { color: #e8d5a3; }
+
+  /* 主容器 */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+  }
+
+  /* 帖子标题 */
+  .thread-title {
+    background: #22223a;
+    border: 1px solid #3a3a5c;
+    border-radius: 4px 4px 0 0;
+    padding: 16px 20px;
+    margin-top: 8px;
+  }
+  .thread-title h1 {
+    font-size: 18px;
+    color: #e8d5a3;
+    font-weight: bold;
+    line-height: 1.5;
+  }
+  .thread-meta {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #777;
+    display: flex;
+    gap: 16px;
+  }
+
+  /* 帖子操作栏 */
+  .thread-actions {
+    background: #1e1e36;
+    border-left: 1px solid #3a3a5c;
+    border-right: 1px solid #3a3a5c;
+    padding: 8px 20px;
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+  }
+  .thread-actions button {
+    background: #2a2a4a;
+    border: 1px solid #3a3a5c;
+    color: #aaa;
+    padding: 4px 12px;
+    border-radius: 2px;
+    cursor: default;
+    font-size: 12px;
+  }
+  .thread-actions button.fav { color: #e8a34a; border-color: #e8a34a; }
+
+  /* 帖子卡片 */
+  .post-card {
+    background: #22223a;
+    border: 1px solid #3a3a5c;
+    border-top: none;
+    display: flex;
+  }
+  .post-card:first-of-type { border-top: 1px solid #3a3a5c; }
+
+  /* 左侧用户栏 */
+  .poster-panel {
+    width: 160px;
+    min-width: 160px;
+    padding: 14px 12px;
+    background: #1e1e36;
+    border-right: 1px solid #2a2a4a;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+  }
+  .poster-panel .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    background: #2a2a4a;
+    border: 2px solid #3a3a5c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #555;
+  }
+  .poster-panel .avatar.op {
+    background: #3a2a1a;
+    border-color: #8a6a3a;
+    color: #8a6a3a;
+  }
+  .poster-panel .username {
+    font-weight: bold;
+    color: #c0c0c0;
+    font-size: 13px;
+  }
+  .poster-panel .username.op-tag { color: #e8a34a; }
+  .poster-panel .level {
+    margin-top: 4px;
+    color: #777;
+    font-size: 11px;
+  }
+  .poster-panel .stats {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #666;
+    line-height: 1.8;
+    border-top: 1px solid #2a2a4a;
+    padding-top: 8px;
+  }
+  .poster-panel .stats .num {
+    color: #999;
+    font-weight: bold;
+  }
+
+  /* 右侧内容栏 */
+  .post-content {
+    flex: 1;
+    padding: 14px 20px;
+    min-width: 0;
+  }
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #777;
+    border-bottom: 1px dashed #2a2a4a;
+    padding-bottom: 8px;
+  }
+  .post-header .floor {
+    color: #e8d5a3;
+    font-weight: bold;
+    font-size: 13px;
+  }
+  .post-body {
+    color: #bbb;
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .post-body p { margin-bottom: 8px; }
+
+  /* 楼主特殊链接 */
+  .post-body .portal-link {
+    display: inline-block;
+    margin: 8px 0;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #3a1a1a, #5a2a2a);
+    border: 2px solid #8a4a3a;
+    border-radius: 6px;
+    color: #ffaa66;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .post-body .portal-link:hover {
+    background: linear-gradient(135deg, #5a2a2a, #7a3a3a);
+    border-color: #aa6a4a;
+    color: #ffcc88;
+    box-shadow: 0 0 20px rgba(255, 100, 50, 0.3);
+  }
+
+  /* 快速回复 */
+  .quick-reply {
+    background: #22223a;
+    border: 1px solid #3a3a5c;
+    border-top: none;
+    padding: 16px 20px;
+    border-radius: 0 0 4px 4px;
+    margin-bottom: 12px;
+  }
+  .quick-reply textarea {
+    width: 100%;
+    height: 80px;
+    background: #1a1a2e;
+    border: 1px solid #3a3a5c;
+    border-radius: 4px;
+    color: #555;
+    padding: 10px;
+    font-size: 13px;
+    resize: none;
+    pointer-events: none;
+  }
+  .quick-reply .reply-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .quick-reply .reply-bar button {
+    background: #3a3a5c;
+    border: none;
+    color: #666;
+    padding: 6px 20px;
+    border-radius: 2px;
+    cursor: default;
+    font-size: 12px;
+  }
+  .quick-reply .reply-bar .tip {
+    font-size: 11px;
+    color: #555;
+  }
+
+  /* 翻页 */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  .pagination span {
+    padding: 4px 12px;
+    background: #22223a;
+    border: 1px solid #3a3a5c;
+    border-radius: 2px;
+    color: #666;
+    cursor: default;
+  }
+  .pagination span.current {
+    background: #3a3a5c;
+    color: #e8d5a3;
+    border-color: #5a5a7c;
+  }
+
+  /* 底部 */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: #444;
+    border-top: 1px solid #2a2a4a;
+    margin-top: 20px;
+  }
+
+  /* 滚动条 */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1a1a2e; }
+  ::-webkit-scrollbar-thumb { background: #3a3a5c; border-radius: 3px; }
+
+  /* 回复楼层差异色 */
+  .post-card.alt .poster-panel { background: #202038; }
+
+  /* 楼主标识 */
+  .op-badge {
+    display: inline-block;
+    background: #8a6a3a;
+    color: #1a1a2e;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-left: 4px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部栏 -->
+<div class="header-top">
+  <div class="logo">NGA·艾泽拉斯国家地理</div>
+  <div class="user-info">
+    <span>游客浏览中</span>
+    <span>|</span>
+    <span>登录</span>
+    <span>注册</span>
+    <span>|</span>
+    <span>消息(0)</span>
+  </div>
+</div>
+
+<!-- 主导航 -->
+<div class="main-nav">
+  <a>首页</a><a>论坛</a><a>精华</a><a>幻化</a><a>数据库</a><a>视频</a><a>工具箱</a>
+</div>
+
+<!-- 面包屑 -->
+<div class="breadcrumb">
+  <a>论坛首页</a> &raquo; <a>美食夜话</a> &raquo; <a>深夜食堂</a> &raquo; <span>阅读帖子</span>
+</div>
+
+<div class="container">
+
+  <!-- 帖子标题 -->
+  <div class="thread-title">
+    <h1>【深夜慎入】关于那家已经停业的面馆，我发现了一些奇怪的东西</h1>
+    <div class="thread-meta">
+      <span>发帖时间：2024-11-17 02:47</span>
+      <span>|</span>
+      <span>回复/查看：16 / 3520</span>
+      <span>|</span>
+      <span>最后回复：2024-11-17 04:28</span>
+    </div>
+  </div>
+
+  <!-- 操作栏 -->
+  <div class="thread-actions">
+    <button class="fav">★ 收藏</button>
+    <button>👍 点赞(42)</button>
+    <button>分享</button>
+    <button>举报</button>
+    <button>只看楼主</button>
+    <button>正序浏览</button>
+  </div>
+
+  <!-- ===== 楼主主帖 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar op">👤</div>
+      <div class="username op-tag">深夜不归人</div>
+      <div class="level">LV.7 深夜游魂</div>
+      <div class="stats">
+        威望: <span class="num">3.2</span><br>
+        发帖: <span class="num">47</span><br>
+        注册: 2021-03<br>
+        货币: <span class="num">1280G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#1 楼主</span>
+        <span>2024-11-17 02:47</span>
+      </div>
+      <div class="post-body">
+        <p>老哥们，这么晚了还没睡的有吗？</p>
+        <p>说个事，我经常去的一家面馆——「一面之缘·私房面馆」，在城南那条老街上的，老饕应该都听说过。半年前突然关门停业了，问隔壁店铺说是老板回老家了。</p>
+        <p>本来这事儿也就过去了，但昨天晚上我熬夜刷手机，无意间搜到了这家面馆的外卖页面，<strong>居然还在正常运行</strong>。一个已经停业半年的面馆，网页还在，还能下单……</p>
+        <p>我仔细逛了逛这个页面，越看越觉得不对劲。你们自己进去看看吧，我总感觉这面馆背后藏着什么东西。</p>
+        <p style="text-align:center; margin: 16px 0;">
+          <a href="noodle_shop.html" class="portal-link" target="_blank">🔗 [传送门] 一面之缘·私房面馆</a>
+        </p>
+        <p style="color:#666; font-size:12px;">（半夜看这个有点瘆人，建议胆小的白天再点）</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 2楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">键盘侦探</div>
+      <div class="level">LV.5 实习侦探</div>
+      <div class="stats">
+        威望: <span class="num">1.8</span><br>
+        发帖: <span class="num">312</span><br>
+        注册: 2022-06<br>
+        货币: <span class="num">640G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#2</span>
+        <span>2024-11-17 02:53</span>
+      </div>
+      <div class="post-body">
+        <p>卧槽，这大半夜的刷到这种帖子……鸡皮疙瘩起来了</p>
+        <p>点进去看了，页面居然真的还能下单，我加了碗牛肉面试了下，走到付款那步都没报错。不是，一个停业半年的店，网页还正常维护着？而且底部版权写的还是今年。这运维费谁在掏？</p>
+        <p>我现在有点后悔点进去了，强迫症犯了，今晚不搞清楚睡不着。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3楼 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">熬夜冠军</div>
+      <div class="level">LV.4 夜行动物</div>
+      <div class="stats">
+        威望: <span class="num">0.8</span><br>
+        发帖: <span class="num">156</span><br>
+        注册: 2023-04<br>
+        货币: <span class="num">420G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#3</span>
+        <span>2024-11-17 02:56</span>
+      </div>
+      <div class="post-body">
+        <p>火钳刘明！前排兜售瓜子花生矿泉水——</p>
+        <p>大半夜刷到这种帖子，今晚必上热门。我先占个位置，明天早上起来看有没有大佬解密。谜语人出没，NGA传统艺能了属于是。</p>
+        <p>不过说真的，停业半年的店网页还在跑，这事儿本身就挺奇怪。等一个柯南。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">夜猫子一号</div>
+      <div class="level">LV.8 资深夜猫</div>
+      <div class="stats">
+        威望: <span class="num">4.5</span><br>
+        发帖: <span class="num">1208</span><br>
+        注册: 2020-09<br>
+        货币: <span class="num">3200G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#4</span>
+        <span>2024-11-17 02:58</span>
+      </div>
+      <div class="post-body">
+        <p>哈哈你们胆子也太小了，不就一个网站嘛（虽然我也心里发毛）</p>
+        <p>不过说真的，评价区有问题。有个叫"老食客"的ID留言说「老顾客都知道，东西不在菜单上」——这措辞好怪，正常人评价会说"推荐隐藏菜品"或者"有隐藏菜单"，谁会写"东西不在菜单上"啊？感觉像在暗示什么。</p>
+        <p>还有，"一面之缘"这店名你们不觉得耳熟吗？我记得有首什么藏头诗里有这句……忘了是哪首了。另外商家电话 028-8888-6666 我刚打了，提示空号，但响了三声才断——为什么空号会响三声？</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">路过打酱油</div>
+      <div class="level">LV.6 酱油党</div>
+      <div class="stats">
+        威望: <span class="num">2.1</span><br>
+        发帖: <span class="num">503</span><br>
+        注册: 2022-01<br>
+        货币: <span class="num">980G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#5</span>
+        <span>2024-11-17 03:02</span>
+      </div>
+      <div class="post-body">
+        <p>等等，你们都在分析网站玄学，没人关心这家面到底好不好吃吗？</p>
+        <p>我一个吃货看到菜单图已经开始流口水了。祖传牛肉面42，蒜泥白肉28，这价格在成都面馆里算中等偏上了。有没有老饕出来说说这家店以前味道怎么样？如果是好吃的店莫名其妙关了，那确实有点可惜。</p>
+        <p>另外 @夜猫子一号 你说的藏头诗，我搜了一下没搜到。你记错了吧。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6楼 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">吃瓜群众甲</div>
+      <div class="level">LV.3 潜水员</div>
+      <div class="stats">
+        威望: <span class="num">0.6</span><br>
+        发帖: <span class="num">28</span><br>
+        注册: 2024-08<br>
+        货币: <span class="num">120G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#6</span>
+        <span>2024-11-17 03:07</span>
+      </div>
+      <div class="post-body">
+        <p>不是你们都不睡觉的？？凌晨三点在这破案呢</p>
+        <p>好吧我也看了一眼……那个冰粉的图拍得还挺好看，12块钱一份，价格挺良心的。话说12反过来是21，如果真是解谜游戏的话，21会不会是某个关键数字？比如日期、密码长度什么的？</p>
+        <p>另外我注意到营业时间写的 10:00-02:00，这个 02:00 很微妙啊，凌晨两点。正常面馆谁会开到凌晨两点？除非……它本来就不是给普通人开的。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 7楼 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">考古学家</div>
+      <div class="level">LV.12 数据矿工</div>
+      <div class="stats">
+        威望: <span class="num">12.7</span><br>
+        发帖: <span class="num">3841</span><br>
+        注册: 2018-01<br>
+        货币: <span class="num">15600G</span>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #2a2a4a;font-size:10px;color:#555;line-height:1.6;word-break:break-all;">
+        <div style="color:#666;font-size:10px;margin-bottom:2px;">— 签名 —</div>
+        <span style="color:#444;">PSN ID: miantiao37 | Steam: 考古学家 | 艾欧尼亚: 大师300点</span><br>
+        <span style="color:#444;">（加好友请带备注，好友位有限）</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#7</span>
+        <span>2024-11-17 03:15</span>
+      </div>
+      <div class="post-body">
+        <p>行了行了别瞎猜了，我认真看了下页面源码（对，我闲的）</p>
+        <p>关于我们页面有个商家编号 <code style="background:#2a2a4a;padding:1px 6px;border-radius:2px;color:#ffaa66;">noodle_master</code>，我随手试了一下去商家登录，这个编号确实能当账号使，直接跳到了密码输入界面。但密码试了几个常见的都不对，123456、admin、noodle123 全跪。</p>
+        <p>另外我还注意到两个不知道有没有用的东西：①页面 banner 那个暖橙色，色号是 E85D04，我总觉得这个颜色是故意选的，E85 倒过来是 58E，04 不动……算了可能我想多了；②我把菜单上所有菜的价格加了一遍：牛肉面 28 + 排骨面 25 + 担担面 15 + 蹄花面 22 + 蒜泥白肉 18 + 口水鸡 22 + 冰粉 12 = 142。142 是不是什么暗号？</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 8楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">不信邪</div>
+      <div class="level">LV.4 理性派</div>
+      <div class="stats">
+        威望: <span class="num">1.2</span><br>
+        发帖: <span class="num">89</span><br>
+        注册: 2024-03<br>
+        货币: <span class="num">280G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#8</span>
+        <span>2024-11-17 03:18</span>
+      </div>
+      <div class="post-body">
+        <p>散了散了，我觉得你们过度解读了。</p>
+        <p>不过刚搜了下，这家面馆在大众点评上居然还有页面，停业了页面还挂着。我翻了下评价区，居然有骑手在里边聊过这家店的事，挺有意思的。</p>
+        <p>链接我就不贴了，自己去搜。骑手聊的那些比面馆官网有意思多了。</p>
+        <p>要我说，有这功夫不如早点睡觉。明天醒来就会发现这帖子沉了。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 9楼：楼主回复 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar op">👤</div>
+      <div class="username op-tag">深夜不归人<span class="op-badge">楼主</span></div>
+      <div class="level">LV.7 深夜游魂</div>
+      <div class="stats">
+        威望: <span class="num">3.2</span><br>
+        发帖: <span class="num">47</span><br>
+        注册: 2021-03<br>
+        货币: <span class="num">1280G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#9 楼主</span>
+        <span>2024-11-17 03:22</span>
+      </div>
+      <div class="post-body">
+        <p>@考古学家 大佬牛逼，还看源码……我也试了 noodle_master 那个登录，跟你一样卡在密码。试了面馆名字拼音、开业日期、店面地址，全错。</p>
+        <p>@吃瓜群众甲 02:00 那个我也有注意到，以前我去吃的时候问过老板为什么开到那么晚，他就是笑笑不说话。现在想想确实不对劲。还有那个冰粉 12 元我倒觉得没啥，他们家冰粉一直这个价。</p>
+        <p>对了补充个细节——这家面馆的老板姓陈，老街坊都叫他"老陈"，但从来没人知道他全名叫什么。一个大活人，半年前说不见就不见了，隔壁茶叶店老板说他关门那天连招呼都没打。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 10楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">肚子饿了</div>
+      <div class="level">LV.3 吃货</div>
+      <div class="stats">
+        威望: <span class="num">0.5</span><br>
+        发帖: <span class="num">42</span><br>
+        注册: 2024-05<br>
+        货币: <span class="num">210G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#10</span>
+        <span>2024-11-17 03:26</span>
+      </div>
+      <div class="post-body">
+        <p>有没有人跟我一样……看完帖子现在好饿啊。</p>
+        <p>话说成都还有没有类似的老面馆推荐？不要网红店，就要这种藏在巷子里的苍蝇馆子。之前去重庆吃过一家叫"梯坎面"的，味道绝了。成都这边我还没找到特别对胃口的。</p>
+        <p>（对不起歪楼了，你们继续破案，我点个外卖先）</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 11楼 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">真相挖掘机</div>
+      <div class="level">LV.9 谜题爱好者</div>
+      <div class="stats">
+        威望: <span class="num">6.1</span><br>
+        发帖: <span class="num">672</span><br>
+        注册: 2021-11<br>
+        货币: <span class="num">4800G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#11</span>
+        <span>2024-11-17 03:31</span>
+      </div>
+      <div class="post-body">
+        <p>你们都在纠结价格和颜色，没人注意评价区那条可疑的评论吗？</p>
+        <p style="background:#2a2a4a;padding:8px 12px;border-radius:4px;border-left:3px solid #8a6a3a;color:#e8d5a3;">
+          「有个老顾客每次点单都是固定搭配，老板说这是老规矩，但我忘了具体是哪几样了。骑手应该知道，他们每次送的单子备注里都有。」
+        </p>
+        <p>这条评论很关键！评价里有个老顾客提到了固定搭配，但关键信息好像在<strong>骑手那边</strong>。那个老顾客说他忘了具体是哪几样了，但明确说了骑手的配送备注里有。你们有没有办法搞到骑手视角的信息？比如骑手登录？或者有没有骑手在别的平台（比如大众点评）留过言？</p>
+        <p>我觉得这条线索指向的是骑手端的信息，不是面馆页面本身能直接找到的。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 12楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">键盘侦探</div>
+      <div class="level">LV.5 实习侦探</div>
+      <div class="stats">
+        威望: <span class="num">1.8</span><br>
+        发帖: <span class="num">312</span><br>
+        注册: 2022-06<br>
+        货币: <span class="num">640G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#12</span>
+        <span>2024-11-17 03:45</span>
+      </div>
+      <div class="post-body">
+        <p>我回来了，刚才花了半小时把可能的密码组合全试了一遍：</p>
+        <p>noodle321 ✗ / master321 ✗ / noodle_master321 ✗ / 321321 ✗ / 3210 ✗ / yimianzhiyuan ✗ / laochen ✗ / chen ✗ / 2021（注册年份）✗</p>
+        <p>全跪。不过我突然想到——如果 3-2-1 不是密码本身，而是某种"索引"呢？比如页面第三段文字第二个词的第一行什么的？就像那种寻宝游戏一样……我是不是想太多了</p>
+        <p>@吃瓜群众甲 02:00 那个，我倒过来想了下，20:00 就是晚上八点，会不会是某个关键时间？比如晚上八点登录才有隐藏内容？</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 13楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">蹲一个结局</div>
+      <div class="level">LV.2 围观群众</div>
+      <div class="stats">
+        威望: <span class="num">0.3</span><br>
+        发帖: <span class="num">14</span><br>
+        注册: 2024-10<br>
+        货币: <span class="num">60G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#13</span>
+        <span>2024-11-17 03:55</span>
+      </div>
+      <div class="post-body">
+        <p>插眼。cy。等一个大佬解密。</p>
+        <p>@键盘侦探 你也太拼了试了那么多密码，respect。不过我赌五毛钱这密码根本不是纯数字组合，哪有这么简单。要是纯数字的话前面早有人试出来了。</p>
+        <p>我觉得密码应该藏在这个页面本身的文字里……比如"关于我们"那段介绍词，或者菜单描述文案。你们有没有人认真读过菜单上每道菜的描述？</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 14楼 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">老城故事多</div>
+      <div class="level">LV.2 新手上路</div>
+      <div class="stats">
+        威望: <span class="num">0.1</span><br>
+        发帖: <span class="num">3</span><br>
+        注册: 2024-11<br>
+        货币: <span class="num">30G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#14</span>
+        <span>2024-11-17 04:02</span>
+      </div>
+      <div class="post-body">
+        <p>专门注册账号来回复这个帖子。</p>
+        <p>我就住城南老街，以前常去一面之缘吃面。老陈这个人……怎么说呢，平时看着就是个普通的面馆老板，但他有个习惯，给熟客上面的时候，碗底会压一张小纸条。有时候是句诗，有时候是一串数字，有时候就画个符号。我们那帮老客都觉得挺好玩的，没人当真。</p>
+        <p>面馆关门之后有人说老陈回老家了，但也有传言说他其实压根没离开，只是"不方便露面"了。我最后一次去是五月底，那天他给我碗底压的纸条写的是"六月见"。结果六月份店就关了。</p>
+        <p>不说了，有点瘆人。希望只是我想多了。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 15楼 ===== -->
+  <div class="post-card alt">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">懒人求带</div>
+      <div class="level">LV.3 伸手党</div>
+      <div class="stats">
+        威望: <span class="num">0.4</span><br>
+        发帖: <span class="num">35</span><br>
+        注册: 2024-06<br>
+        货币: <span class="num">150G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#15</span>
+        <span>2024-11-17 04:15</span>
+      </div>
+      <div class="post-body">
+        <p>爬了这么久的楼还没看到密码总结，有没有好心人直接给个结论啊……</p>
+        <p>noodle_master 密码到底是多少？我试了 321321、123456、noodle321、yimianzhiyuan、laochen，全都不对。不想爬楼了，求大佬带路！！！</p>
+        <p>另外我有个疑问——你们说那个3-2-1如果是密码，那格式是啥？纯数字 321？还是带字母的？还是3210？还是3-2-1？可能性也太多了吧。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 16楼 ===== -->
+  <div class="post-card">
+    <div class="poster-panel">
+      <div class="avatar">👤</div>
+      <div class="username">吃瓜群众甲</div>
+      <div class="level">LV.3 潜水员</div>
+      <div class="stats">
+        威望: <span class="num">0.6</span><br>
+        发帖: <span class="num">28</span><br>
+        注册: 2024-08<br>
+        货币: <span class="num">120G</span>
+      </div>
+    </div>
+    <div class="post-content">
+      <div class="post-header">
+        <span class="floor">#16</span>
+        <span>2024-11-17 04:28</span>
+      </div>
+      <div class="post-body">
+        <p>OK兄弟们，我捋一下目前的线索，你们看对不对：</p>
+        <p>① 商家账号 noodle_master ✓ ② 密码可能跟 3-2-1（三份牛肉面+两份蒜泥白肉+一份冰粉）有关 ✓ ③ "东西不在菜单上"暗示有隐藏入口 ✓</p>
+        <p>然后一堆干扰项：色号 E85D04、电话空号响三声、冰粉 12 元倒过来 21、菜单总价 142、营业时间 02:00 倒过来 20:00、店名在藏头诗里、老陈碗底塞纸条……</p>
+        <p>说实话我觉得这就是个 ARG（Alternate Reality Game），说不定是哪个独立游戏工作室搞的营销。但不管怎样，挺有意思的，天亮了再研究，先睡了。</p>
+        <p style="color:#666;font-size:12px;">PS：如果真有人试出密码了记得 @ 我</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 快速回复 -->
+  <div class="quick-reply">
+    <textarea placeholder="您需要登录后才可以回帖……"></textarea>
+    <div class="reply-bar">
+      <span class="tip">登录后参与讨论 | Ctrl+Enter 快速回复</span>
+      <button disabled>发表回复</button>
+    </div>
+  </div>
+
+  <!-- 翻页 -->
+  <div class="pagination">
+    <span>‹ 上一页</span>
+    <span class="current">1</span>
+    <span>下一页 ›</span>
+    <span>跳转到</span>
+  </div>
+
+  <!-- 底部 -->
+  <div class="footer">
+    <p>NGA玩家社区 · 艾泽拉斯国家地理 · 2002-2024</p>
+    <p>Powered by Discuz! | 本页面纯属虚构，仅供娱乐</p>
+  </div>
+
+</div>
+
+<script>
+  // 反调试措施：禁止右键
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // 禁止 F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // DevTools 检测（装饰性提醒）
+  (function() {
+    var threshold = 160;
+    setInterval(function() {
+      if (
+        window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold
+      ) {
+        console.clear();
+        console.log('%c嘘……有些秘密不该被看见。', 'color:#666;font-size:14px;');
+        console.log('%c如果你在找什么，不如去面馆页面看看？', 'color:#8a6a3a;');
+      }
+    }, 1000);
+  })();
+</script>
+
+</body>
+</html>

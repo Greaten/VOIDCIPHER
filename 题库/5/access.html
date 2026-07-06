@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TS-09 终端验证 - 鲨鲨wiki</title>
+<link rel="stylesheet" href="css/wiki.css">
+<style>
+/* Access page specific overrides */
+.access-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #0d0d0d;
+    background-image:
+        radial-gradient(ellipse at center, rgba(30,60,90,0.15) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0a0a 0%, #111 100%);
+}
+
+.access-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.access-card {
+    background: #161616;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 40px 44px;
+    width: 440px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.7), 0 0 80px rgba(51,255,51,0.03);
+    text-align: center;
+}
+
+.access-card .card-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 12px rgba(51,255,51,0.3));
+}
+
+.access-card h2 {
+    color: #ccc;
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: 3px;
+    margin-bottom: 4px;
+}
+
+.access-card .subtitle {
+    color: #666;
+    font-size: 0.78rem;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+}
+
+.access-card .field-label {
+    display: block;
+    color: #888;
+    font-size: 0.75rem;
+    text-align: left;
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.access-card input {
+    width: 100%;
+    padding: 12px 16px;
+    background: #0a0a0a;
+    border: 1px solid #444;
+    color: #33ff33;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    border-radius: 4px;
+    outline: none;
+    text-align: center;
+    letter-spacing: 4px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.access-card input:focus {
+    border-color: #33ff33;
+    box-shadow: 0 0 12px rgba(51,255,51,0.15);
+}
+
+.access-card input.error-input {
+    border-color: #ff3333;
+    box-shadow: 0 0 12px rgba(255,51,51,0.2);
+}
+
+.access-card .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.access-card button {
+    flex: 1;
+    padding: 12px;
+    background: #1a2a1a;
+    color: #33ff33;
+    border: 1px solid #33ff33;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    letter-spacing: 2px;
+    border-radius: 4px;
+    transition: all 0.25s;
+}
+
+.access-card button:hover {
+    background: #33ff33;
+    color: #0a0a0a;
+}
+
+.access-card button.btn-cancel {
+    background: transparent;
+    border-color: #555;
+    color: #888;
+}
+
+.access-card button.btn-cancel:hover {
+    background: #333;
+    color: #ccc;
+}
+
+.access-error {
+    color: #ff4444;
+    font-size: 0.78rem;
+    margin-top: 10px;
+    min-height: 20px;
+    letter-spacing: 1px;
+}
+
+.access-hint {
+    color: #555;
+    font-size: 0.7rem;
+    margin-top: 18px;
+    line-height: 1.6;
+}
+
+.access-footer {
+    text-align: center;
+    padding: 16px;
+    color: #444;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+}
+
+/* Glitch text on errors */
+@keyframes glitchText {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-1px); }
+    40% { transform: translateX(1px); }
+    60% { transform: translateX(-0.5px); }
+    80% { transform: translateX(0.5px); }
+}
+
+.glitch-text { animation: glitchText 0.15s linear; }
+</style>
+</head>
+<body class="access-wrapper">
+
+<div class="access-main">
+    <div class="access-card">
+        <div class="card-icon">&#x1f988;</div>
+        <h2>TS-09 终端验证</h2>
+        <p class="subtitle">GAMMA 级安全区域 — 需要访问口令</p>
+
+        <label class="field-label">访问口令</label>
+        <input type="password" id="accessCode" placeholder="输入口令..." maxlength="32" autocomplete="off">
+
+        <div class="btn-row">
+            <button id="btnSubmit" onclick="verifyAccess()">验证</button>
+            <button class="btn-cancel" onclick="window.location.href='index.html'">返回</button>
+        </div>
+
+        <div class="access-error" id="errorMsg"></div>
+
+        <div class="access-hint">
+            提示：口令线索散布于鲨鲨wiki各词条之中。<br>
+            仔细阅读，你会发现深埋在文字中的秘密。
+        </div>
+    </div>
+</div>
+
+<footer class="access-footer">
+    TS-09 独立终端 | 波塞冬站 C舱 | 鲨鲨wiki 内部系统
+</footer>
+
+<script src="js/anti-debug.js"></script>
+<script src="js/crypto.js"></script>
+<script>
+    // 正确答案（Base64 + XOR加密存储，密钥: SHARK_DEEP_2024）
+    // 占位密码的密文：实际密码将在第二阶段确定
+    // 此处使用 "N3PTUN3" 作为占位答案
+    var ENCRYPTED_ANSWER = SharkCrypto.encrypt("N3PTUN3", "SHARK_DEEP_2024");
+
+    function verifyAccess() {
+        var input = document.getElementById('accessCode');
+        var errorEl = document.getElementById('errorMsg');
+        var code = input.value.trim();
+
+        if (!code) {
+            errorEl.textContent = '[错误] 请输入访问口令。';
+            input.classList.add('error-input');
+            return;
+        }
+
+        var correct = SharkCrypto.verify(code, ENCRYPTED_ANSWER, "SHARK_DEEP_2024");
+
+        if (correct) {
+            errorEl.textContent = '';
+            input.classList.remove('error-input');
+            // 跳转到终端页面
+            document.querySelector('.access-card').style.opacity = '0.5';
+            setTimeout(function() {
+                window.location.href = 'terminal.html';
+            }, 800);
+        } else {
+            errorEl.textContent = '[拒绝] 口令错误。访问被拒绝。';
+            errorEl.classList.add('glitch-text');
+            input.classList.add('error-input');
+            input.value = '';
+            input.focus();
+
+            setTimeout(function() {
+                errorEl.classList.remove('glitch-text');
+                input.classList.remove('error-input');
+            }, 600);
+        }
+    }
+
+    // 回车键提交
+    document.getElementById('accessCode').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            verifyAccess();
+        }
+    });
+
+    // 自动聚焦
+    document.getElementById('accessCode').focus();
+</script>
+
+</body>
+</html>

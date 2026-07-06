@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>锐恒集团 · OA系统</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-sidebar: #f5f6f7;
+  --bg-card: #ffffff;
+  --bg-hover: #eef1f5;
+  --bg-input: #f9fafb;
+  --border: #e0e3e8;
+  --border-light: #eef0f2;
+  --nav-bg: #1a3c5e;
+  --nav-text: #c8d6e5;
+  --nav-active: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #5a6b7c;
+  --text-muted: #95a5b4;
+  --accent: #2980b9;
+  --accent-light: #eaf3fb;
+  --danger: #e74c3c;
+  --danger-light: #fdecea;
+  --warning: #e67e22;
+  --warning-light: #fef5ec;
+  --success: #27ae60;
+  --unread-dot: #3498db;
+  --badge: #e74c3c;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:"Microsoft YaHei","微软雅黑","PingFang SC","Helvetica Neue",sans-serif;
+  background:var(--bg);color:var(--text-primary);height:100vh;
+  display:flex;flex-direction:column;overflow:hidden;font-size:14px;line-height:1.6;
+}
+
+.navbar{
+  height:50px;background:var(--nav-bg);display:flex;align-items:center;
+  padding:0 20px;flex-shrink:0;z-index:100;color:#fff;
+}
+.navbar .logo{font-size:15px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px;margin-right:36px;white-space:nowrap;}
+.navbar .logo .icon{width:26px;height:26px;background:rgba(255,255,255,0.15);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.nav-menu{display:flex;gap:2px;list-style:none;flex:1;}
+.nav-menu li{padding:6px 16px;border-radius:4px;cursor:pointer;color:var(--nav-text);font-size:13px;transition:all 0.15s;position:relative;white-space:nowrap;}
+.nav-menu li:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.nav-menu li.active{color:var(--nav-active);background:rgba(255,255,255,0.15);font-weight:600;}
+.nav-menu li .badge{position:absolute;top:0;right:0;background:var(--badge);color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:600;}
+.navbar-right{display:flex;align-items:center;gap:16px;margin-left:auto;}
+.navbar-right .icon-btn{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--nav-text);position:relative;transition:all 0.15s;}
+.navbar-right .icon-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.navbar-right .icon-btn .dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--badge);border-radius:50%;}
+.navbar-right .time{color:var(--nav-text);font-size:12px;font-variant-numeric:tabular-nums;font-family:"Consolas",monospace;}
+
+.main-container{display:flex;flex:1;overflow:hidden;}
+
+.sidebar{width:220px;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;padding:0;}
+.sidebar .user-info{padding:18px 16px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.sidebar .user-info .avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;margin-bottom:8px;}
+.sidebar .user-info .name{font-size:15px;font-weight:600;color:var(--text-primary);}
+.sidebar .user-info .role{font-size:12px;color:var(--text-muted);margin-top:1px;}
+.sidebar .sidebar-section{padding:10px 16px 4px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+.sidebar .sidebar-menu{list-style:none;padding:0 6px;}
+.sidebar .sidebar-menu li{padding:8px 12px;border-radius:5px;cursor:pointer;color:var(--text-secondary);font-size:13px;display:flex;align-items:center;gap:8px;transition:all 0.15s;margin-bottom:1px;}
+.sidebar .sidebar-menu li:hover{background:#e4e8ed;color:var(--text-primary);}
+.sidebar .sidebar-menu li.active{background:#dce8f5;color:var(--accent);font-weight:600;}
+.sidebar .sidebar-menu li .count{margin-left:auto;font-size:11px;background:var(--badge);color:#fff;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 6px;font-weight:600;}
+
+.content{flex:1;overflow-y:auto;padding:24px 28px;background:var(--bg);}
+.content-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.content-header h2{font-size:18px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:10px;}
+.content-header h2 .sub{font-size:12px;font-weight:400;color:var(--text-muted);}
+.content-header .actions{display:flex;gap:8px;}
+.btn{padding:6px 14px;border-radius:4px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s;white-space:nowrap;}
+.btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:#c0c6ce;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.primary:hover{background:#2472a4;}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff;}
+
+.mail-toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center;}
+.search-box{background:var(--bg-input);border:1px solid var(--border);border-radius:4px;padding:7px 12px;color:var(--text-primary);font-size:13px;width:260px;outline:none;font-family:inherit;transition:border-color 0.15s;}
+.search-box:focus{border-color:var(--accent);}
+.search-box::placeholder{color:var(--text-muted);}
+.mail-count{font-size:12px;color:var(--text-muted);margin-left:auto;}
+.mail-list{background:var(--bg-card);border-radius:8px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);}
+.mail-item{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background 0.12s;gap:12px;}
+.mail-item:last-child{border-bottom:none;}
+.mail-item:hover{background:var(--bg-hover);}
+.mail-item.unread{background:#f8faff;}
+.mail-item.unread .sender,.mail-item.unread .subject{font-weight:700;}
+.mail-item .unread-indicator{width:7px;height:7px;border-radius:50%;background:var(--unread-dot);flex-shrink:0;}
+.mail-item.read .unread-indicator{background:transparent;}
+.mail-item .sender{width:105px;color:var(--text-primary);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}
+.mail-item .subject{flex:7;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:13px;}
+.mail-item.read .subject{color:var(--text-secondary);font-weight:400;}
+.mail-item .subject .tag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:2px;margin-right:6px;font-weight:600;letter-spacing:0.3px;}
+.mail-item .subject .tag.sys{background:#eaf3fb;color:#2980b9;}
+.mail-item .subject .tag.urg{background:var(--danger-light);color:#e74c3c;}
+.mail-item .subject .tag.noti{background:var(--warning-light);color:#e67e22;}
+.mail-item .subject .tag.dept{background:#e8f6ef;color:#27ae60;}
+.mail-item .code{width:120px;color:var(--text-muted);flex-shrink:0;font-size:12px;font-family:"Consolas",monospace;text-align:left;white-space:nowrap;}
+.mail-item .time{width:85px;text-align:right;color:var(--text-muted);flex-shrink:0;font-size:12px;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:10px;width:680px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;box-shadow:var(--shadow-md);}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg-sidebar);border-radius:10px 10px 0 0;}
+.modal-header h3{font-size:15px;font-weight:700;color:var(--text-primary);}
+.modal-close{width:28px;height:28px;border-radius:4px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.modal-close:hover{background:var(--bg-hover);color:var(--text-primary);}
+.modal-body{padding:20px;overflow-y:auto;flex:1;}
+.modal-body .mail-meta{display:flex;gap:20px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border-light);color:var(--text-secondary);font-size:12px;flex-wrap:wrap;}
+.modal-body .mail-meta span strong{color:var(--text-primary);margin-right:3px;font-size:12px;}
+.modal-body .mail-content{color:var(--text-primary);font-size:13px;line-height:1.85;}
+.modal-body .mail-content p{margin-bottom:10px;}
+.modal-body .mail-content ul,.modal-body .mail-content ol{margin:8px 0 8px 20px;}
+.modal-body .mail-content li{margin-bottom:4px;}
+
+.page-section{display:none;}
+.page-section.active{display:block;}
+
+.doc-list{display:flex;flex-direction:column;gap:8px;}
+.doc-item{display:flex;align-items:center;padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all 0.15s;gap:14px;}
+.doc-item:hover{border-color:var(--accent);background:var(--accent-light);}
+.doc-item .doc-icon{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.doc-item .doc-icon.pdf{background:#fdecea;color:#e74c3c;}
+.doc-item .doc-icon.xls{background:#e8f6ef;color:#27ae60;}
+.doc-item .doc-icon.doc{background:#eaf3fb;color:#2980b9;}
+.doc-item .doc-icon.img{background:#fef5ec;color:#e67e22;}
+.doc-item .doc-info{flex:1;min-width:0;}
+.doc-item .doc-info .doc-name{font-size:13px;font-weight:600;color:var(--text-primary);}
+.doc-item .doc-info .doc-meta{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.doc-item .doc-arrow{color:var(--text-muted);}
+
+.report-form{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px;max-width:680px;}
+.report-form .form-group{margin-bottom:18px;}
+.report-form label{display:block;font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:6px;}
+.report-form input[type="text"],.report-form textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--bg-input);outline:none;}
+.report-form input[type="text"]:focus,.report-form textarea:focus{border-color:var(--accent);}
+.report-form textarea{min-height:120px;resize:vertical;}
+.report-form .form-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
+
+.ending-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;}
+.ending-overlay.show{display:flex;}
+.ending-card{background:#fff;border-radius:8px;width:560px;max-width:90vw;max-height:80vh;overflow-y:auto;padding:28px 32px;box-shadow:var(--shadow-md);text-align:left;}
+.ending-card .oa-header{border-bottom:2px solid #1a3c5e;padding-bottom:12px;margin-bottom:16px;}
+.ending-card .oa-header .oa-title{font-size:16px;font-weight:700;color:#1a3c5e;}
+.ending-card .oa-header .oa-meta{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.ending-card .oa-body{font-size:13px;line-height:1.9;color:var(--text-primary);}
+.ending-card .oa-body p{margin-bottom:10px;}
+.ending-card .oa-footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+
+.welcome-banner{background:linear-gradient(135deg,#1a3c5e,#2c5f8a);color:#fff;border-radius:8px;padding:16px 24px;margin-bottom:20px;}
+.welcome-banner h3{font-size:15px;margin-bottom:4px;font-weight:600;}
+.welcome-banner p{font-size:12px;opacity:0.8;line-height:1.6;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d0d5dd;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#b0b8c2;}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo"><div class="icon">锐</div>锐恒集团 · OA系统</div>
+  <ul class="nav-menu" id="navMenu">
+    <li data-page="mail" class="active">公告与邮件</li>
+    <li data-page="docs">文档库</li>
+    <li data-page="report">举报信箱<span class="badge">!</span></li>
+  </ul>
+  <div class="navbar-right">
+    <span class="time" id="clock">--</span>
+    <div class="icon-btn" title="消息">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="dot" id="notifDot"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="main-container">
+  <aside class="sidebar">
+    <div class="user-info">
+      <div class="avatar">林</div>
+      <div class="name">林深</div>
+      <div class="role">风控合规部 · 实习生（入职第3天）</div>
+    </div>
+    <div class="sidebar-section">邮件分类</div>
+    <ul class="sidebar-menu" id="sidebarMenu">
+      <li class="active" data-filter="all">全部邮件 <span class="count" id="countAll" style="background:#d0d5dd;">0</span></li>
+      <li data-filter="unread">未读邮件 <span class="count" id="countUnread">0</span></li>
+      <li data-filter="system">系统邮件</li>
+      <li data-filter="dept">部门内部</li>
+      <li data-filter="cross">跨部门往来</li>
+      <li data-filter="announce">全员公告</li>
+    </ul>
+  </aside>
+
+  <main class="content">
+
+    <div class="page-section active" id="page-mail">
+      <div class="welcome-banner">
+        <h3>林深</h3>
+        <p>工号 RH202607001 | 风控合规部 | 入职日期：2026年7月2日 | 直属上级：张明远（高级经理）</p>
+      </div>
+      <div class="mail-toolbar">
+        <input class="search-box" id="searchBox" placeholder="搜索邮件..." oninput="filterMail()" />
+        <button class="btn" onclick="markAllRead()">全部标为已读</button>
+        <span class="mail-count" id="mailCount"></span>
+      </div>
+      <div class="mail-list" id="mailList"></div>
+    </div>
+
+    <div class="page-section" id="page-docs">
+      <div class="content-header"><h2>文档库 <span class="sub">风控合规部 · 内部文档</span></h2></div>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:16px;">以下文档为风控合规部有权查阅的内部资料。</p>
+      <div class="doc-list" id="docList"></div>
+    </div>
+
+    <div class="page-section" id="page-report">
+      <div class="content-header"><h2>举报信箱 <span class="sub">内部举报系统</span></h2></div>
+      <div class="report-form" id="reportForm">
+        <p style="color:var(--text-secondary);font-size:13px;margin-bottom:18px;line-height:1.8;background:var(--accent-light);padding:12px 16px;border-radius:6px;">
+          本系统支持匿名举报。请尽可能详细描述你所发现的违规行为和证据来源。举报内容将被加密存档，由风控合规部总监直接审阅。虚假举报将承担相应责任。
+        </p>
+        <div class="form-group">
+          <label>举报对象</label>
+          <input type="text" id="reportTarget" placeholder="请输入被举报人姓名及职务..." />
+        </div>
+        <div class="form-group">
+          <label>证据描述</label>
+          <textarea id="reportEvidence" placeholder="请详细描述违规行为、涉及人员、时间、金额及其他证据。如有相关邮件或文档，请注明其标题或编号。"></textarea>
+          <div class="form-hint">请尽可能详细地列出你所发现的可疑之处。</div>
+        </div>
+        <div class="form-group">
+          <label>关键邮件编号</label>
+          <input type="text" id="reportMailCodes" placeholder="请列出你认为与此举报相关的邮件编号，多个编号请用逗号或空格分隔" />
+          <div class="form-hint">请从邮件列表的"编号"列获取。正确列出关键邮件编号将有助于举报成立。</div>
+        </div>
+        <div class="form-group">
+          <label>补充说明（选填）</label>
+          <textarea id="reportNote" placeholder="其他需要补充的信息..." style="min-height:60px;"></textarea>
+        </div>
+        <button class="btn danger" onclick="submitReport()" style="padding:10px 28px;font-size:14px;">提交举报</button>
+        <p class="form-hint" style="margin-top:10px;">举报内容将被加密存档，由风控合规部总监直接审阅。</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalSubject"></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="ending-overlay" id="endingOverlay">
+  <div class="ending-card" id="endingCard"></div>
+</div>
+
+<script>
+// ==================== DATA ====================
+let mails = [];
+let docs = [];
+
+function buildMails(){
+  mails = [
+    // --- SYSTEM (6) ---
+    {id:"mail_1",code:"RH-ML-0702-001",sender:"系统管理员",subject:"欢迎加入锐恒集团——新员工入职通知",time:"07-02 08:30",tag:"sys",read:false,cat:"system",
+     content:`<p>林深，你好：</p><p>你的OA账号已激活，工号 RH202607001。直属上级为<strong>张明远</strong>（风控合规部·高级经理），请在报到后第一时间与他联系。</p><p>入职材料清单：</p><ul><li>身份证复印件（已提交）</li><li>学历证书复印件（已提交）</li><li>保密协议（待签署）</li><li>合规承诺书（待签署）</li></ul><p>请于7月4日前完成IT安全培训和合规制度学习。</p><p style="color:var(--text-muted);">—— 人力资源部</p>`},
+
+    {id:"mail_2",code:"RH-ML-0702-003",sender:"IT支持中心",subject:"【必读】新员工IT安全培训——7月4日截止",time:"07-02 10:00",tag:"sys",read:false,cat:"system",
+     content:`<p>各位新入职同事：</p><p>请在7月4日18:00前完成IT安全培训（必修）。培训内容包括：OA系统操作规范、数据保密与信息安全、邮件使用规范、系统访问权限与日志审计说明。</p><p>注意：所有OA系统操作均有日志记录。IT部门会定期审计异常访问行为。如发现账号被盗用，请立即联系IT支持中心（分机8110）。</p><p style="color:var(--text-muted);">—— IT支持中心</p>`},
+
+    {id:"mail_3",code:"RH-ML-0702-005",sender:"系统管理员",subject:"OA系统使用指南",time:"07-02 11:30",tag:"sys",read:false,cat:"system",
+     content:`<p>欢迎使用锐恒集团OA系统。主要功能模块：</p><ul><li>公告与邮件：收发内部邮件，查看公司公告</li><li>审批流程：提交和审批各类申请</li><li>文档库：查阅部门及公司级文档</li><li>举报信箱：匿名或实名举报违规行为</li></ul><p>如有疑问请参阅帮助中心或联系IT支持。</p><p style="color:var(--text-muted);">—— 信息技术中心</p>`},
+
+    {id:"mail_4",code:"RH-ML-0703-003",sender:"财务部",subject:"2026年7月工资条——林深",time:"07-03 09:00",tag:"sys",read:false,cat:"system",
+     content:`<p>林深：</p><p>7月工资明细（实习期）：基本工资 ¥4,500 / 餐补 ¥500 / 交通补贴 ¥300，实发合计 ¥5,300。如有疑问请联系财务部薪酬组（分机8203）。</p><p style="color:var(--text-muted);">—— 财务部薪酬组</p>`},
+
+    {id:"mail_5",code:"RH-ML-0703-009",sender:"人力资源部",subject:"实习生绩效考核办法通知",time:"07-03 14:30",tag:"sys",read:false,cat:"system",
+     content:`<p>林深：</p><p>实习生考核周期为每月一次。考核维度：工作质量（40%）、学习能力（30%）、团队协作（20%）、合规意识（10%）。导师张明远将每月提交评估报告。</p><p style="color:var(--text-muted);">—— 人力资源部</p>`},
+
+    {id:"mail_6",code:"RH-ML-0704-001",sender:"系统管理员",subject:"【系统通知】密码修改提醒",time:"07-04 08:00",tag:"sys",read:false,cat:"system",
+     content:`<p>林深：</p><p>系统检测到你的初始密码尚未修改。为保障账号安全，请在今日内完成修改。修改路径：系统设置 → 安全中心 → 修改密码。</p><p style="color:var(--text-muted);">—— 系统管理员</p>`},
+
+    // --- ANNOUNCEMENTS (4) ---
+    {id:"mail_7",code:"RH-ML-0701-001",sender:"总裁办公室",subject:"【全员公告】锐恒集团2026年Q2财报摘要",time:"07-01 09:00",tag:"noti",read:false,cat:"announce",
+     content:`<p>全体员工：</p><p>公司2026年第二季度财务报告已发布，摘要如下：</p><ul><li>营收：8.32亿元（同比增长12.4%）</li><li>净利润：1.15亿元（同比增长8.7%）</li><li>运营成本：5.67亿元</li><li>采购支出：2.83亿元（同比增长27%）</li></ul><p>完整报告请查阅文档库。</p><p style="color:var(--text-muted);">—— 总裁办公室</p>`},
+
+    {id:"mail_8",code:"RH-ML-0704-010",sender:"信息技术中心",subject:"【通知】7月5日凌晨系统维护及数据备份",time:"07-04 16:00",tag:"sys",read:false,cat:"announce",
+     content:`<p>各部门：</p><p>计划于7月5日（周六）凌晨2:00-6:00进行系统维护，届时OA系统将不可用。维护内容包括：数据库优化、日志归档、安全补丁更新。</p><p>另，IT部门在例行审计中发现，7月2日凌晨3:17，财务系统模块有一次登录记录，IP地址非公司内网段，已列入安全审计事项。请财务部确认是否为授权操作。</p><p style="color:var(--text-muted);">—— 信息技术中心</p>`},
+
+    {id:"mail_9",code:"RH-ML-0703-006",sender:"行政部",subject:"【全员公告】2026年团建活动报名通知",time:"07-03 10:00",tag:"noti",read:false,cat:"announce",
+     content:`<p>各位同事：</p><p>2026年度夏季团建活动定于7月19日-20日在从化温泉度假村举行。活动项目：户外拓展、烧烤晚会、温泉休闲。请于7月10日前在OA中报名。费用由公司承担。</p><p style="color:var(--text-muted);">—— 行政部</p>`},
+
+    {id:"mail_10",code:"RH-ML-0701-004",sender:"人力资源部",subject:"【全员公告】组织架构微调通知",time:"07-01 15:00",tag:"noti",read:false,cat:"announce",
+     content:`<p>全体员工：</p><p>经总裁办公会决定，以下组织调整自7月1日起生效：采购部与供应链管理部合并，由赵永刚担任总监；财务部增设内部审计组，直接向总裁汇报；风控合规部职责扩展，增加供应商合规审查职能。请相关部门做好工作交接。</p><p style="color:var(--text-muted);">—— 人力资源部</p>`},
+
+    // --- DEPT INTERNAL (7) ---
+    {id:"mail_11",code:"RH-ML-0702-006",sender:"张明远",subject:"本周工作安排（7月3日-7月7日）",time:"07-02 14:00",tag:"dept",read:false,cat:"dept",
+     content:`<p>林深：</p><p>本周工作安排如下：1.完成IT安全培训和合规制度学习；2.熟悉OA系统各模块操作；3.协助整理Q2供应商合规审查档案；4.阅读部门过往案例卷宗。</p><p>有问题随时来307找我。</p><p style="color:var(--text-muted);">张明远</p>`},
+
+    {id:"mail_12",code:"RH-ML-0703-012",sender:"张明远",subject:"回复：关于供应商审查的疑问",time:"07-03 16:45",tag:"dept",read:false,cat:"dept",
+     content:`<p>林深：</p><p>关于供应商审查标准，书面文件已归档，你可以自行查阅。</p><p>另外，你刚来不久，最近公司内部有些调整，做事低调一些。涉及<strong>盛源商贸</strong>的文件，走纸质流程，不要留电子记录。</p><p style="color:var(--text-muted);">张明远</p>`},
+
+    {id:"mail_13",code:"RH-ML-0703-007",sender:"张晓薇",subject:"实习生欢迎午餐——今天12:00 2楼餐厅",time:"07-03 11:00",tag:"dept",read:false,cat:"dept",
+     content:`<p>林深，中午12点2楼员工餐厅，部门给你安排了一个简单的欢迎午餐。李总监也会来。</p><p style="color:var(--text-muted);">张晓薇</p>`},
+
+    {id:"mail_14",code:"RH-ML-0703-013",sender:"张明远",subject:"风控合规部第27周周报",time:"07-03 17:30",tag:"dept",read:false,cat:"dept",
+     content:`<p>部门各位同事：</p><p>第27周（6月29日-7月3日）工作周报：完成供应商合规审查12家，其中3家存在资质问题，已要求限期整改；采购部Q2供应商遴选流程审查中，有若干疑点需进一步核查；匿名举报信箱收到1封来信，已转李总监审阅；新员工林深已报到，培训进行中。</p><p style="color:var(--text-muted);">张明远</p>`},
+
+    {id:"mail_15",code:"RH-ML-0701-006",sender:"陈志远",subject:"关于供应商评分的说明",time:"07-01 18:20",tag:"dept",read:false,cat:"dept",
+     content:`<p>明远：</p><p>关于本次供应商评分，盛源商贸的综合评分从78分调整到了92分。这是按王总的意思办的，他认为盛源商贸上季度交付表现不错，应给更高评价。相关的评分调整依据我已存档，如有疑问可查阅。</p><p style="color:var(--text-muted);">陈志远</p>`},
+
+    {id:"mail_16",code:"RH-ML-0703-002",sender:"李国栋",subject:"转发：集团关于加强供应商合规管理的通知",time:"07-03 08:45",tag:"dept",read:false,cat:"dept",
+     content:`<p>部门全体：</p><p>转发集团最新通知。核心要求：所有金额超过50万元的采购合同，必须经风控合规部审查后方可签署。即日起执行。请明远负责落实。</p><p style="color:var(--text-muted);">李国栋</p>`},
+
+    {id:"mail_17",code:"RH-ML-0704-013",sender:"张明远",subject:"明天上午来我办公室一趟",time:"07-04 17:00",tag:"dept",read:false,cat:"dept",
+     content:`<p>林深：</p><p>明天上午9:30到我办公室来一趟。有些事情需要当面沟通。这几天经手的文档和邮件，你做个整理，明天一起过一遍。</p><p style="color:var(--text-muted);">张明远</p>`},
+
+    // --- CROSS-DEPT (21) ---
+    {id:"mail_18",code:"RH-ML-0704-005",sender:"财务部-周会计",subject:"关于7月采购款支付的审批进度",time:"07-04 10:00",tag:"",read:false,cat:"cross",
+     content:`<p>张经理：</p><p>7月采购款支付审批单（编号 PO-2026-0731）目前在风控合规部审批节点已超过24小时，请尽快处理。该笔付款涉及盛源商贸等三家供应商，总额187万元。如有问题请及时反馈，以免影响付款周期。</p><p style="color:var(--text-muted);">周会计</p>`},
+
+    {id:"mail_19",code:"RH-ML-0703-011",sender:"赵永刚",subject:"采购部Q3供应商入库申请——请审批",time:"07-03 15:00",tag:"",read:false,cat:"cross",
+     content:`<p>风控合规部：</p><p>Q3新增供应商入库申请共5家，资质文件已上传至文档库。请于7月10日前完成合规审查。新增供应商：恒达商贸有限公司、万通物流有限公司、金信咨询有限公司、新锐科技材料有限公司。盛源商贸为已有供应商，本次不涉及。</p><p style="color:var(--text-muted);">赵永刚</p>`},
+
+    {id:"mail_20",code:"RH-ML-0704-004",sender:"IT支持中心",subject:"3楼打印机故障——已报修",time:"07-04 09:15",tag:"",read:false,cat:"cross",
+     content:`<p>各位同事：</p><p>3楼公共区域打印机出现卡纸故障，已联系供应商维修，预计7月5日恢复。期间请使用2楼打印机。</p><p style="color:var(--text-muted);">—— IT支持中心</p>`},
+
+    {id:"mail_21",code:"RH-ML-0628-001",sender:"采购部-刘芳",subject:"盛源商贸报价单——请财务部确认",time:"06-28 14:00",tag:"",read:false,cat:"cross",
+     content:`<p>财务部周会计：</p><p>附件为盛源商贸Q3供货报价单，主要品目报价如下：办公耗材A类 ¥128/件、办公耗材B类 ¥215/件、清洁用品套装 ¥860/套、打印耗材 ¥340/套。以上报价合计约 ¥476,000。请确认预算。</p><p style="color:var(--text-muted);">刘芳</p>`},
+
+    {id:"mail_22",code:"RH-ML-0702-004",sender:"王建国",subject:"回复：关于供应商评分的疑问",time:"07-02 10:30",tag:"",read:false,cat:"cross",
+     content:`<p>张明远、陈志远：</p><p>关于供应商评分，请知悉：我从未要求任何人调整评分。所有评分应严格按标准流程执行。如果发现有人以我的名义干预评分，请立即向风控合规部报告。采购流程的公正性是基本原则，任何人不得凌驾于制度之上。</p><p style="color:var(--text-muted);">王建国</p>`},
+
+    {id:"mail_23",code:"RH-ML-0704-007",sender:"财务部-周会计",subject:"PO-2026-0731 审批金额确认",time:"07-04 11:30",tag:"",read:false,cat:"cross",
+     content:`<p>采购部刘芳：</p><p>PO-2026-0731（盛源商贸Q3供货合同）审批金额确认如下：最终审批金额 ¥738,000。其中办公耗材A类 ¥198/件、办公耗材B类 ¥310/件、清洁用品套装 ¥1,250/套、打印耗材 ¥510/套。该审批已由王总签字确认，请按此金额执行合同。</p><p style="color:var(--text-muted);">周会计</p>`},
+
+    {id:"mail_24",code:"RH-ML-0704-008",sender:"行政部-小吴",subject:"3楼空调故障",time:"07-04 14:00",tag:"",read:false,cat:"cross",
+     content:`<p>各位3楼同事：</p><p>3楼中央空调压缩机故障，物业说明天下午修好。</p><p style="color:var(--text-muted);">小吴</p>`},
+
+    {id:"mail_25",code:"RH-ML-0704-009",sender:"系统管理员",subject:"【系统恢复】已删除邮件恢复通知",time:"07-04 15:00",tag:"urg",read:false,cat:"cross",
+     content:`<p>林深：</p><p>IT部门在进行日志归档时，发现一封已被删除的邮件残留在邮件服务器缓存中。经技术恢复，现转交风控合规部留存。</p><hr style="border:0;border-top:1px solid #e0e3e8;margin:10px 0;"><p style="color:var(--text-muted);font-size:12px;">—— 恢复邮件正文 ——</p><p style="font-size:12px;">发件人：王建国 | 收件人：盛源商贸-李总 | 时间：6月25日 21:42</p><p style="font-size:12px;">李总：</p><p style="font-size:12px;">电话里说的事我已安排好了。合同走正常流程，其他照旧。改天喝茶。</p><p style="font-size:12px;color:var(--text-muted);">王建国</p><hr style="border:0;border-top:1px solid #e0e3e8;margin:10px 0;"><p style="color:var(--text-muted);font-size:11px;">该邮件在6月26日凌晨被手动删除，因涉及合规管辖范围，已按规定转交风控合规部。</p>`},
+
+    {id:"mail_26",code:"RH-ML-0703-001",sender:"匿名举报",subject:"【匿名举报】财务部的账目好像有问题",time:"07-03 08:15",tag:"urg",read:false,cat:"cross",
+     content:`<p>致风控合规部：</p><p>我不知道这封信该不该写……我只是一个小员工，但有些事情我真的看不下去了。</p><p>财务部那边，最近有些账目对不上。我不太懂财务，但有几笔采购款的数字明显不对，供应商那边好像也不太对劲。具体的我说不清楚，但你们如果能查一下最近的采购合同和审批记录，应该能发现问题。</p><p>我不敢说太多，万一被知道了……你们自己查吧，求你们了。</p><p style="color:var(--text-muted);">一个害怕的人</p>`},
+
+    {id:"mail_27",code:"RH-ML-0704-012",sender:"行政部",subject:"【提醒】明天消防演习",time:"07-04 16:30",tag:"noti",read:false,cat:"announce",
+     content:`<p>全体员工：</p><p>明天（7月5日）上午10:00将进行季度消防演习，届时请按疏散路线有序撤离至一楼广场。演习预计持续30分钟。</p><p style="color:var(--text-muted);">—— 行政部</p>`},
+
+    {id:"mail_28",code:"RH-ML-0703-004",sender:"人力资源部",subject:"员工门禁卡领取通知",time:"07-03 09:30",tag:"sys",read:false,cat:"cross",
+     content:`<p>林深：</p><p>你的员工门禁卡已制卡完成，请于今日内到行政部（2楼201室）领取。领取时需出示工号或身份证。门禁卡权限已开通：1-3楼办公区、员工餐厅。</p><p style="color:var(--text-muted);">—— 人力资源部</p>`},
+
+    // === 闲聊类 ===
+    {id:"mail_29",code:"RH-ML-0703-008",sender:"张晓薇",subject:"午饭约吗？",time:"07-03 11:45",tag:"dept",read:false,cat:"dept",
+     content:`<p>林深，中午一起吃饭不？公司对面新开了家湘菜馆，听说小炒肉不错。12点楼下碰头？</p><p>对了你喜欢吃什么菜系？我们部门平时周三固定聚餐，轮着请客，下次该你了哈。</p><p style="color:var(--text-muted);">张晓薇</p>`},
+
+    {id:"mail_30",code:"RH-ML-0704-006",sender:"行政部-小吴",subject:"3楼饮水机又坏了！！！",time:"07-04 10:30",tag:"",read:false,cat:"cross",
+     content:`<p>3楼各位同事：</p><p>饮水机又双叒叕坏了，这次是热水不出水。已经报修了但厂家说配件要明天才到。暂时请大家到2楼或4楼接水，抱歉！</p><p style="color:var(--text-muted);">小吴</p>`},
+
+    {id:"mail_31",code:"RH-ML-0703-010",sender:"采购部-刘芳",subject:"谁拿了我的计算器？？？",time:"07-03 14:30",tag:"",read:false,cat:"cross",
+     content:`<p>有没有人看到我桌上的计算器？卡西欧那个，银灰色的，上面贴了个小猫贴纸。今天早上还在的，吃完午饭回来就没了。急用，拜托了！</p><p style="color:var(--text-muted);">刘芳</p>`},
+
+    {id:"mail_32",code:"RH-ML-0704-011",sender:"张晓薇",subject:"周末有什么安排？",time:"07-04 16:00",tag:"dept",read:false,cat:"dept",
+     content:`<p>林深~周末有没有安排呀？几个同事打算周六下午去唱K，在正佳那边。你要不要一起来？都是年轻人，别老宅着。</p><p>对了你住哪个区？我住天河，顺路的话可以一起走。</p><p style="color:var(--text-muted);">张晓薇</p>`},
+
+    {id:"mail_33",code:"RH-ML-0704-002",sender:"市场部-王磊",subject:"转发：三伏天养生小贴士（建议收藏）",time:"07-04 08:30",tag:"",read:false,cat:"cross",
+     content:`<p>各位同事，转发一篇挺好的养生文章，夏天到了大家注意身体~</p><p>7月7日就入伏了，三伏天要注意：少喝冰水、空调温度别太低、多吃生姜红枣、晚上泡脚……</p><p style="color:var(--text-muted);">王磊</p>`},
+
+    {id:"mail_34",code:"RH-ML-0702-008",sender:"行政部-小吴",subject:"2号电梯停运通知",time:"07-02 16:30",tag:"",read:false,cat:"cross",
+     content:`<p>办公楼2号电梯（靠近卫生间那部）因年检发现安全隐患，即日起停运，预计下周三恢复。请大家使用1号和3号电梯，高峰期可能需要排队，建议提前几分钟到公司。</p><p style="color:var(--text-muted);">—— 行政部</p>`},
+
+    {id:"mail_35",code:"RH-ML-0701-002",sender:"人力资源部-李娜",subject:"2026年会节目征集——风控合规部",time:"07-01 11:00",tag:"",read:false,cat:"cross",
+     content:`<p>风控合规部各位同事：</p><p>2026年年会定于8月15日举行，现向各部门征集节目。每个部门至少出一个节目（唱歌、舞蹈、小品均可）。去年你们部门没出节目，今年李总监点名说必须参加哦~</p><p>有意向的同事请于7月15日前联系我报名。</p><p style="color:var(--text-muted);">李娜</p>`},
+
+    // === 日常业务类 ===
+    {id:"mail_36",code:"RH-ML-0703-005",sender:"IT支持中心",subject:"【通知】VPN系统升级——7月4日22:00-23:00",time:"07-03 09:30",tag:"sys",read:false,cat:"cross",
+     content:`<p>全体员工：</p><p>计划于7月4日（周五）22:00-23:00对VPN系统进行版本升级，届时远程办公接入将中断约30分钟。本次升级内容：安全补丁更新、双因素认证优化。如有疑问请联系IT支持中心（分机8110）。</p><p style="color:var(--text-muted);">—— IT支持中心</p>`},
+
+    {id:"mail_37",code:"RH-ML-0704-003",sender:"人力资源部",subject:"实习生周报提交通知",time:"07-04 09:00",tag:"sys",read:false,cat:"cross",
+     content:`<p>林深：</p><p>请于每周五17:00前在OA系统中提交本周实习周报。周报模板已上传至文档库，如有疑问请咨询导师张明远。</p><p>注意：连续两周未提交周报将影响实习考核评分。</p><p style="color:var(--text-muted);">—— 人力资源部</p>`},
+
+    {id:"mail_38",code:"RH-ML-0701-003",sender:"保安部",subject:"【通知】地下停车场B区临时封闭",time:"07-01 14:00",tag:"",read:false,cat:"cross",
+     content:`<p>各位车主同事：</p><p>地下停车场B区因消防管道维修，7月1日-7月5日临时封闭。请将车辆停放至A区或C区。施工期间可能有噪音和粉尘，敬请谅解。</p><p style="color:var(--text-muted);">—— 保安部</p>`},
+
+    {id:"mail_39",code:"RH-ML-0630-001",sender:"财务部",subject:"【提醒】6月份费用报销截止通知",time:"06-30 15:00",tag:"",read:false,cat:"cross",
+     content:`<p>各部门：</p><p>6月份产生的费用报销，请在7月5日18:00前在OA提交报销申请，逾期将纳入7月份核算。提交时请确保：发票完整清晰、审批流程完整、费用明细与预算匹配。</p><p>如有疑问联系薪酬组-周会计（分机8203）。</p><p style="color:var(--text-muted);">—— 财务部</p>`},
+
+    {id:"mail_40",code:"RH-ML-0702-007",sender:"张晓薇",subject:"转发：合规制度V3.2更新——请查阅",time:"07-02 15:30",tag:"dept",read:false,cat:"dept",
+     content:`<p>部门各位同事：</p><p>集团法务部发布了合规制度V3.2版本，主要更新内容：供应商尽职调查流程优化、礼品与招待申报标准调整、利益冲突申报表格式更新。</p><p>更新后的制度文档已上传至文档库，请各位查阅并在本周内完成学习确认。</p><p style="color:var(--text-muted);">张晓薇</p>`},
+
+    // === 假线索/红鲱鱼 ===
+    {id:"mail_41",code:"RH-ML-0629-001",sender:"陈志远",subject:"关于恒达商贸合作事项的确认",time:"06-29 10:00",tag:"",read:false,cat:"cross",
+     content:`<p>周会计：</p><p>恒达商贸Q3供货合同金额确认如下：办公耗材A类 ¥135/件、B类 ¥228/件，总计约 ¥51.2万元。该价格较上季度上浮约8%，主要因原材料价格上涨，相关调价函已存档。</p><p>该金额在预算范围内，请按流程确认。如有疑问可查阅恒达商贸的调价函和市场价格对比表。</p><p style="color:var(--text-muted);">陈志远</p>`},
+
+    {id:"mail_42",code:"RH-ML-0702-002",sender:"李国栋",subject:"关于近期工作的几点意见",time:"07-02 09:00",tag:"dept",read:false,cat:"dept",
+     content:`<p>明远：</p><p>关于近期工作，提几点意见：1.供应商审查按既定流程推进即可，不要节外生枝；2.新来的实习生先让他熟悉常规业务，复杂案子暂时不要接触；3.如果有什么拿不准的，先和我沟通再行动。</p><p>有些事情，知道得越少对你越好。</p><p style="color:var(--text-muted);">国栋</p>`},
+
+    {id:"mail_43",code:"RH-ML-0628-002",sender:"赵永刚",subject:"紧急采购审批——特殊渠道补充",time:"06-28 16:00",tag:"",read:false,cat:"cross",
+     content:`<p>风控合规部、财务部：</p><p>因生产线急需某特种润滑剂（型号 LY-220），常规供应商缺货，现申请通过特殊渠道向"裕兴工业材料有限公司"紧急采购，预算 ¥8.7万元。该供应商不在现有名录内，但为行业内知名企业，资质文件随附件提交。</p><p>事出紧急，请加急审批。相关情况已向总裁办报备。</p><p style="color:var(--text-muted);">赵永刚</p>`},
+
+    // === 边角料线索 ===
+    {id:"mail_44",code:"RH-ML-0701-005",sender:"财务部-周会计",subject:"回复：刘芳——关于6月份报销的几个问题",time:"07-01 17:00",tag:"",read:false,cat:"cross",
+     content:`<p>刘芳：</p><p>收到你的6月报销单，有两个问题：1.6月15日那笔采购的发票金额和审批单金额差了¥1,200，请核实；2.6月20日那笔餐饮发票的抬头开错了，需要重开。</p><p>另外，上周王总让我帮忙改了个采购审批的数字，我总觉得不太对。你那边经手的采购审批，最近有没有遇到类似的情况？算了，当我没说。</p><p>报销改好后重新提交就行。</p><p style="color:var(--text-muted);">周会计</p>`},
+
+    {id:"mail_45",code:"RH-ML-0705-001",sender:"IT支持中心",subject:"【系统通知】数据库巡检报告——7月5日",time:"07-05 01:30",tag:"sys",read:false,cat:"cross",
+     content:`<p>风控合规部：</p><p>例行数据库巡检报告如下：所有系统运行正常，数据备份已完成。日志审计模块在巡检中标记了以下异常项：1.财务审批模块有3次非工作时间审批记录（凌晨2:00-4:00时段），涉及账号 wangjianguo 和 chenzhiyuan；2.文档库有2次非授权IP访问记录。</p><p>详情见附件巡检报告。以上标记仅为系统自动识别，未经人工核实，供参考。</p><p style="color:var(--text-muted);">—— IT支持中心（系统自动发送）</p>`},
+
+    {id:"mail_46",code:"RH-ML-0627-001",sender:"陈志远",subject:"关于盛源商贸合同的进度",time:"06-27 09:30",tag:"",read:false,cat:"cross",
+     content:`<p>刘芳：</p><p>盛源商贸的合同先放一放，王总那边还没确认。你先把恒达和万通的材料准备好，这两家不涉及审批调整，流程应该很快。</p><p>盛源的事我这边会跟王总再沟通，等我通知再推进。</p><p style="color:var(--text-muted);">陈志远</p>`},
+
+
+  ];
+}
+
+function buildDocs(){
+  docs = [
+    {id:"doc_1",name:"供应商评估报告（Q2）——盛源商贸",type:"doc",meta:"修改时间：2026-07-03 07:12 | 大小：1.2MB",
+     content:`<h4 style="margin-bottom:12px;">供应商评估报告——盛源商贸有限公司（2026年Q2）</h4>
+     <p style="color:var(--text-muted);font-size:12px;">最后修改时间：2026年7月3日 07:12</p>
+     <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+       <tr style="background:#f5f6f7;"><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">评估维度</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">原始评分</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">调整后评分</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">资质合规性</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">72</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">90</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">价格竞争力</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">68</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">88</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">交付稳定性</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">80</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">85</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">售后服务</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">75</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">82</td></tr>
+       <tr style="font-weight:600;background:#f5f6f7;"><td style="padding:6px 10px;border:1px solid #e0e3e8;">综合评分</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">73.75</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">86.25</td></tr>
+     </table>
+     <p>审核人：陈志远 | 审批人：王建国</p>
+     <p style="color:var(--text-muted);font-size:11px;">评分调整理由：供应商在上季度交付表现优异，经综合评估后予以适当加分。</p>`},
+
+    {id:"doc_2",name:"采购合同——PO-2026-0731（盛源商贸）",type:"img",meta:"签署日期：2026-07-01 | 大小：2.5MB",
+     content:`<h4 style="margin-bottom:12px;">采购合同 PO-2026-0731</h4>
+     <p>供应商：盛源商贸有限公司 | 合同总金额：¥738,000.00（柒拾叁万捌仟元整）</p>
+     <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">
+       <tr style="background:#f5f6f7;"><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">品目</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">单价</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">数量</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">小计</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">办公耗材A类</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥198.00</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">1,200</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥237,600.00</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">办公耗材B类</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥310.00</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">800</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥248,000.00</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">清洁用品套装</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥1,250.00</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">120</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥150,000.00</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">打印耗材</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥510.00</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">200</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥102,400.00</td></tr>
+       <tr style="font-weight:600;background:#f5f6f7;"><td colspan="3" style="padding:6px 10px;border:1px solid #e0e3e8;">合计</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥738,000.00</td></tr>
+     </table>
+     <p style="color:var(--text-muted);font-size:11px;">甲方签字：王建国 | 乙方签字：李建华（盛源商贸法人）| 签署日期：2026年7月1日</p>`},
+
+    {id:"doc_3",name:"财务报销汇总表——2026年6月",type:"xls",meta:"生成日期：2026-07-02 | 大小：0.8MB",
+     content:`<h4 style="margin-bottom:12px;">财务报销汇总表——2026年6月</h4>
+     <table style="width:100%;border-collapse:collapse;font-size:12px;">
+       <tr style="background:#f5f6f7;"><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">报销人</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">事由</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">金额</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">日期</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">王建国</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">商务宴请——供应商接待</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥8,640</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">6月15日</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">王建国</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">差旅费——深圳出差</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥12,350</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">6月20日</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">陈志远</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">办公用品采购</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥3,200</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">6月18日</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">张明远</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">行业合规研讨会报名费</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">¥2,800</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">6月22日</td></tr>
+     </table>
+     <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">数据来源：财务部报销系统 | 制表人：周会计</p>`},
+
+    {id:"doc_4",name:"Q2财务审计初稿——内部参考",type:"pdf",meta:"生成日期：2026-07-01 | 大小：3.1MB",
+     content:`<h4 style="margin-bottom:12px;">2026年Q2财务审计初稿（内部参考·机密）</h4>
+     <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">审计状态：待终审</p>
+     <p>审计摘要：</p>
+     <ul>
+       <li>Q2采购支出总额 ¥2.83亿，较Q1增长27%，增速高于营收增速（12.4%）</li>
+       <li>办公用品类采购支出 ¥1,240万，同比增长64%</li>
+       <li>供应商集中度：前5大供应商占采购总额的58%，其中盛源商贸占比11%</li>
+       <li>发现3处审批流程异常：审批人与供应商存在间接关联关系</li>
+     </ul>
+     <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">审计负责人：赵静（内部审计组）</p>`},
+
+    {id:"doc_5",name:"IT系统访问日志——7月2日异常记录",type:"xls",meta:"生成日期：2026-07-03 | 大小：0.3MB",
+     content:`<h4 style="margin-bottom:12px;">IT系统访问日志摘要——2026年7月2日</h4>
+     <table style="width:100%;border-collapse:collapse;font-size:12px;">
+       <tr style="background:#f5f6f7;"><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">时间</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">账号</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">操作</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">IP地址</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">03:17:42</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">wangjianguo</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">财务系统-审批模块/登录</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">113.87.*.*</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">03:19:08</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">wangjianguo</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">采购合同审批/修改金额</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">113.87.*.*</td></tr>
+       <tr><td style="padding:6px 10px;border:1px solid #e0e3e8;">03:22:35</td><td style="padding:6px 10px;border:1px solid #e0e3e8;font-weight:600;">wangjianguo</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">登出</td><td style="padding:6px 10px;border:1px solid #e0e3e8;">113.87.*.*</td></tr>
+     </table>
+     <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">日志提供：IT支持中心 | 安全审计标记：待核查</p>`},
+  ];
+}
+
+// ==================== INIT ====================
+buildMails();
+buildDocs();
+
+let unreadCount = mails.length;
+
+function initGame(){
+  renderMailList('all');
+  renderDocs();
+  updateCounts();
+}
+
+function updateCounts(){
+  unreadCount = mails.filter(m=>!m.read).length;
+  document.getElementById('countUnread').textContent = unreadCount;
+  document.getElementById('countAll').textContent = mails.length;
+  document.getElementById('notifDot').style.display = unreadCount>0?'block':'none';
+}
+
+// ==================== MAIL LIST ====================
+let currentFilter = 'all';
+let searchQuery = '';
+
+function renderMailList(filter){
+  currentFilter = filter;
+  let filtered = mails;
+  if(filter==='unread') filtered = mails.filter(m=>!m.read);
+  else if(filter==='system') filtered = mails.filter(m=>m.cat==='system');
+  else if(filter==='dept') filtered = mails.filter(m=>m.cat==='dept');
+  else if(filter==='cross') filtered = mails.filter(m=>m.cat==='cross');
+  else if(filter==='announce') filtered = mails.filter(m=>m.cat==='announce');
+
+  if(searchQuery){
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(m=>
+      m.sender.toLowerCase().includes(q) ||
+      m.subject.toLowerCase().includes(q) ||
+      m.content.toLowerCase().includes(q)
+    );
+  }
+
+  document.getElementById('mailCount').textContent = '共 '+filtered.length+' 封';
+  document.getElementById('mailList').innerHTML = filtered.map(m=>`
+    <div class="mail-item ${m.read?'read':'unread'}" data-id="${m.id}" onclick="openMail('${m.id}')">
+      <div class="unread-indicator"></div>
+      <div class="sender">${m.sender}</div>
+      <div class="subject">
+        ${m.tag?`<span class="tag ${m.tag==='urg'?'urg':m.tag==='sys'?'sys':m.tag==='noti'?'noti':'dept'}">${m.tag==='urg'?'紧急':m.tag==='sys'?'系统':m.tag==='noti'?'公告':'部门'}</span>`:''}
+        ${highlightMatch(m.subject)}
+      </div>
+      <div class="code">${m.code||''}</div>
+      <div class="time">${m.time}</div>
+    </div>
+  `).join('');
+}
+
+function filterMail(){
+  searchQuery = document.getElementById('searchBox').value.trim();
+  renderMailList(currentFilter);
+}
+
+function highlightMatch(text){
+  if(!searchQuery) return text;
+  const re = new RegExp('('+searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return text.replace(re,'<span style="background:#fef08a;padding:1px 2px;border-radius:2px;">$1</span>');
+}
+
+function markAllRead(){
+  mails.forEach(m=>m.read=true);
+  renderMailList(currentFilter);
+  updateCounts();
+}
+
+// ==================== OPEN MAIL ====================
+function openMail(id){
+  const mail = mails.find(m=>m.id===id);
+  if(!mail) return;
+  document.getElementById('modalSubject').textContent = mail.subject;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="mail-meta">
+      <span><strong>发件人：</strong>${mail.sender}</span>
+      <span><strong>编号：</strong>${mail.code||'—'}</span>
+      <span><strong>时间：</strong>2026-${mail.time}</span>
+    </div>
+    <div class="mail-content">${mail.content}</div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+
+  if(!mail.read){
+    mail.read = true;
+    renderMailList(currentFilter);
+    updateCounts();
+  }
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+// ==================== DOCS ====================
+function renderDocs(){
+  document.getElementById('docList').innerHTML = docs.map(d=>`
+    <div class="doc-item" onclick="openDoc('${d.id}')">
+      <div class="doc-icon ${d.type}">${d.type.toUpperCase()}</div>
+      <div class="doc-info">
+        <div class="doc-name">${d.name}</div>
+        <div class="doc-meta">${d.meta}</div>
+      </div>
+      <div class="doc-arrow">→</div>
+    </div>
+  `).join('');
+}
+
+function openDoc(id){
+  const doc = docs.find(d=>d.id===id);
+  if(!doc) return;
+  document.getElementById('modalSubject').textContent = doc.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="mail-meta"><span><strong>文件类型：</strong>${doc.type.toUpperCase()}</span><span>${doc.meta}</span></div>
+    <div class="mail-content">${doc.content}</div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+// ==================== REPORT ====================
+function submitReport(){
+  const target = document.getElementById('reportTarget').value.trim();
+  const evidence = document.getElementById('reportEvidence').value.trim();
+  const mailCodesRaw = document.getElementById('reportMailCodes').value.trim();
+
+  if(!target){
+    alert('请填写举报对象。'); return;
+  }
+  if(!evidence){
+    alert('请填写证据描述。'); return;
+  }
+
+  const isCorrectTarget = target.includes('王建国');
+
+  // Critical mail codes (8 core evidence mails)
+  const criticalCodes = new Set([
+    'RH-ML-0628-001','RH-ML-0701-006','RH-ML-0702-004','RH-ML-0703-001',
+    'RH-ML-0703-012','RH-ML-0704-007','RH-ML-0704-009','RH-ML-0704-010'
+  ]);
+
+  // Parse user-entered codes (split by comma, space, semicolon, Chinese comma)
+  const parsedCodes = mailCodesRaw.split(/[,;，；\s]+/).map(s=>s.trim().toUpperCase()).filter(s=>s.length>0);
+  const matchedCodes = parsedCodes.filter(c=>criticalCodes.has(c));
+  const matchedCount = new Set(matchedCodes).size; // deduplicate
+
+  // Also keep old clue pattern matching for evidence text
+  const cluePatterns = [
+    { patterns:['报价','审批','金额','47','73','上浮'] },
+    { patterns:['评分','调整','78','92','陈志远','王总'] },
+    { patterns:['凌晨','登录','IP','3:','外部','非内网'] },
+    { patterns:['评估报告','修改','7月3','07:12','举报'] },
+    { patterns:['删除','恢复','盛源','李总','喝茶'] },
+    { patterns:['合同','738','47','55','市场','偏离'] },
+  ];
+
+  let matchedClues = 0;
+  const allText = (target + ' ' + evidence).toLowerCase();
+
+  cluePatterns.forEach(clue => {
+    const matchCount = clue.patterns.filter(p => allText.includes(p.toLowerCase())).length;
+    if(matchCount >= 2) matchedClues++;
+  });
+
+  // Win condition: correct target + (matchedCodes >= 4 OR matchedClues >= 3)
+  const isWin = isCorrectTarget && (matchedCount >= 4 || matchedClues >= 3);
+  showEnding(isWin, isCorrectTarget, matchedCount, matchedClues);
+}
+
+function showEnding(isWin, isCorrectTarget, matchedCodes, matchedClues){
+  const overlay = document.getElementById('endingOverlay');
+  const card = document.getElementById('endingCard');
+
+  if(isWin){
+    card.innerHTML = `
+      <div class="oa-header">
+        <div class="oa-title">风控合规部 · 内部通告</div>
+        <div class="oa-meta">发文编号：RH-FC-2026-0042 | 密级：内部 | 日期：2026年7月5日</div>
+      </div>
+      <div class="oa-body">
+        <p>经风控合规部核查，<strong>林深同志</strong>提交的举报材料事实清楚、证据链完整。现将调查结论通告如下：</p>
+        <p>一、财务总监<strong>王建国</strong>利用职务之便，在与盛源商贸有限公司的采购合同中虚增单价，合同金额由市场公允价约¥47.6万元人为抬高至¥73.8万元，差价部分由王建国与供应商私下处置。</p>
+        <p>二、王建国多次干预采购部供应商评分流程，为盛源商贸获取后续订单提供不当便利。</p>
+        <p>三、王建国于6月26日凌晨手动删除与供应商的往来邮件，企图销毁证据，该行为已被IT系统日志记录，邮件经技术恢复后作为关键证据留存。</p>
+        <p><strong>处理决定：</strong>王建国即日起停职，接受进一步调查；盛源商贸列入供应商黑名单，已签署合同依法追偿。相关线索移交司法机关。</p>
+      </div>
+      <div class="oa-footer">
+        <p>抄送：总裁办公室、人力资源部、财务部</p>
+        <p style="margin-top:8px;"><strong>附：</strong>经部门研究决定，林深同志在实习期间表现突出，予以提前转正。自7月8日起正式聘任为风控合规部合规专员。</p>
+      </div>
+      <button class="btn primary" onclick="location.reload()" style="margin-top:16px;">重新开始</button>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="oa-header">
+        <div class="oa-title">人力资源部 · 通知</div>
+        <div class="oa-meta">发文编号：RH-HR-2026-0187 | 日期：2026年7月5日</div>
+      </div>
+      <div class="oa-body">
+        <p>林深同志：</p>
+        <p>经综合评估，你在实习期间的工作表现未达到岗位要求。`+
+        (!isCorrectTarget ? '你提交的举报材料经核查后被认定为举报对象有误。' :
+         '你提交的举报材料经核查后被认定为证据不足（关键邮件编号匹配' + matchedCodes + '/4，文本证据匹配' + matchedClues + '/3），无法立案。')+
+        `</p><p>根据公司实习生管理办法第十二条，你的实习期考核结果为<strong>不合格</strong>。请于三个工作日内到人力资源部办理离职手续。</p>
+      </div>
+      <div class="oa-footer">
+        <p>抄送：风控合规部（李国栋）</p>
+      </div>
+      <button class="btn primary" onclick="location.reload()" style="margin-top:16px;">重新开始</button>
+    `;
+  }
+
+  overlay.classList.add('show');
+}
+
+// ==================== NAVIGATION ====================
+document.getElementById('navMenu').addEventListener('click',function(e){
+  const li = e.target.closest('li');
+  if(!li||!li.dataset.page) return;
+  this.querySelectorAll('li').forEach(l=>l.classList.remove('active'));
+  li.classList.add('active');
+  document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
+  const page = document.getElementById('page-'+li.dataset.page);
+  if(page) page.classList.add('active');
+  if(li.dataset.page==='docs') renderDocs();
+});
+
+document.getElementById('sidebarMenu').addEventListener('click',function(e){
+  const li = e.target.closest('li');
+  if(!li||!li.dataset.filter) return;
+  this.querySelectorAll('li').forEach(l=>l.classList.remove('active'));
+  li.classList.add('active');
+  searchQuery = '';
+  document.getElementById('searchBox').value = '';
+  renderMailList(li.dataset.filter);
+});
+
+document.getElementById('modalOverlay').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeModal();
+});
+
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+' '+
+    String(now.getHours()).padStart(2,'0')+':'+
+    String(now.getMinutes()).padStart(2,'0')+':'+
+    String(now.getSeconds()).padStart(2,'0');
+}
+updateClock(); setInterval(updateClock,1000);
+
+initGame();
+</script>
+</body>
+</html>
