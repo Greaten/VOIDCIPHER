@@ -677,6 +677,9 @@ if(GOT_PWD&&GOT_ID){
  PH.push({type:'sys',text:'🎯 <b>你已成功获取关键信息：</b><br>后台密码：<b style="color:#e74c3c;font-family:monospace">xm2024</b><br>身份证号：<b style="color:#e74c3c;font-family:monospace">110101200601010234</b><br><span style="color:#888">💡 去招生网站右上角点击「管理」链接登录后台。</span>'});
  cl='<div class="pm-done" style="display:block;text-align:center;color:#409eff;padding:12px;font-size:13px">✅ 调查完成。关闭私信窗口，去网站登录后台。</div>';
  ST('🔓 私信套出密码：xm2024 · 身份证号：110101200601010234');
+}else if(PMS===-2){
+ PH.push({type:'sys',text:'⚠ 对话已结束。你未能获取完整凭据。<br><span style="font-size:9px;color:#aaa">关闭私信窗口重试吧。记住：让对方相信你是"自己人"。</span>'});
+ cl='<div class="pm-done" style="display:block;text-align:center;color:#e74c3c;padding:12px;font-size:13px">对话终止。关闭窗口重新开始。</div>';
 }else if(PMS>=0&&PMS<PM_SCENES.length){
  var scene=PM_SCENES[PMS];
  if(scene.choices){
@@ -712,9 +715,11 @@ if(choice.good!==undefined){
   setTimeout(function(){PH.push({side:'other',text:PM_SCENES[nxt].other});PMS=nxt;RD()},500);
  }else if(nxt===-1){
   /* 错误分支 */
-  PH.push({side:'other',text:DICE_BAD(choice.bad||0)});
+  var bIdx=choice.bad||0;
+  PH.push({side:'other',text:DICE_BAD(bIdx)});
+  var hint=BAD_MSGS[bIdx]&&BAD_MSGS[bIdx][1]?BAD_MSGS[bIdx][1]:'你需要让对方相信你是「自己人」。';
   setTimeout(function(){
-   PH.push({type:'sys',text:'⚠ 对话已终止。关闭私信窗口重试吧。<br><span style="font-size:9px;color:#aaa">提示：你需要让对方相信你是「自己人」。</span>'});
+   PH.push({type:'sys',text:'⚠ 对话已终止。关闭私信窗口重试吧。<br><span style="font-size:9px;color:#aaa">提示：'+hint+'</span>'});
    PMS=-1;RD();
   },500);
  }else{
@@ -1004,10 +1009,9 @@ function OD(){var els=document.querySelectorAll('.detail-overlay');els.forEach(f
 
 RenderUni();window._bl=!0;
 var nh=BN();
-document.getElementById('notyThumb').innerHTML=nh;
 document.getElementById('notyFull').innerHTML=nh;
 UE();UT();
-setTimeout(function(){O('chat');ST('💬 收到表姐微信：格林希尔大学的录取通知书，是真是假？')},600);
+setTimeout(function(){O('chat');var tb=document.getElementById('notyThumb');if(tb)tb.innerHTML=nh;ST('💬 收到表姐微信：格林希尔大学的录取通知书，是真是假？')},600);
 </script>
 </body>
 </html>
