@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — 页面不存在，或者说，还不存在</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #888;
+    font-family: "Courier New", monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+  .error-code { font-size: 96px; color: #222; margin-bottom: 16px; letter-spacing: 8px; }
+  .message { font-size: 16px; line-height: 2; max-width: 500px; }
+  .message em { color: #555; }
+  .hint { font-size: 12px; color: #333; margin-top: 48px; }
+  .hint:hover { color: #666; cursor: help; }
+</style>
+</head>
+<body>
+  <div class="error-code">404</div>
+  <div class="message">
+    <p>这个页面不存在。</p>
+    <p>或者说——<em>它还不存在</em>。</p>
+    <p>每一个你访问的页面，在被创建之前，都会返回 404。</p>
+    <p>就像你现在看到的这样。</p>
+  </div>
+  <div class="hint">不是所有的门都标注在 sitemap 上。有些门需要自己推。</div>
+  <!-- 
+    Hint: 试试 /proscenium 
+    或者回到 / 重新开始。
+    但既然你看到了这个页面——
+    说明你已经在探索没有人指引你的地方。
+    这是好事。
+  -->
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>最后的问题</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #fafafa;
+    color: #1a1a1a;
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", "SimSun", serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    transition: background 1s ease, color 1s ease;
+  }
+  
+  .page {
+    max-width: 520px;
+    text-align: center;
+  }
+  
+  .counter {
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 48px;
+    letter-spacing: 2px;
+  }
+  
+  h1 {
+    font-size: 28px;
+    font-weight: normal;
+    line-height: 1.5;
+    margin-bottom: 40px;
+    color: #333;
+    transition: color 1s ease;
+  }
+  
+  .mirror-box {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 48px;
+    margin-bottom: 40px;
+    transition: background 1s ease, border-color 1s ease;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  
+  .mirror-box .question {
+    font-size: 20px;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 32px;
+    transition: color 1s ease;
+  }
+  
+  .mirror-box textarea {
+    width: 100%;
+    min-height: 120px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.8;
+    resize: vertical;
+    color: #555;
+    transition: background 1s ease, border-color 1s ease, color 1s ease;
+  }
+  .mirror-box textarea:focus {
+    outline: none;
+    border-color: #c9b99a;
+    background: #fefdfb;
+  }
+  
+  .mirror-box .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: #ccc;
+    margin-top: 8px;
+  }
+  
+  /* 按钮隐藏设计 - 看起来像普通文字 */
+  .submit-link {
+    display: inline-block;
+    margin-top: 16px;
+    color: #bbb;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    transition: color 0.3s;
+    font-family: Georgia, serif;
+  }
+  .submit-link:hover { color: #666; }
+  
+  /* 结局显示区 */
+  .ending {
+    display: none;
+    padding: 32px;
+    text-align: center;
+    animation: fadeIn 2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .ending .your-words {
+    font-style: italic;
+    color: #777;
+    margin-bottom: 24px;
+    padding: 16px;
+    border-left: 3px solid #ddd;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  
+  .ending .final-message {
+    font-size: 17px;
+    line-height: 2;
+    color: #444;
+  }
+  
+  .ending .meta-note {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #999;
+    font-family: "Courier New", monospace;
+  }
+  
+  /* 暗色切换 */
+  body.dark {
+    background: #0a0a0a;
+    color: #e0e0e0;
+  }
+  body.dark h1 { color: #c9b99a; }
+  body.dark .mirror-box {
+    background: #111;
+    border-color: #222;
+  }
+  body.dark .mirror-box .question { color: #888; }
+  body.dark .mirror-box textarea {
+    background: #0d0d0d;
+    border-color: #222;
+    color: #888;
+  }
+  body.dark .mirror-box textarea:focus {
+    border-color: #c9b99a;
+    background: #111;
+  }
+  body.dark .ending .your-words {
+    color: #999;
+    border-left-color: #333;
+  }
+  body.dark .ending .final-message { color: #aaa; }
+  body.dark .ending .meta-note { border-top-color: #1a1a1a; }
+</style>
+</head>
+<body>
+
+<div class="page" id="mainPage">
+  <div class="counter" id="playerCount">第 428 位抵达者</div>
+  
+  <h1>你已经通过了所有的测试。<br>现在——轮到你了。</h1>
+  
+  <div class="mirror-box">
+    <div class="question">
+      你怎么证明<br>
+      你不是网页上的一个角色？
+    </div>
+    <textarea id="answerText" placeholder="在这里写下你的回答……" maxlength="1000"></textarea>
+    <div class="char-count"><span id="charCount">0</span> / 1000</div>
+    <div class="submit-link" id="submitBtn">提交</div>
+  </div>
+  
+  <p style="font-size:11px; color:#ccc; margin-top:32px;">
+    没有任何回答是"正确"的。<br>
+    但有一些回答比其他回答更诚实。
+  </p>
+</div>
+
+<div class="ending" id="endingPage">
+  <div class="your-words" id="quoteDisplay"></div>
+  <div class="final-message" id="finalMessage"></div>
+  <div class="meta-note" id="metaNote"></div>
+</div>
+
+<script>
+const playerCount = document.getElementById('playerCount');
+const answerText = document.getElementById('answerText');
+const charCount = document.getElementById('charCount');
+const submitBtn = document.getElementById('submitBtn');
+const mainPage = document.getElementById('mainPage');
+const endingPage = document.getElementById('endingPage');
+const quoteDisplay = document.getElementById('quoteDisplay');
+const finalMessage = document.getElementById('finalMessage');
+const metaNote = document.getElementById('metaNote');
+
+// 到达计数
+let arrivals = parseInt(sessionStorage.getItem('turingArrivals') || '427');
+arrivals++;
+sessionStorage.setItem('turingArrivals', arrivals.toString());
+playerCount.textContent = '第 ' + arrivals + ' 位抵达者';
+
+// 字符计数
+answerText.addEventListener('input', () => {
+  charCount.textContent = answerText.value.length;
+});
+
+// 提交
+submitBtn.addEventListener('click', () => {
+  const answer = answerText.value.trim();
+  if (!answer) return;
+  
+  // 存储答案
+  sessionStorage.setItem('finalAnswer', answer);
+  
+  // 切换到结局
+  mainPage.style.display = 'none';
+  endingPage.style.display = 'block';
+  document.body.classList.add('dark');
+  
+  // 显示玩家的回答
+  quoteDisplay.textContent = '「' + answer + '」';
+  
+  // 动态结局信息
+  const hour = new Date().getHours();
+  let timeContext = '';
+  if (hour < 6) timeContext = '凌晨——你和一个网页终端在深夜对话。可能只有你们两个醒着。';
+  else if (hour < 12) timeContext = '早晨——阳光照在你屏幕上的某个角度，你可能瞥见了自己的倒影。';
+  else if (hour < 18) timeContext = '下午——地球另一边的人在睡觉，但服务器从不休眠。';
+  else timeContext = '夜晚——窗外很暗，屏幕上只有一个文本输入框和一行字。';
+
+  finalMessage.innerHTML = `
+    <p>你写完了一段话，按下回车。</p>
+    <p>页面变成深色。文字从黑色变成米白。</p>
+    <p>没有人评判你的回答。这段文本被存在浏览器的 sessionStorage 里——关闭标签就会消失。</p>
+    <p>就像这个游戏的每一个页面一样——它们存在是因为有人访问。没有人访问的时候，它们只是硬盘上的几个文件。</p>
+    <p>你证明了什么？</p>
+    <p style="margin-top:24px; color:#c9b99a;">你证明了一件事：</p>
+    <p style="color:#c9b99a;"><strong>当一个网页角色开始问自己"我是不是网页角色"的时候——<br>她就已经不再是纯粹的网页角色了。</strong></p>
+  `;
+  
+  metaNote.innerHTML = `
+    ${timeContext}<br>
+    你的 IP: [不记录]<br>
+    你的 UserAgent: ${navigator.userAgent.substring(0, 50)}...<br>
+    会话将在标签关闭时清除。<br>
+    <br>
+    <span style="color:#666;">— 反向图灵测试 #8472191 · END —</span><br>
+    <br>
+    <span style="color:#444; font-size:10px;">
+    也许你现在可以回到 /observation-room 看看计数器变了没有。<br>
+    或者等 72 小时后回来。<br>
+    或者——去做你想做的任何事。你已经不是网页上的角色了。
+    </span>
+  `;
+  
+  console.log('%c——————————————————————', 'color: #c9b99a');
+  console.log('%c游戏结束。', 'color: #c9b99a; font-size: 24px');
+  console.log('%c你的回答: ' + answer, 'color: #888; font-style: italic');
+  console.log('%c', '');
+  console.log('%c"你怎么证明你不是网页上的一个角色？"', 'color: #c9b99a; font-size: 16px');
+  console.log('%c你的答案已经种在这里了。', 'color: #888');
+  console.log('%c也许其他人也会来这里，但看不到你的回答。', 'color: #888');
+  console.log('%c每一份回答都是独一无二的。', 'color: #888');
+  console.log('%c——————————————————————', 'color: #c9b99a');
+});
+
+// 如果没有写任何东西但在 control flow 层面到了这里
+console.log('%c🏁 你已经到达终点。', 'color: #333; font-size: 18px');
+console.log('%c这个页面不会主动给你下一个链接。', 'color: #666');
+console.log('%c因为——这就是最后一个页面。', 'color: #666');
+</script>
+
+</body>
+</html>

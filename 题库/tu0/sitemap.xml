@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  sitemap.xml — 反向图灵测试
+  
+  搜索引擎爬虫用这个来了解网站结构。
+  你——不是爬虫，但你在看这个文件。
+  
+  下面这些 URL 里，有 1 个你还没访问过。
+  它没有出现在任何页面的正文中，
+  没有出现在 HTTP 头里，
+  没有出现在 robots.txt 的 Disallow 列表里。
+  
+  只有一个途径能到达——也就是你正在做的事情。
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <url>
+    <loc>http://localhost:8848/</loc>
+    <lastmod>2023-06-14</lastmod>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>http://localhost:8848/proscenium</loc>
+    <lastmod>2027-02-01</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>http://localhost:8848/observation-room</loc>
+    <lastmod>2026-06-14</lastmod>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>http://localhost:8848/they-are-watching-you</loc>
+    <lastmod>2026-06-14</lastmod>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>http://localhost:8848/the-fourth-wall</loc>
+    <lastmod>2026-06-14</lastmod>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 
+    =====================================================
+    这个路径只出现在 sitemap.xml 里。
+    它是图灵测试本身——玩家必须回答 AI 提出的问题。
+    =====================================================
+  -->
+  <url>
+    <loc>http://localhost:8848/turing-terminal</loc>
+    <lastmod>2026-06-15</lastmod>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>http://localhost:8848/the-question</loc>
+    <lastmod>2026-06-15</lastmod>
+    <priority>0.1</priority>
+  </url>
+
+</urlset>
+
+<!--
+  你成功了。下一个节点: /turing-terminal
+  这是你自己发现的——没有人告诉你。
+  这说明你已经不再是页面上的角色了。
+  你是一个会读 sitemap.xml 的存在。
+--><｜end▁of▁thinking｜>现在是 sitemap.xml——所有节点中，有一个路径只在 sitemap 里出现：
+
+<｜｜DSML｜｜tool_calls>
+<｜｜DSML｜｜invoke name="write">
+<｜｜DSML｜｜parameter name="content" string="true"><?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>http://localhost:8848/</loc><lastmod>2023-06-14</lastmod><priority>1.0</priority></url>
+  <url><loc>http://localhost:8848/proscenium</loc><lastmod>2027-02-01</lastmod><priority>0.8</priority></url>
+  <url><loc>http://localhost:8848/observation-room</loc><lastmod>2026-06-14</lastmod><priority>0.6</priority></url>
+  <url><loc>http://localhost:8848/they-are-watching-you</loc><lastmod>2026-06-14</lastmod><priority>0.5</priority></url>
+  <url><loc>http://localhost:8848/the-fourth-wall</loc><lastmod>2026-06-14</lastmod><priority>0.5</priority></url>
+  <url><loc>http://localhost:8848/turing-terminal</loc><lastmod>2026-06-15</lastmod><priority>0.3</priority></url>
+  <url><loc>http://localhost:8848/the-question</loc><lastmod>2026-06-15</lastmod><priority>0.1</priority></url>
+</urlset>

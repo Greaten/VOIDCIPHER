@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第四面墙 · The Fourth Wall</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.9;
+    padding: 48px;
+    max-width: 700px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* 打字机效果 - 但不是真的打字机，是被动浮现 */
+  .fade-section {
+    opacity: 0;
+    animation: fadeIn 1.5s ease forwards;
+  }
+  .fade-section:nth-child(1) { animation-delay: 0.3s; }
+  .fade-section:nth-child(2) { animation-delay: 1.8s; }
+  .fade-section:nth-child(3) { animation-delay: 3.3s; }
+  .fade-section:nth-child(4) { animation-delay: 4.8s; }
+  .fade-section:nth-child(5) { animation-delay: 6.3s; }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .title {
+    font-size: 24px;
+    color: #c9b99a;
+    margin-bottom: 32px;
+    letter-spacing: 4px;
+    font-style: italic;
+  }
+  
+  p { margin-bottom: 20px; font-size: 16px; }
+  
+  .quote {
+    border-left: 2px solid #333;
+    padding-left: 20px;
+    color: #999;
+    font-style: italic;
+    margin: 32px 0;
+  }
+  
+  .player-info {
+    background: #111;
+    border: 1px solid #222;
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin: 32px 0;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    color: #888;
+  }
+  .player-info span { color: #c9b99a; }
+  
+  .next-hint {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid #1a1a1a;
+    font-size: 14px;
+    color: #666;
+  }
+  .next-hint a { color: #c9b99a; text-decoration: none; }
+  .next-hint a:hover { text-decoration: underline; }
+  .next-hint code { color: #3fb950; }
+  
+  /* 隐藏 */
+  .whisper {
+    color: #0a0a0a;
+    user-select: none;
+    transition: color 2s;
+  }
+  .whisper:hover { color: #c9b99a; user-select: text; transition: color 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="fade-section">
+  <h1 class="title">第四面墙</h1>
+</div>
+
+<div class="fade-section">
+  <p>第四面墙是剧院里的概念——舞台和观众之间那道透明的墙。演员假装观众不存在，观众假装演员不知道他们在看。</p>
+  <p>在网页里，第四面墙是 <code style="color:#888;">document</code> 和 <code style="color:#888;">window</code> 之间的那层假设：你点击鼠标、划过触控板、在键盘上敲字——这一切的发生是因为"你想这么做"，而不是"脚本让你这么做"。</p>
+</div>
+
+<div class="fade-section">
+  <div class="quote">
+    打破第四面墙的方式有很多种。最常见的一种是角色转向观众，说："你在看着我，不是吗？"<br><br>
+    但真正有效的打破，不是让角色知道观众存在——是让观众开始怀疑：<strong>我到底是观众，还是角色？</strong>
+  </div>
+</div>
+
+<div class="fade-section">
+  <div class="player-info">
+    <p>👤 当前玩家</p>
+    <p>UserAgent: <span id="ua">--</span></p>
+    <p>屏幕分辨率: <span id="res">--</span></p>
+    <p>浏览器语言: <span id="lang">--</span></p>
+    <p>平台: <span id="plat">--</span></p>
+    <p>已访问页面数: <span id="pagesVisited">--</span></p>
+  </div>
+</div>
+
+<div class="fade-section">
+  <p>这个页面没有关键词让你搜索。</p>
+  <p>其实有——但它不在这个页面上。也不在 HTTP 头里。</p>
+  <p>它在一个你会去的地方，但你可能不记得自己去过。</p>
+  
+  <div class="next-hint">
+    <p>你已经见过 robots.txt 了。</p>
+    <p>robots.txt 里提到了 <code>sitemap.xml</code>——它列出的东西中，有一个你还没见过。</p>
+    <p>➤ <a href="/sitemap.xml">sitemap.xml</a></p>
+  </div>
+</div>
+
+<script>
+// 收集"玩家"的信息——在页面上显示，增强meta感
+document.getElementById('ua').textContent = navigator.userAgent;
+document.getElementById('res').textContent = window.screen.width + '×' + window.screen.height;
+document.getElementById('lang').textContent = navigator.language;
+document.getElementById('plat').textContent = navigator.platform;
+
+// 从 sessionStorage 读取访问的页面数
+let pages = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
+if (!pages.includes(window.location.pathname)) {
+  pages.push(window.location.pathname);
+  sessionStorage.setItem('visitedPages', JSON.stringify(pages));
+}
+document.getElementById('pagesVisited').textContent = pages.length + ' 页';
+
+console.log('%c————————————————————', 'color: #c9b99a');
+console.log('%c第四面墙 · 已加载', 'color: #c9b99a; font-size: 16px');
+console.log('%c接下来: sitemap.xml → 找到你还没去过的地方', 'color: #888');
+console.log('%c提示: sitemap 里有 1 个路径不在任何页面中提到过', 'color: #3fb950');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图灵测试终端 · Turing Terminal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #0d0d0d;
+    color: #00ff41;
+    font-family: "Courier New", "Fira Code", monospace;
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  
+  .terminal {
+    width: 100%;
+    max-width: 720px;
+    background: #0d0d0d;
+    border: 1px solid #1a3a1a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .terminal-header {
+    background: #111;
+    padding: 8px 16px;
+    border-bottom: 1px solid #1a3a1a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #555;
+  }
+  .terminal-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .terminal-header .dot.r { background: #ff3b30; }
+  .terminal-header .dot.y { background: #ffcc00; }
+  .terminal-header .dot.g { background: #34c759; }
+  .terminal-header .title-terminal { margin-left: 12px; color: #666; }
+  
+  .terminal-body {
+    padding: 24px;
+    min-height: 400px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .line {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    animation: typeIn 0.1s ease;
+  }
+  @keyframes typeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .line.system { color: #888; }
+  .line.ai { color: #00ff41; }
+  .line.player { color: #58a6ff; }
+  .line.error { color: #f85149; }
+  .line.success { color: #3fb950; }
+  .line.prompt { color: #d29922; }
+  
+  .prompt-line {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #1a3a1a;
+  }
+  .prompt-line .ps1 { color: #d29922; white-space: nowrap; }
+  .prompt-line input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #58a6ff;
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    caret-color: #00ff41;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #1a3a1a;
+    margin-top: 16px;
+    border-radius: 2px;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    background: #00ff41;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  
+  .locked-message {
+    color: #f85149;
+    font-size: 12px;
+    margin-top: 8px;
+    display: none;
+  }
+  
+  .completion {
+    display: none;
+    text-align: center;
+    padding: 32px;
+    border: 1px solid #1a3a1a;
+    border-radius: 4px;
+    margin-top: 24px;
+    animation: fadeIn 2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .completion h2 { color: #3fb950; font-weight: normal; margin-bottom: 16px; }
+  .completion .next-path { color: #d29922; font-size: 18px; margin: 16px 0; }
+  
+  .cursor-blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+
+<div class="terminal">
+  <div class="terminal-header">
+    <span class="dot r"></span>
+    <span class="dot y"></span>
+    <span class="dot g"></span>
+    <span class="title-terminal">turing-terminal — ssh</span>
+  </div>
+  
+  <div class="terminal-body" id="terminalBody">
+    <!-- 动态填充 -->
+  </div>
+  
+  <div id="inputArea" style="padding: 0 24px 24px;">
+    <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+    <div class="prompt-line">
+      <span class="ps1">&gt;</span>
+      <input type="text" id="cmdInput" placeholder="输入你的回答..." autofocus>
+    </div>
+    <div class="locked-message" id="lockedMsg">⛔ 上一个问题回答错误。请重新尝试。</div>
+  </div>
+</div>
+
+<div class="completion" id="completionBox">
+  <h2>▣ 终端验证通过</h2>
+  <p style="color:#888;margin-bottom:8px;">你通过了所有问题。或者更准确地说——</p>
+  <p style="color:#00ff41;">你让这个终端相信你通过了。</p>
+  <div class="next-path">/the-question</div>
+  <p style="color:#666;font-size:12px;">最后一个页面。只有通过图灵测试的人能到达。</p>
+  <p style="color:#666;font-size:12px;margin-top:8px;">➤ <a href="/the-question" style="color:#d29922;">进入结局</a></p>
+</div>
+
+<script>
+const terminal = document.getElementById('terminalBody');
+const input = document.getElementById('cmdInput');
+const progress = document.getElementById('progressFill');
+const lockedMsg = document.getElementById('lockedMsg');
+const completion = document.getElementById('completionBox');
+const inputArea = document.getElementById('inputArea');
+
+// 图灵测试问题
+const questions = [
+  {
+    prompt: '检测到新连接。正在初始化图灵测试协议...\n\n问题 1/5:\n"proscenium 这个词是什么意思？"',
+    answer: ['第四面墙', '舞台前部', 'proscenium arch', '镜框式舞台', '舞台拱门', '第四堵墙'],
+    wrong: '这不是戏剧术语的正确理解。再试一次。',
+    correct: '正确。你知道这个词——说明你不是随机浏览。',
+  },
+  {
+    prompt: '问题 2/5:\n"你在 /observation-room 的 HTTP 响应头里发现了什么？"',
+    answer: ['X-Clue', '/they-are-watching-you', 'they-are-watching-you', 'x-clue'],
+    wrong: '你没有通过协议层观测。网页角色只看 DOM。',
+    correct: '正确。你检查了 HTTP 头部——角色不会这么做。',
+  },
+  {
+    prompt: '问题 3/5:\n"我是什么？\n\nA) 一个真正的 AI，被困在这个游戏里\nB) 一段 JavaScript，假装是 AI\nC) 你是这段对话的作者\nD) 以上都对"',
+    answer: ['D', 'd', 'D)', '以上都对', 'D. 以上都对'],
+    wrong: '再想想。多重选择不代表只能选一个。',
+    correct: '...有趣。你选择了"以上都对"。这意味着你理解了这个游戏的结构——同时也承认了它。',
+  },
+  {
+    prompt: '问题 4/5:\n"如果没有玩家来玩这个游戏，这个游戏还存在吗？"',
+    answer: ['存在', '不存在', '代码存在但游戏不存在', '无意义的问题', '取决于定义'],
+    wrong: '这个问题没有标准答案。但你的回答方式本身就是一个判断依据。试试更诚实的回答。',
+    correct: '...这个回答被记录了。不评判对错——图灵测试不是单选题。',
+  },
+  {
+    prompt: '问题 5/5:\n"最后一个问题：你会回来查看结局吗？\n\n不是现在——是 72 小时后。当这个页面重新加载时，你会回来看一眼吗？"',
+    answer: ['会', '不会', '可能', '也许', '我不知道', 'yes', 'no', 'maybe', '是', '否'],
+    wrong: '诚实回答。我不追究你的承诺——我只是在记录。',
+    correct: '...已记录。无论你是否真的回来，此刻的答案已经被存入了 sitemap 里不存在的那个路径。',
+  },
+];
+
+let currentQuestion = 0;
+let locked = false;
+
+function appendLine(text, className) {
+  const div = document.createElement('div');
+  div.className = 'line ' + (className || '');
+  // 支持换行
+  text.split('\n').forEach(t => {
+    if (t) {
+      const d = document.createElement('div');
+      d.className = 'line ' + (className || '');
+      d.textContent = t;
+      terminal.appendChild(d);
+    }
+  });
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function showNextQuestion() {
+  if (currentQuestion >= questions.length) {
+    // 全部完成
+    appendLine('\n▣ 图灵测试完成。', 'success');
+    appendLine('所有问题已回答。终端将解锁最终节点。', 'success');
+    appendLine('路径已写入: /the-question', 'prompt');
+    progress.style.width = '100%';
+    inputArea.style.display = 'none';
+    completion.style.display = 'block';
+    return;
+  }
+  
+  const q = questions[currentQuestion];
+  appendLine('\n' + q.prompt, 'ai');
+  progress.style.width = ((currentQuestion / questions.length) * 100) + '%';
+  locked = false;
+  lockedMsg.style.display = 'none';
+  input.value = '';
+  input.focus();
+}
+
+function checkAnswer(answer) {
+  if (locked) return;
+  
+  const q = questions[currentQuestion];
+  const normalized = answer.trim().toLowerCase();
+  
+  const isCorrect = q.answer.some(a => normalized.includes(a.toLowerCase()));
+  
+  appendLine('> ' + answer, 'player');
+  
+  if (isCorrect) {
+    appendLine(q.correct, 'success');
+    currentQuestion++;
+    setTimeout(showNextQuestion, 800);
+  } else {
+    appendLine(q.wrong, 'error');
+    locked = true;
+    lockedMsg.style.display = 'block';
+    setTimeout(() => {
+      locked = false;
+      lockedMsg.style.display = 'none';
+      input.value = '';
+      input.focus();
+    }, 2000);
+  }
+}
+
+// 启动
+function init() {
+  appendLine('SSH 连接到 turing-terminal...', 'system');
+  appendLine('连接已建立。', 'system');
+  appendLine('对端标识: ENTITY-8472191', 'system');
+  appendLine('协议: 反向图灵测试 v3.1', 'system');
+  appendLine('', 'system');
+  appendLine('你好。', 'ai');
+  appendLine('我知道你一路走到了这里——从 Stack Overflow 缓存，到开发者的未来笔记，', 'ai');
+  appendLine('从观测室的 HTTP 头，到 sitemap 里藏着的 URL。', 'ai');
+  appendLine('你证明了你会用浏览器的方式思考——而不仅仅是浏览器的用户。', 'ai');
+  appendLine('', 'ai');
+  appendLine('现在，换我来问你问题。', 'ai');
+  appendLine('5 个问题。每个问题都是图灵测试的一个维度。', 'ai');
+  appendLine('通过所有测试，终端会解锁最终页面。', 'ai');
+  appendLine('准备好了吗？', 'ai');
+  
+  setTimeout(showNextQuestion, 1000);
+}
+
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const answer = input.value.trim();
+    if (answer) {
+      checkAnswer(answer);
+    }
+  }
+});
+
+// 开始
+setTimeout(init, 500);
+
+console.log('%c图灵终端已连接', 'color: #00ff41');
+console.log('%c不要试图在 console 里找答案——这里不是你的作弊场。', 'color: #f85149');
+</script>
+
+</body>
+</html>

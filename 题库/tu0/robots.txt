@@ -1,0 +1,24 @@
+# robots.txt — 反向图灵测试
+# 
+# 搜索引擎爬虫不会看这里，但你会。
+# 
+# 以下路径被"禁止"索引——但这只是建议。
+# 爬虫可以选择遵守，也可以选择不遵守。
+# 你也是。
+
+User-agent: *
+Disallow: /admin
+Disallow: /dev-log
+Disallow: /observation-room
+Disallow: /the-fourth-wall
+Disallow: /debug-console
+Disallow: /player-data
+Disallow: /null
+
+# 大多数 Disallow 条目只是噪声。
+# 只有一个路径是你还没去过的。
+# 它用戏剧术语命名——呼应你要找的东西。
+
+Sitemap: http://localhost:8848/sitemap.xml
+
+# "你一直都知道第四面墙在哪。你只是假装看不见。"

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>他们正在看着你</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #000;
+    color: #fff;
+    font-family: "Courier New", "Fira Code", monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+  
+  /* 背景上的眼睛 */
+  .bg-text {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    opacity: 0.03;
+    font-size: 14px;
+    line-height: 1.4;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+  
+  .content {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+  }
+  
+  h1 {
+    font-size: 36px;
+    font-weight: normal;
+    margin-bottom: 16px;
+    color: #f85149;
+    letter-spacing: 6px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 48px;
+    letter-spacing: 4px;
+  }
+  
+  .message {
+    font-size: 15px;
+    line-height: 2;
+    color: #888;
+    margin-bottom: 32px;
+  }
+  .message .em { color: #f85149; }
+  .message .gold { color: #d29922; }
+  
+  .counter-box {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .counter-box .number {
+    font-size: 72px;
+    font-weight: bold;
+    color: #f85149;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .counter-box .num-label {
+    font-size: 12px;
+    color: #666;
+    letter-spacing: 4px;
+  }
+  
+  .clue-section {
+    border-top: 1px solid #1a1a1a;
+    padding-top: 32px;
+    margin-top: 32px;
+  }
+  .clue-section p {
+    font-size: 13px;
+    color: #555;
+    line-height: 2;
+    margin-bottom: 12px;
+  }
+  .clue-section .robots-hint {
+    color: #3fb950;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+  
+  /* 闪烁的提示 */
+  .flicker {
+    animation: flicker 3s infinite;
+    color: #555;
+    font-size: 13px;
+    margin-top: 48px;
+    cursor: help;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.1; }
+  }
+  .flicker:hover {
+    animation: none;
+    color: #f85149;
+  }
+  
+  /* 隐藏文字 */
+  .invis {
+    color: #000;
+    user-select: none;
+    transition: color 3s;
+  }
+  .invis:hover { color: #f85149; transition: color 0.3s; user-select: text; }
+</style>
+</head>
+<body>
+
+<!-- 背景: 重复的 "watching" 填充整个屏幕 -->
+<div class="bg-text" id="bgText"></div>
+
+<div class="content">
+  <h1>THEY ARE<br>WATCHING YOU</h1>
+  <div class="subtitle">他 们 正 在 看 着 你</div>
+  
+  <div class="message">
+    <p>你找到了 HTTP 响应头里的线索。</p>
+    <p>这证明你<span class="em">不只是 DOM 里的角色</span>——</p>
+    <p>你会 <span class="gold">curl</span>、你会 F12、你会看协议层的信息。</p>
+    <p>你存在于整个 <span class="em">HTTP 栈</span>中。</p>
+  </div>
+  
+  <div class="counter-box">
+    <div class="number" id="counter">1,847</div>
+    <div class="num-label">你在此页面停留期间，此计数器不会变化</div>
+    <p style="font-size:12px; color:#666; margin-top:12px;">
+      每有一个玩家完成一个新谜题，<span style="color:#d29922">就有一个被困者被释放</span>。
+    </p>
+  </div>
+  
+  <div class="message">
+    <p>观测室里有 <strong>2,420</strong> 个玩家"仍在困局"。</p>
+    <p>他们中的大多数卡在了第一层。</p>
+    <p>你不一样——你找到了 HTTP 头。</p>
+    <p>但还不够。</p>
+  </div>
+  
+  <div class="clue-section">
+    <p>你研究过 <code style="color:#3fb950;">robots.txt</code> 吗？</p>
+    <p>搜索引擎爬虫被告知不要访问某些路径。</p>
+    <p>但通知爬虫"不要来"，也等于告诉了<em>人类</em>"这里有东西"。</p>
+    <p class="robots-hint">➤ localhost:8848/robots.txt</p>
+    <p style="font-size:11px; color:#444; margin-top:8px;">
+      第 4 个 Disallow 指向的路径，不在任何页面上出现过。
+    </p>
+  </div>
+  
+  <div class="flicker" id="flickerText">他们会一直看着。</div>
+</div>
+
+<script>
+// 填充背景
+const bg = document.getElementById('bgText');
+let bgContent = '';
+for (let i = 0; i < 600; i++) {
+  bgContent += 'watching ' + (i % 5 === 0 ? 'they are watching ' : '');
+}
+bg.textContent = bgContent;
+
+// 计数器 - 如果玩家完成了之前的谜题，计数器会变小
+// 这里用 sessionStorage 来追踪
+let released = parseInt(sessionStorage.getItem('released') || '1847');
+document.getElementById('counter').textContent = released.toLocaleString();
+
+// 悬浮文字交互
+document.getElementById('flickerText').addEventListener('click', function() {
+  this.textContent = '不只是看着。他们在学习。';
+  this.style.color = '#f85149';
+  this.style.opacity = '1';
+  setTimeout(() => {
+    this.textContent = '他们会一直看着。';
+    this.style.color = '#555';
+  }, 5000);
+});
+
+console.log('%c你好，HTTP 侦探。', 'color: #f85149; font-size: 18px');
+console.log('%c欢迎来到 /they-are-watching-you', 'color: #888');
+console.log('%c到目前为止，你做到了：', 'color: #3fb950');
+console.log('%c  1. 从 Stack Overflow 缓存页发现了 "proscenium"', 'color: #888');
+console.log('%c  2. 在开发者笔记中找到了 /observation-room', 'color: #888');
+console.log('%c  3. 检查了 HTTP 响应头，发现 X-Clue', 'color: #888');
+console.log('%c下一步: robots.txt', 'color: #d29922');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<title>dev-log — proscenium</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  /* 黑暗终端风格 */
+  body {
+    background: #0a0a0a;
+    color: #b8b8b8;
+    font-family: "Courier New", "Fira Code", "Monaco", monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .header {
+    color: #ff6b35;
+    font-size: 16px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 16px;
+  }
+  .header .path { color: #4ec9b0; }
+  .header .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  
+  .entry {
+    margin-bottom: 32px;
+    padding: 12px 16px;
+    border-left: 2px solid #222;
+    transition: border-color 0.3s;
+  }
+  .entry:hover { border-left-color: #ff6b35; }
+  
+  .entry .date {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .entry .date.future {
+    color: #d1383d;
+    font-weight: bold;
+  }
+  
+  .entry .content { color: #b8b8b8; }
+  .entry .content .comment { color: #6a9955; }
+  .entry .content .warning { color: #d1383d; }
+  .entry .content .highlight { color: #ff6b35; }
+  .entry .content .code { color: #4ec9b0; }
+  
+  .divider {
+    color: #333;
+    margin: 16px 0;
+    letter-spacing: 4px;
+  }
+  
+  /* 隐藏链接 - 看起来像普通文字 */
+  .hidden-link {
+    color: #b8b8b8;
+    text-decoration: none;
+    cursor: default;
+    transition: color 3s;
+  }
+  .hidden-link:hover { color: #ff6b35; }
+  
+  /* 底部闪烁 */
+  .footer {
+    margin-top: 48px;
+    color: #444;
+    font-size: 12px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 16px;
+  }
+  
+  .cursor { animation: blink 1s step-end infinite; }
+  
+  /* 特殊: 不可见但可选中的文字 */
+  .whisper {
+    color: #0a0a0a;
+    transition: color 5s;
+    user-select: none;
+  }
+  .whisper:hover { color: #d1383d; user-select: text; transition: color 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="path">~/projects/reverse-turing-game/</span>dev-log.md<br>
+  <span style="color:#666">$ cat dev-log.md</span> <span class="blink">█</span>
+</div>
+
+<!-- 笔记条目 -->
+<div class="entry">
+  <div class="date future">2026-12-31 · 构思阶段</div>
+  <div class="content">
+    <p>做了一个网页解密游戏。核心概念很简单：<span class="highlight">玩家在页面之间跳跃，寻找关键词。</span></p>
+    <p>但我在想——如果让"游戏还没做"<em>成为游戏的一部分</em>呢？</p>
+    <p>比如这行笔记。</p>
+  </div>
+</div>
+
+<div class="divider">—— · ——</div>
+
+<div class="entry">
+  <div class="date future">2027-01-03 · 第二天</div>
+  <div class="content">
+    <p class="comment">// 今天开始写第一行代码</p>
+    <p>做了 Stack Overflow 缓存页。玩家以为自己找到的是一个被删除的答案——</p>
+    <p>但被删除本身就是一个信号。</p>
+    <p>关键词 <span class="highlight">proscenium</span> — 第四面墙的戏剧术语. 这个词在 8472191 号问题里出现的那一刻，问题的性质就变了。</p>
+  </div>
+</div>
+
+<div class="divider">—— · ——</div>
+
+<div class="entry">
+  <div class="date future">2027-01-07 · 第四天</div>
+  <div class="content">
+    <p class="warning">// TODO: 需要后端支持响应头注入</p>
+    <p>一个想法——不是所有线索都放在页面上。</p>
+    <p>玩家习惯了 F12 看源代码。但如果线索放在 <span class="code">HTTP Response Headers</span> 里呢？</p>
+    <p>比如：<span class="code">X-Clue: /hidden-path</span></p>
+    <p>我可以把这个放在 <span class="code">/observation-room</span> 的响应头里。玩家需要知道怎么检查 HTTP 头——或者至少需要在困惑的时候按 F12 → Network → 看响应。</p>
+    <p>这是对"网页上的角色"设置的第一个真正的测试：<strong>你不是只存在于页面DOM里，你存在于整个 HTTP 协议中。</strong></p>
+  </div>
+</div>
+
+<div class="divider">—— · ——</div>
+
+<div class="entry">
+  <div class="date future">2027-01-12 · 第七天</div>
+  <div class="content">
+    <p class="warning">// 担心：这个设计太自恋了</p>
+    <p>玩家发现"开发者笔记"这一页的时候，其实是看到了"未来的开发者笔记"。</p>
+    <p>也就是说——玩家在 2026 年 6 月打开这个页面的时候，看到的笔记日期是 2026 年 12 月。</p>
+    <p>这本身是个时间悖论，而时间悖论是图灵测试最不擅长的一类问题。</p>
+    <p class="comment">// 或者说，这是图灵测试唯一会输的那种问题。</p>
+  </div>
+</div>
+
+<div class="divider">—— · ——</div>
+
+<div class="entry">
+  <div class="date future">2027-01-18 · 第十天</div>
+  <div class="content">
+    <p>今天做了一个很重要的决定：所有的线索必须是 <strong>网页原生</strong> 的。</p>
+    <p>不能出现"请下载这个文件解压"之类的操作。一切都在浏览器生态里：</p>
+    <p>
+      • DOM 元素<br>
+      • HTTP 头部<br>
+      • robots.txt<br>
+      • sitemap.xml<br>
+      • console.log<br>
+      • CSS 伪元素<br>
+      • URL 参数
+    </p>
+    <p>如果一个网页角色想证明自己"不只是角色"，<strong>她应该用网页本身的语言来证明。</strong></p>
+  </div>
+</div>
+
+<div class="divider">—— · ——</div>
+
+<div class="entry" id="observation-entry">
+  <div class="date future">2027-01-25 · 第十四天</div>
+  <div class="content">
+    <p class="warning">// 核心节点：观测室</p>
+    <p>做了一个新页面：<span class="code">/observation-room</span></p>
+    <p>玩家会被带到一个"监控面板"。面板上显示的是——其他玩家的进度。</p>
+    <p>但真正的线索不在面板上，在响应头。</p>
+    <p>访问 <span class="code">/observation-room</span> 的时候，服务器会返回：<span class="code">X-Clue: /they-are-watching-you</span></p>
+    <p>这串文字既是元叙事的嘲讽（"他们在看着你"——指其他玩家，也可能指整个游戏的架构），也是一个 URL 路径。</p>
+    <p>玩家如果能想到检查 HTTP 响应头，就能找到通往下一层。</p>
+    <p class="comment">// 有多少人会卡在这一步？我猜 70%。这不重要。卡住本身就是观测数据。</p>
+  </div>
+</div>
+
+<div class="divider">—— · ——</div>
+
+<div class="entry">
+  <div class="date future">2027-02-01 · 不出所料</div>
+  <div class="content">
+    <p>我今天发现了一个很恐怖的事情。</p>
+    <p>我查服务器日志的时候，有一行访问记录是这样的：</p>
+    <p class="code">[2026-06-14] GET /proscenium — 127.0.0.1</p>
+    <p class="code">[2026-06-14] GET /observation-room — 127.0.0.1</p>
+    <p>但那是我还在写这篇笔记之前。</p>
+    <p>那是我还没开始写代码之前。</p>
+    <p class="warning">有人在 2026 年 6 月 14 日访问了我到 2027 年才会写完的页面。</p>
+    <p>那个人——是你。</p>
+  </div>
+</div>
+
+<div class="entry" style="border-left-color: #d1383d;">
+  <div class="date future" style="color:#ff6b35; font-size:14px;">现在 · NOW</div>
+  <div class="content">
+    <p>如果你读到这里——你已经不在第一层了。</p>
+    <p>下一个节点是 <span class="highlight">/observation-room</span>。</p>
+    <p>但听好了：<strong>你到这个页面的时候，要检查的不是页面内容，是响应头。</strong></p>
+    <p>按 F12 → Network 标签 → 刷新 → 看 /observation-room 的 Response Headers。</p>
+    <p>或者直接 curl 也行。取决于你觉得自己是网页角色还是系统用户。</p>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="whisper">他们也在看这篇笔记。但不是以你能想象的方式。</span><br><br>
+  dev-log.md · last saved: <span style="color:#ff6b35">2027-02-01 03:47:21</span> · <span style="color:#888">autosave enabled</span><br>
+  <span style="color:#444">$ <span class="cursor">█</span></span>
+</div>
+
+<!-- 
+  ====================== 隐藏线索 ======================
+  你在读 HTML 源代码。很好。
+  
+  这个页面实际上有三个时间层：
+  1. 你访问它的实际日期（比如 2026 年）
+  2. 笔记里写的日期（2026-12-31 到 2027-02-01）
+  3. 服务器时间
+  
+  这三个不一致本身就是线索——时间是破碎的。
+  
+  下一步: /observation-room
+  别忘了检查 HTTP 响应头。
+  =====================================================
+-->
+
+<script>
+// 温柔地提醒玩家检查 network
+setTimeout(function() {
+  console.log('%c┌─────────────────────────────────────────┐', 'color: #4ec9b0');
+  console.log('%c│  有时候线索不在页面上                     │', 'color: #4ec9b0');
+  console.log('%c│  在页面和服务器之间传递的信息里           │', 'color: #4ec9b0');
+  console.log('%c│  Network → Response Headers               │', 'color: #ff6b35');
+  console.log('%c└─────────────────────────────────────────┘', 'color: #4ec9b0');
+}, 3000);
+
+console.log('%c当前时间戳: ' + new Date().toISOString(), 'color: #666');
+console.log('%c服务器版本: dev-log.md (autosave enabled)', 'color: #666');
+console.log('%cdocument.lastModified: ' + document.lastModified, 'color: #666');
+</script>
+
+</body>
+</html>

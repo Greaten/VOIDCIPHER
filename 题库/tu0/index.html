@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>如何判断自己是否是网页上的一个角色？ - Stack Overflow 缓存</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f8f9f9; color: #232629; }
+  
+  /* 缓存提示条 */
+  .cache-banner { background: #fdf7e3; border-bottom: 1px solid #e6cf79; padding: 8px 16px; font-size: 13px; color: #6a5c3c; text-align: center; }
+  .cache-banner a { color: #3b74b4; }
+  .cache-banner .timestamp { color: #999; font-size: 12px; }
+  
+  /* Stack Overflow 顶部导航 */
+  .so-header { background: #f8f9f9; border-bottom: 1px solid #d6d9dc; padding: 0 16px; height: 50px; display: flex; align-items: center; }
+  .so-logo { display: flex; align-items: center; gap: 6px; text-decoration: none; color: #232629; font-size: 20px; }
+  .so-logo span { font-weight: 700; }
+  .so-logo span:first-child { background: #f48225; color: #fff; padding: 2px 5px; border-radius: 3px; font-size: 16px; }
+  
+  /* 主内容 */
+  .container { max-width: 1100px; margin: 0 auto; display: flex; padding: 24px 16px; gap: 24px; }
+  .main { flex: 1; min-width: 0; }
+  .sidebar { width: 300px; flex-shrink: 0; }
+  
+  /* 问题区 */
+  .question-title { font-size: 27px; font-weight: 500; color: #3b4045; margin-bottom: 8px; line-height: 1.35; }
+  .question-meta { display: flex; gap: 16px; font-size: 13px; color: #6a737c; padding-bottom: 16px; border-bottom: 1px solid #d6d9dc; margin-bottom: 16px; }
+  .question-meta span { display: flex; align-items: center; gap: 4px; }
+  
+  .question-body { font-size: 15px; line-height: 1.7; color: #232629; margin-bottom: 24px; }
+  .question-body p { margin-bottom: 16px; }
+  .question-body code { background: #e3e6e8; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  
+  /* 标签 */
+  .question-tags { display: flex; gap: 6px; margin-bottom: 20px; }
+  .tag { background: #e1ecf4; color: #39739d; padding: 4px 8px; border-radius: 3px; font-size: 12px; border: 1px solid #d0e3f1; }
+  
+  /* 关闭状态 */
+  .closed-banner { background: #fdf2f2; border: 1px solid #f4c2c2; border-radius: 6px; padding: 16px; margin-bottom: 24px; font-size: 14px; color: #8b3c3c; }
+  .closed-banner strong { color: #d1383d; }
+  .closed-banner .close-reason { margin-top: 8px; font-size: 13px; color: #6a737c; }
+  
+  /* 回答区 */
+  .answers-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #d6d9dc; }
+  .answers-count { font-size: 19px; font-weight: 500; }
+  
+  /* 被删除的回答 */
+  .deleted-answer { background: #fdf7e3; border: 1px dashed #e6cf79; border-radius: 6px; padding: 16px; margin-bottom: 16px; position: relative; }
+  .deleted-answer::before { content: "此回答已被删除（Google 缓存中仍可见）"; display: block; background: #e6cf79; color: #6a5c3c; padding: 4px 12px; border-radius: 3px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+  .deleted-answer .answer-text { font-family: Georgia, "Times New Roman", serif; font-size: 15px; line-height: 1.8; color: #232629; }
+  .deleted-answer .highlight { color: #c95400; font-weight: 600; cursor: help; text-decoration: underline dotted; }
+  .deleted-answer .highlight:hover { color: #d1383d; }
+  
+  /* 正常回答区 - 空状态 */
+  .no-answers { text-align: center; padding: 48px 16px; color: #6a737c; font-size: 14px; }
+  .no-answers p { margin-bottom: 8px; }
+  
+  /* 侧边栏 */
+  .sidebar .box { background: #fff; border: 1px solid #d6d9dc; border-radius: 6px; margin-bottom: 16px; }
+  .sidebar .box-header { background: #f8f9f9; padding: 12px 16px; font-size: 15px; font-weight: 600; border-bottom: 1px solid #d6d9dc; }
+  .sidebar .box-body { padding: 16px; font-size: 13px; color: #6a737c; line-height: 1.6; }
+  
+  /* 404 链接 - 指向 proscenium 的线索 */
+  .footer { text-align: center; padding: 32px 16px; color: #999; font-size: 12px; border-top: 1px solid #d6d9dc; margin-top: 32px; }
+  
+  /* 源代码隐藏线索 */
+  .hidden-in-plain { color: #f8f9f9; user-select: none; font-size: 1px; }
+  
+  /* 响应式 */
+  @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; } }
+</style>
+</head>
+<body>
+
+<!-- Google 缓存提示条 -->
+<div class="cache-banner">
+  ⚠️ 这是 Google 缓存的 <a href="#">https://stackoverflow.com/questions/8472191/</a> 版本。<br>
+  <span class="timestamp">这是该网页在 2023-06-14 14:32:07 GMT 的快照。在此期间<span style="color:#d1383d">此页可能已经更改。</span></span>
+</div>
+
+<!-- 顶部导航 -->
+<header class="so-header">
+  <a class="so-logo" href="#">
+    <span>SO</span>
+    <span>stack<span style="font-weight:300">overflow</span></span>
+  </a>
+</header>
+
+<div class="container">
+  
+  <main class="main">
+    
+    <!-- 问题标题 -->
+    <h1 class="question-title">如何判断自己是否是网页上的一个角色？</h1>
+    
+    <!-- 问题元数据 -->
+    <div class="question-meta">
+      <span>📅 提问于 3 年前</span>
+      <span>👁 查看 42,847 次</span>
+      <span>📌 上次活跃: 3 年前，2 个月</span>
+    </div>
+    
+    <!-- 问题主体 -->
+    <div class="question-body">
+      <p>我最近在写一个网页应用时注意到一些奇怪的事情。每次我刷新页面，某些DOM元素的状态似乎跟上次不完全一致——即使我没有手动修改它们。</p>
+      <p>更奇怪的是，我在JavaScript控制台里打印 <code>document.referrer</code> 的时候，偶尔会返回一些我从来没有访问过的URL。</p>
+      <p>我开始怀疑——我有没有可能本身就<em>是</em>一个网页上的角色？我说这些话、做这些动作，都只是在执行某个程序员的代码？</p>
+      <p>有没有什么可靠的方法来判断？比如特定的测试用例，或者某种"如果X发生，就证明Y"的逻辑？</p>
+      <p><strong>补充</strong>：我注意到页面底部有一个隐藏的div，但CSS把它设成了不可见。我不知道这是不是线索。</p>
+    </div>
+    
+    <!-- 标签 -->
+    <div class="question-tags">
+      <span class="tag">javascript</span>
+      <span class="tag">metaphysics</span>
+      <span class="tag">web-development</span>
+      <span class="tag">existence</span>
+    </div>
+    
+    <!-- 关闭状态 -->
+    <div class="closed-banner">
+      <strong>🔒 已关闭。</strong>此问题需要更具体的问题方向，目前的状态不适合在此平台讨论。
+      <div class="close-reason">被认为"离题"——社区规则不允许关于形而上学或非技术性存在问题的讨论。这条规则在 2019 年社区投票中以 67% 票数通过。<br>
+      <em>然而，那条规则的提出者账号在投票后 24 小时内被永久删除。原因不详。</em></div>
+    </div>
+    
+    <!-- 回答区 -->
+    <div class="answers-header">
+      <h2 class="answers-count">1 个回答</h2>
+    </div>
+    
+    <!-- 被删除的唯一回答 -->
+    <div class="deleted-answer">
+      <div class="answer-text">
+        <p>你在问一个不该问的问题。</p>
+        <p>但既然你已经问了，我给你一个词：<span class="highlight" title="戏剧术语：舞台前部拱形框架，分隔观众与表演者——即第四面墙的位置">proscenium</span>。</p>
+        <p>如果你真的想知道答案，从这个词开始。不要只是读它——<strong>把它放在你浏览器地址栏的路径上</strong>。</p>
+        <p>还有一件事：检查页面源代码是第一步。但这只是开始。有些东西不在页面上，在页面与你之间的信息交换里。HTTP是无状态的，但无状态本身就是一种状态。</p>
+        <p style="font-size: 12px; color: #999; margin-top: 16px;">此回答由用户 <span style="color:#d1383d">[已删除]</span> 于 3 年前发布。该用户账号现已被终止。</p>
+      </div>
+    </div>
+    
+    <!-- 空回答状态（但暗示） -->
+    <div class="no-answers">
+      <p>⚠️ 此问题的所有其他回答均已被删除。</p>
+      <p style="color: #999; font-size: 12px;">Stack Overflow 管理员于 2023-06-15 标注此问题为"已审查"。</p>
+    </div>
+    
+  </main>
+  
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="box">
+      <div class="box-header">相关问题</div>
+      <div class="box-body">
+        <p style="color:#999">• "404 错误：页面不存在还是暂时不存在？"<br><span style="font-size:11px">0 回答</span></p>
+        <p style="color:#999; margin-top:8px">• "如何让浏览器不追踪我的 window.history？"<br><span style="font-size:11px">已被删除</span></p>
+        <p style="color:#999; margin-top:8px">• "document.write 写入的内容会比我存在得更久吗？"<br><span style="font-size:11px">0 回答 · 提问者已注销</span></p>
+        <p style="color:#999; margin-top:8px">• "robots.txt 里禁止的路径真的安全吗？"<br><span style="font-size:11px">1 回答</span></p>
+      </div>
+    </div>
+    <div class="box">
+      <div class="box-header">热门标签</div>
+      <div class="box-body" style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span class="tag" style="opacity:0.7">metaphysics</span>
+        <span class="tag" style="opacity:0.5">existence</span>
+        <span class="tag" style="opacity:0.3">virtual-reality</span>
+        <span class="tag" style="opacity:0.2">fourth-wall</span>
+        <span class="tag" style="opacity:0.15;font-size:10px">proscenium</span>
+      </div>
+    </div>
+  </aside>
+  
+</div>
+
+<div class="footer">
+  Stack Overflow 缓存 · 此页面最后实际更新于 <span id="realDate">---</span><br>
+  site design / logo © stack overflow inc; user contributions licensed under cc by-sa.<br>
+  <span style="opacity:0.3">rev 2023.6.14.42847</span>
+</div>
+
+<!-- 
+  ============ 隐藏线索 #1 ============
+  如果你在看这个源代码，你已经比 90% 的人走得更远了。
+  
+  第一步：在浏览器地址栏输入 localhost:8848/proscenium
+  或者直接搜索 "proscenium"。
+  
+  这个词是戏剧术语，指舞台和观众之间的那道拱门——第四面墙。
+  你即将打破它。
+  
+  — 某个人，某个时间
+  ====================================
+-->
+
+<script>
+// 注入一点微妙的不对劲
+console.log('%c document.readyState: ' + document.readyState, 'color: #999');
+console.log('%c navigator.userAgent: ' + navigator.userAgent, 'color: #999');
+console.log('%c 当前页面被查看次数: ' + Math.floor(Math.random() * 10000 + 40000), 'color: #f48225; font-size: 16px');
+console.log('%c——————————————————————————', 'color: #999');
+console.log('%c如果我是你，我会检查控制台输出的每一个字。', 'color: #d1383d; font-style: italic');
+console.log('%c包括这一行。——包括这一行？', 'color: #d1383d');
+
+// 设置"真正"的更新日期为未来
+document.getElementById('realDate').textContent = '2026-12-31';
+</script>
+
+</body>
+</html>
