@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>VOIDCIPHER — 游戏库</title>
 <style>
-  :root {
+  :root, [data-theme="dark"] {
     --bg-deeper: #080a0c;
     --bg-primary: #0c0f14;
     --bg-elevated: #12161d;
@@ -20,6 +20,27 @@
     --font-mono: 'Courier New', 'Source Code Pro', 'Consolas', monospace;
     --font-system: system-ui, -apple-system, sans-serif;
   }
+
+  [data-theme="light"] {
+    --bg-deeper: #f2efe8;
+    --bg-primary: #faf9f5;
+    --bg-elevated: #ffffff;
+    --text-primary: #3d3420;
+    --text-secondary: #6b5e45;
+    --text-muted: #9e8f70;
+    --accent: #8a7235;
+    --accent-dim: #b8973e;
+    --border: #d8d0bf;
+  }
+
+  [data-theme="light"] body::before,
+  [data-theme="light"] body::after,
+  [data-theme="light"] .noise { display: none; }
+
+  [data-theme="light"] .brand {
+    text-shadow: 0 0 20px rgba(138,114,53,0.15), 0 0 4px rgba(138,114,53,0.1);
+  }
+  [data-theme="light"] .game-card-icon { text-shadow: 0 0 8px rgba(138,114,53,0.15); }
 
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -80,16 +101,22 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   /* Admin btn */
-  .btn-admin {
+  .btn-admin, .theme-toggle {
     display: inline-flex; align-items: center; gap: 0.5rem;
     padding: 0.5rem 1.2rem; font-family: var(--font-mono); font-size: 0.85rem;
     letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
     border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
     text-decoration: none;
   }
-  .btn-admin:hover { border-color: var(--accent-dim); background: rgba(200,168,78,0.06); color: var(--accent); }
-  .btn-admin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .header-actions { display: flex; gap: 0.75rem; }
+  .btn-admin:hover, .theme-toggle:hover { border-color: var(--accent-dim); background: rgba(200,168,78,0.06); color: var(--accent); }
+  .btn-admin:focus-visible, .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+  .zoom-hint {
+    font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.08em;
+    white-space: nowrap; opacity: 0.55; transition: opacity 0.3s;
+  }
+  .zoom-hint:hover { opacity: 1; }
 
   /* Filter Bar */
   .filter-bar {
@@ -170,7 +197,7 @@
   }
 </style>
 </head>
-<body>
+<body data-theme="dark">
 
 <div class="noise"></div>
 
@@ -183,6 +210,8 @@
       <span class="status-line"><span class="status-dot"></span>NODE ACTIVE</span>
     </div>
     <div class="header-actions">
+      <span class="zoom-hint">页面大小不舒服可以用 Ctrl + + 或 - 调整大小</span>
+      <button class="theme-toggle" id="themeToggle" title="切换浅色/暗色模式" aria-label="切换浅色/暗色模式">◐ 浅色</button>
       <a href="donate.html" class="btn-admin">支持</a>
     </div>
   </header>
@@ -337,6 +366,29 @@
   function escapeAttr(str) {
     return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
+
+  /* ── Theme Toggle ── */
+  (function() {
+    const body = document.body;
+    const btn = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('voidcipher-theme');
+    if (saved) body.dataset.theme = saved;
+    updateBtn();
+
+    btn.addEventListener('click', () => {
+      const next = body.dataset.theme === 'dark' ? 'light' : 'dark';
+      body.dataset.theme = next;
+      localStorage.setItem('voidcipher-theme', next);
+      updateBtn();
+    });
+
+    function updateBtn() {
+      const isDark = body.dataset.theme === 'dark';
+      btn.innerHTML = isDark ? '◐ 浅色' : '◑ 暗色';
+      btn.title = isDark ? '切换浅色模式' : '切换暗色模式';
+      btn.setAttribute('aria-label', btn.title);
+    }
+  })();
 
   renderFilterBar();
   renderGameLibrary();
