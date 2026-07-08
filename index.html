@@ -40,6 +40,7 @@
   [data-theme="light"] .brand {
     text-shadow: 0 0 20px rgba(138,114,53,0.15), 0 0 4px rgba(138,114,53,0.1);
   }
+  [data-theme="light"] .secret-reveal { text-shadow: 0 0 12px rgba(138,114,53,0.5); }
   [data-theme="light"] .game-card-icon { text-shadow: 0 0 8px rgba(138,114,53,0.15); }
 
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -88,6 +89,15 @@
     line-height: 1.2;
   }
   .brand:hover { animation: glitch-shift 0.3s ease-in-out; }
+
+  .secret-reveal {
+    font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.15em;
+    color: var(--accent); text-shadow: 0 0 12px rgba(200,168,78,0.6);
+    opacity: 0; transform: translateY(2px); transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none; user-select: none;
+  }
+  .secret-reveal.visible { opacity: 1; transform: translateY(0); }
+
   @keyframes glitch-shift {
     0%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,1px)}80%{transform:translate(1px,-2px)}100%{transform:translate(0)}
   }
@@ -205,7 +215,8 @@
 
   <header class="header">
     <div class="header-left">
-      <span class="brand">VOIDCIPHER</span>
+      <span class="brand" id="brandTitle">VOIDCIPHER</span>
+      <span class="secret-reveal" id="secretReveal">破雾之箭，直击靶心</span>
       <span class="tagline">文字解密 · 游戏库</span>
       <span class="status-line"><span class="status-dot"></span>NODE ACTIVE</span>
     </div>
@@ -388,6 +399,39 @@
       btn.title = isDark ? '切换浅色模式' : '切换暗色模式';
       btn.setAttribute('aria-label', btn.title);
     }
+  })();
+
+  (function() {
+    const brand = document.getElementById('brandTitle');
+    const secret = document.getElementById('secretReveal');
+    let revealed = false;
+
+    document.addEventListener('mouseup', () => {
+      if (revealed) return;
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+      try {
+        if (brand && sel.containsNode(brand, true)) {
+          secret.classList.add('visible');
+          revealed = true;
+          setTimeout(() => { secret.classList.remove('visible'); revealed = false; }, 4000);
+        }
+      } catch (e) {}
+    });
+
+    // 移动端 touch 支持
+    document.addEventListener('touchend', () => {
+      if (revealed) return;
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+      try {
+        if (brand && sel.containsNode(brand, true)) {
+          secret.classList.add('visible');
+          revealed = true;
+          setTimeout(() => { secret.classList.remove('visible'); revealed = false; }, 4000);
+        }
+      } catch (e) {}
+    });
   })();
 
   renderFilterBar();
