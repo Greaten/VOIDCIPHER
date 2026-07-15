@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>江临市第三人民医院 · 精神科电子病历系统</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ══════ 登录页基础 ══════ */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e8ecf1 0%, #d5dbe3 40%, #c8d0d9 100%);
+  position: relative;
+  overflow: hidden;
+}
+.login-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(180,190,200,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(160,175,190,0.2) 0%, transparent 50%);
+  animation: loginBgShift 20s ease-in-out infinite;
+}
+@keyframes loginBgShift {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(1%, -0.5%); }
+  66% { transform: translate(-0.5%, 1%); }
+}
+
+.login-container {
+  position: relative; z-index: 1;
+  width: 440px;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.login-header {
+  background: #1a3a4a;
+  padding: 20px 28px;
+  display: flex; align-items: center; gap: 12px;
+}
+.login-header .hospital-icon {
+  width: 40px; height: 40px;
+  background: #fff; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #1a3a4a; flex-shrink: 0;
+}
+.login-header .hospital-name { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+.login-header .system-label { color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 2px; }
+
+.login-body { padding: 32px 28px 24px; }
+
+.warning-banner {
+  background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px;
+  padding: 12px 16px; margin-bottom: 24px;
+  font-size: 13px; color: #92400e;
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+}
+.warning-banner .warn-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 12px; color: #57606a; margin-bottom: 6px; font-weight: 500; letter-spacing: 0.3px; }
+.form-group input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid #d0d7de; border-radius: 4px;
+  font-size: 14px; color: #1f2937; background: #f6f8fa;
+  transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit;
+}
+.form-group input:focus {
+  outline: none; border-color: #1a3a4a;
+  box-shadow: 0 0 0 3px rgba(26,58,74,0.1); background: #fff;
+}
+.form-group input::placeholder { color: #b0b8c1; }
+
+.login-btn {
+  width: 100%; padding: 12px;
+  background: #1a3a4a; color: #fff; border: none; border-radius: 4px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  letter-spacing: 0.5px; transition: background 0.2s; margin-top: 8px;
+}
+.login-btn:hover { background: #234b5e; }
+.login-btn:active { background: #152e3b; }
+.login-btn:disabled { background: #8b9da8; cursor: not-allowed; }
+
+.login-footer {
+  border-top: 1px solid #e8ecf1;
+  padding: 14px 28px;
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: #8b949e;
+}
+.login-footer span { display: flex; align-items: center; gap: 4px; }
+
+.patient-card {
+  background: #f8f9fb; border: 1px solid #d0d7de; border-radius: 4px;
+  padding: 16px; margin-bottom: 20px;
+  font-size: 13px; color: #3b4a54; line-height: 1.6;
+}
+.patient-card .pc-id { font-size: 18px; font-weight: 700; color: #1a3a4a; margin-bottom: 4px; }
+.patient-card .pc-meta { color: #8b949e; font-size: 11px; }
+.patient-card .pc-prev { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #57606a; }
+.patient-card .pc-prev strong { color: #c0392b; }
+
+/* ══════ 右下角聊天组件 ══════ */
+.chat-widget {
+  position: fixed;
+  bottom: 24px; right: 28px;
+  z-index: 1000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+.chat-trigger {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: #1a3a4a;
+  border: 2px solid rgba(255,255,255,0.15);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s ease;
+  position: relative;
+  margin-left: auto;
+}
+.chat-trigger:hover {
+  background: #234b5e;
+  transform: scale(1.06);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+}
+.chat-trigger svg { width: 22px; height: 22px; fill: #fff; }
+
+.chat-trigger .unread-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #e74c3c;
+  border: 2px solid #1a3a4a;
+  opacity: 0; transform: scale(0);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.chat-trigger.has-unread .unread-dot { opacity: 1; transform: scale(1); }
+.chat-trigger.has-unread {
+  animation: triggerPulse 2s ease-in-out infinite;
+}
+@keyframes triggerPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 4px 16px rgba(231,76,60,0.3), 0 0 0 8px rgba(231,76,60,0.08); }
+}
+
+.chat-panel {
+  position: absolute;
+  bottom: 60px; right: 0;
+  width: 360px;
+  max-height: 480px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #d0d7de;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transform-origin: bottom right;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.chat-panel.collapsed {
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-header {
+  background: #1a3a4a;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.chat-header .ch-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #e8ecf1; color: #1a3a4a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; flex-shrink: 0;
+}
+.chat-header .ch-info { flex: 1; min-width: 0; }
+.chat-header .ch-name { color: #fff; font-size: 13px; font-weight: 600; }
+.chat-header .ch-meta {
+  color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 1px;
+  display: flex; align-items: center; gap: 6px;
+}
+.chat-header .ch-status {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #e74c3c; display: inline-block; flex-shrink: 0;
+}
+.chat-header .ch-close {
+  background: none; border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 18px; cursor: pointer;
+  padding: 4px 6px; border-radius: 4px; line-height: 1;
+  transition: all 0.15s;
+}
+.chat-header .ch-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 16px; background: #f6f8fa;
+  display: flex; flex-direction: column; gap: 12px;
+  max-height: 340px;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 2px; }
+
+.chat-msg {
+  max-width: 85%; align-self: flex-start;
+  display: flex; flex-direction: column; gap: 2px;
+  animation: msgSlideIn 0.35s ease both;
+}
+.chat-msg .bubble {
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 12px 12px 12px 4px;
+  padding: 10px 14px; font-size: 13px;
+  color: #3b4a54; line-height: 1.65;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.chat-msg .msg-time { font-size: 10px; color: #8b949e; padding-left: 8px; }
+
+@keyframes msgSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-divider {
+  text-align: center; font-size: 10px; color: #8b949e;
+  padding: 4px 0; position: relative;
+}
+.chat-divider::before, .chat-divider::after {
+  content: ''; position: absolute;
+  top: 50%; width: 25%; height: 1px; background: #d0d7de;
+}
+.chat-divider::before { left: 8px; }
+.chat-divider::after { right: 8px; }
+
+/* 密文气泡 */
+.chat-msg.cipher .bubble {
+  background: #1a1a2e; color: #00ff88;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 12px; border: 1px solid #2a2a4e;
+  letter-spacing: 0.5px;
+  animation: cipherGlow 3s ease-in-out infinite;
+}
+@keyframes cipherGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(0,255,136,0.15); }
+  50% { box-shadow: 0 0 12px rgba(0,255,136,0.3); }
+}
+.chat-msg.cipher .bubble::after {
+  content: '\25AE'; display: inline;
+  animation: cursorBlink 0.8s steps(1) infinite; color: #00ff88;
+}
+@keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+.chat-msg.cipher.done .bubble::after { display: none; }
+
+.chat-footer-hint {
+  padding: 10px 16px; border-top: 1px solid #e8ecf1;
+  font-size: 10px; color: #8b949e;
+  text-align: center; background: #fff; flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+<div class="login-wrapper">
+  <div class="login-container">
+    <div class="login-header">
+      <div class="hospital-icon">&#x1F3E5;</div>
+      <div>
+        <div class="hospital-name">江临市第三人民医院</div>
+        <div class="system-label">精神科 · 电子病历系统 v2.4.1</div>
+      </div>
+    </div>
+
+    <div class="login-body">
+      <div class="warning-banner">
+        <span class="warn-icon">&#x26A0;&#xFE0F;</span>
+        <span>本系统包含受保护的患者健康信息（PHI）。所有访问将被记录。未经授权的访问将依法追究。</span>
+      </div>
+
+      <div class="patient-card" id="patientCard">
+        <div class="pc-id">ID 001 — 陆时砚</div>
+        <div class="pc-meta">入院日期：2024.04.15 · 司法精神鉴定评估中 · 在院</div>
+        <div class="pc-prev">
+          前评估员：<strong>沈若楠</strong>（主任医师 · 已离职）<br>
+          评估周期：2024.04.15 — 2024.07.14<br>
+          <span style="color:#c0392b;">&#x26A0; 评估未完成 — 档案移交待处理</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="username">评估员编号</label>
+        <input type="text" id="username" placeholder="输入您的评估员编号" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="password">授权码</label>
+        <input type="password" id="password" placeholder="输入系统授权码" autocomplete="off">
+      </div>
+
+      <button class="login-btn" id="loginBtn" onclick="handleLogin()">进入系统</button>
+      <div class="login-hint" id="loginHint" style="display:none;margin-top:14px;padding:10px 14px;background:#e8f0fe;border:1px solid #a0c4e8;border-radius:4px;font-size:12px;color:#3b5998;line-height:1.6;animation:fadeInNote 0.4s ease;">
+        <span style="font-weight:600;">🔑 提示</span> — 使用您的评估员编号及临时授权码即可登录。<br>
+        <span style="color:#8b949e;">如未收到授权码，请检查右下角内部通讯频道 →</span>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      <span>&#x1F512; 会话加密：TLS 1.3</span>
+      <span>江临三院 &copy; 2024</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ 右下角聊天组件 ══════ -->
+<div class="chat-widget" id="chatWidget">
+  <div class="chat-trigger" id="chatTrigger" onclick="toggleChat(event)" title="系统消息">
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
+    <div class="unread-dot"></div>
+  </div>
+
+  <div class="chat-panel collapsed" id="chatPanel">
+    <div class="chat-header">
+      <div class="ch-avatar">沈</div>
+      <div class="ch-info">
+        <div class="ch-name">沈若楠</div>
+        <div class="ch-meta">
+          <span class="ch-status"></span>
+          离线 · 最后一次活跃 2024.07.14
+        </div>
+      </div>
+      <button class="ch-close" onclick="toggleChat(event)" title="关闭">&#x2715;</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="chat-footer-hint">
+      ⏱ 离职交接频道 · 48 小时后自动清理
+    </div>
+  </div>
+</div>
+
+<script>
+var _failCount = 0;
+var _chatBuilt = false;
+
+function handleLogin() {
+  var btn = document.getElementById('loginBtn');
+  var u = document.getElementById('username').value.trim();
+  var p = document.getElementById('password').value.trim();
+  if (!u || !p) {
+    _failCount++;
+    var hint = document.getElementById('loginHint');
+    if (hint) hint.style.display = 'block';
+    if (_failCount >= 2) showShenChat();
+    return;
+  }
+  localStorage.setItem('alter_auth', 'true');
+  localStorage.setItem('alter_assessor', u);
+  localStorage.setItem('alter_login_time', new Date().toISOString());
+  btn.textContent = '正在验证...';
+  btn.disabled = true;
+  setTimeout(function(){ window.location.href = 'system.html'; }, 800);
+}
+
+// 页面加载即显示红点引导
+window.addEventListener('DOMContentLoaded', function(){
+  var trig = document.getElementById('chatTrigger');
+  if (trig && !_chatBuilt) trig.classList.add('has-unread');
+});
+
+function toggleChat(e) {
+  if (e) e.stopPropagation();
+  var panel = document.getElementById('chatPanel');
+  var trig = document.getElementById('chatTrigger');
+  var open = !panel.classList.contains('collapsed');
+  if (open) { panel.classList.add('collapsed'); }
+  else {
+    panel.classList.remove('collapsed');
+    trig.classList.remove('has-unread');
+    if (!_chatBuilt) { buildChat(); _chatBuilt = true; }
+  }
+}
+
+function showShenChat() {
+  var panel = document.getElementById('chatPanel');
+  var trig = document.getElementById('chatTrigger');
+  trig.classList.add('has-unread');
+  panel.classList.remove('collapsed');
+  if (!_chatBuilt) { buildChat(); _chatBuilt = true; }
+  setTimeout(scrollChat, 500);
+}
+
+var CHAT_MSGS = [
+  { time:'2024.07.14 17:32', text:'嗯……你来了。' },
+  { time:'2024.07.14 17:32', text:'我是沈若楠。前评估员。这个号用的是系统内部频道，离职之后本来该注销的——我改了一下权限，留了个口子。' },
+  { time:'2024.07.14 17:33', text:'说正事。ID 001 的评估我没做完。不是时间不够——是做到一半发现再往下做我自己就出不去了。' },
+  { time:'2024.07.14 17:33', text:'档案都在系统里。14 份人格评估、23 次会话记录、给药日志、排班表、外面能找到的所有证据——我全塞进去了。文件夹是按我当时的调查顺序排的，跟着走就行。' },
+  { time:'2024.07.14 17:34', text:'先从人格档案开始翻。P01 到 P14，别跳。看到 P14 你就知道为什么了。' },
+  { time:'2024.07.14 17:35', text:'然后去看给药日志——找方小娟的班。再看排班表，找规律。最后翻外部证据里那份火灾报告。' },
+  { time:'2024.07.14 17:35', text:'所有的矛盾我都标好了——你只需要读，不需要猜。' },
+  { divider:'2024.07.14 17:36 · 加密频道' },
+  { cipher:'THE SLEEPER IS THE INTEGRATION. STOP THE MEDS. CHECK THE NIGHT NURSE.', time:'系统信息' }
+];
+
+function buildChat() {
+  var c = document.getElementById('chatMessages');
+  var h = '<div class="chat-divider">江临三院 · 内部通讯 · 离职交接频道</div>';
+  for (var i = 0; i < CHAT_MSGS.length; i++) {
+    var m = CHAT_MSGS[i];
+    if (m.divider) { h += '<div class="chat-divider">'+m.divider+'</div>'; continue; }
+    if (m.cipher) {
+      h += '<div class="chat-msg cipher" id="cipherMsg"><div class="bubble" id="cipherBubble"></div><div class="msg-time">'+m.time+'</div></div>';
+    } else {
+      h += '<div class="chat-msg" style="animation-delay:'+(i*0.12)+'s"><div class="bubble">'+m.text+'</div><div class="msg-time">'+m.time+'</div></div>';
+    }
+  }
+  c.innerHTML = h;
+  var ct = CHAT_MSGS.filter(function(x){return x.cipher})[0].cipher;
+  var cb = document.getElementById('cipherBubble');
+  var cm = document.getElementById('cipherMsg');
+  if (cb && ct) {
+    var idx = 0;
+    var t = setInterval(function(){
+      cb.textContent += ct[idx]; idx++; scrollChat();
+      if (idx >= ct.length) { clearInterval(t); cm.classList.add('done'); }
+    }, 35);
+  }
+  setTimeout(scrollChat, 400);
+}
+
+function scrollChat() {
+  var c = document.getElementById('chatMessages');
+  if (c) c.scrollTop = c.scrollHeight;
+}
+
+if (localStorage.getItem('alter_auth') === 'true') {
+  window.location.href = 'system.html';
+}
+
+document.getElementById('password').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleLogin();
+});
+document.getElementById('username').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('password').focus();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ID 001 — 陆时砚 · 评估档案 | 江临三院精神科</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════ 顶部状态栏 ══════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span>🏥 江临三院 · 精神科</span>
+    <span class="divider"></span>
+    <span class="badge" id="assessorBadge">评估员: ...</span>
+  </div>
+  <div class="topbar-center">
+    <span>📋 ID 001 — 陆时砚</span>
+    <span class="divider"></span>
+    <span>证据完备度</span>
+    <div class="progress-bar">
+      <div class="fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <span style="font-size:11px;color:rgba(255,255,255,0.7)" id="progressText">0/8</span>
+  </div>
+  <div class="topbar-right">
+    <button onclick="openHandbook()" style="background:rgba(255,255,255,0.12);border:none;color:#fff;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;">📖 速查手册</button>
+    <span class="divider"></span>
+    <button onclick="handleLogout()" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:3px 10px;border-radius:3px;font-size:11px;cursor:pointer;">退出系统</button>
+  </div>
+</div>
+
+<!-- ══════ 主布局 ══════ -->
+<div class="main-layout">
+
+  <!-- 左侧边栏 — 档案文件树 -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>📁 评估档案</h3>
+      <span class="count">ID 001</span>
+    </div>
+    <div class="sidebar-scroll" id="fileTree">
+      <!-- JS 动态生成 -->
+    </div>
+  </div>
+
+  <!-- 中央阅读区 -->
+  <div class="reader" id="reader">
+    <div class="reader-toolbar">
+      <span class="doc-title" id="docTitle">选择一份档案开始阅读</span>
+      <span class="doc-meta" id="docMeta"></span>
+    </div>
+    <div class="reader-content" id="readerContent">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8b949e;font-size:14px;flex-direction:column;gap:12px;">
+        <div style="font-size:48px;opacity:0.7;">📋</div>
+        <div style="color:#57606a;font-weight:500;">选择左侧文件开始评估</div>
+        <div style="font-size:11px;color:#b0b8c1;">沈若楠把东西都塞进去了。跟着她的文件夹顺序走。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧分析面板 -->
+  <div class="analysis-panel" id="analysisPanel">
+
+    <!-- 矛盾板 -->
+    <div class="panel-section" style="flex:1;display:flex;flex-direction:column;">
+      <div class="section-title">
+        🔍 矛盾板
+        <span style="font-size:10px;font-weight:400;color:var(--text-muted)">高亮文本 → 钉选</span>
+      </div>
+      <div class="contradiction-board" id="contradictionBoard">
+        <!-- 槽 A -->
+        <div class="pin-slot" id="pinSlotA" onclick="clearSlot('A')">
+          <span class="slot-label">A</span>
+          <span class="slot-text" id="slotAText" style="color:var(--text-muted)">从文档中选择一段文字</span>
+        </div>
+        <!-- 槽 B -->
+        <div class="pin-slot" id="pinSlotB" onclick="clearSlot('B')">
+          <span class="slot-label">B</span>
+          <span class="slot-text" id="slotBText" style="color:var(--text-muted)">从另一份文档中选择文字</span>
+        </div>
+        <button class="btn-compare" id="btnCompare" disabled onclick="doCompare()">比对矛盾</button>
+        <div id="compareResult"></div>
+      </div>
+    </div>
+
+    <!-- 证据链 -->
+    <div class="panel-section">
+      <div class="section-title">⛓ 证据链</div>
+      <div class="evidence-chain" id="evidenceChain">
+        <!-- P1-P8 节点 -->
+        <div class="evidence-chain-row" id="ecRow1">
+          <div class="ec-node" id="ecP1" title="P1 · 三个原初">P1</div><div class="ec-arrow"></div>
+          <div class="ec-node" id="ecP2" title="P2 · 火灾的第四人">P2</div><div class="ec-arrow"></div>
+          <div class="ec-node" id="ecP3" title="P3 · 消失的三天">P3</div><div class="ec-arrow"></div>
+          <div class="ec-node" id="ecP4" title="P4 · 12个死者的记忆">P4</div>
+        </div>
+        <div class="evidence-chain-row" id="ecRow2" style="margin-top:4px">
+          <div class="ec-node" id="ecP5" title="P5 · 办公室的三种真相">P5</div><div class="ec-arrow"></div>
+          <div class="ec-node" id="ecP6" title="P6 · 艺术家的密码">P6</div><div class="ec-arrow"></div>
+          <div class="ec-node" id="ecP7" title="P7 · 沈若楠的加密便签">P7</div><div class="ec-arrow"></div>
+          <div class="ec-node" id="ecP8" title="P8 · 原初的碎片">P8</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 人格关系图谱 -->
+    <div class="panel-section" style="flex:0 0 200px;">
+      <div class="section-title">🕸 人格关系图谱</div>
+      <div class="graph-container" id="graphContainer">
+        <div class="graph-placeholder" id="graphPlaceholder">档案比对后，人格之间的连线会自己浮现</div>
+        <svg id="graphSvg" viewBox="0 0 340 200"></svg>
+      </div>
+    </div>
+
+    <!-- 提交 -->
+    <div class="submit-area">
+      <button class="btn-submit" id="btnSubmit" onclick="openSubmitModal()">提交评估报告</button>
+      <div class="submit-warning">⚠ 提交后不可修改</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════ 提交确认模态 ══════ -->
+<div class="modal-overlay" id="submitModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📝 提交评估报告 — ID 001</h3>
+      <button class="modal-close" onclick="closeSubmitModal()">×</button>
+    </div>
+    <div class="modal-body" id="submitModalBody">
+      <p>您即将提交对患者 ID 001（陆时砚）的最终评估结论。</p>
+      <p style="color:var(--danger);font-weight:600;">⚠ 提交后不可修改。请确认以下内容：</p>
+
+      <div style="margin:16px 0;padding:12px;background:#f6f8fa;border-radius:4px;">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">已解锁证据链</div>
+        <div id="submitEcStatus" style="font-size:12px;">...</div>
+      </div>
+
+      <label style="display:block;margin-top:12px;font-weight:600;font-size:12px;">评估结论：</label>
+      <select id="submitConclusion" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:4px;margin-top:6px;font-size:13px;">
+        <option value="">—— 请选择评估结论 ——</option>
+        <option value="A">A · 患者不具备受审能力 · 建议长期住院观察</option>
+        <option value="B">B · 创伤引发的 DID · 死亡事件为自卫 · 无第三方干预</option>
+        <option value="C">C · 辰星制药系统性犯罪 · 药物干预 + 临床试验掩盖</option>
+        <option value="D">D · 患者具备完整作证能力 · 申请停止压制性给药</option>
+        <option value="E">E · （隐藏选项 · 发现药物压制证据但选择不提交）</option>
+        <option value="F">F · 患者故意杀害苏景州 · 具备完全刑事责任能力</option>
+      </select>
+
+      <label style="display:block;margin-top:12px;font-weight:600;font-size:12px;">备注（可选）：</label>
+      <textarea id="submitNote" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:4px;margin-top:6px;font-size:13px;min-height:80px;resize:vertical;" placeholder="补充您的评估理由..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeSubmitModal()">取消 · 继续评估</button>
+      <button class="btn-danger" onclick="confirmSubmit()">确认提交 · 不可撤销</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ 结局模态 ══════ -->
+<div class="modal-overlay" id="endingModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="endingTitle">评估完成</h3>
+      <button class="modal-close" onclick="document.getElementById('endingModal').style.display='none'">×</button>
+    </div>
+    <div class="modal-body" id="endingBody"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="handleLogout()">退出系统</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ 速查手册模态 ══════ -->
+<div class="handbook-overlay" id="handbookOverlay" style="display:none;">
+  <div class="handbook">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:14px;">📖 精神科评估速查手册</h3>
+      <button class="modal-close" onclick="document.getElementById('handbookOverlay').style.display='none'">×</button>
+    </div>
+    <div class="handbook-tabs" id="handbookTabs">
+      <button class="handbook-tab active" onclick="switchHandbookTab(0)">DSM-5 DID 标准</button>
+      <button class="handbook-tab" onclick="switchHandbookTab(1)">精神科常用药物</button>
+      <button class="handbook-tab" onclick="switchHandbookTab(2)">司法精神鉴定</button>
+    </div>
+    <div class="handbook-body" id="handbookBody"></div>
+  </div>
+</div>
+
+<!-- ══════ Notification ══════ -->
+<div id="notification" style="position:fixed;top:56px;right:16px;background:#1f2937;color:#fff;padding:10px 20px;border-radius:6px;font-size:12px;z-index:700;display:none;box-shadow:var(--shadow-md);pointer-events:none;max-width:320px;"></div>
+
+<script src="js/data/transcripts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
