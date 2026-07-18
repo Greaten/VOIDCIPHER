@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>写给你的信</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="phone-shell">
+  <div class="phone-speaker"></div>
+  
+  <div class="phone-screen">
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <div class="signal">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <span id="statusTime">23:12</span>
+      <span class="battery">■ 67%</span>
+    </div>
+    
+    <!-- 锁屏 -->
+    <div class="lock-screen" id="lockScreen">
+      <!-- 锁屏壁纸区域：可点击的线索 -->
+      <div class="lock-wallpaper" id="lockWallpaper">
+        <div class="lock-time" id="lockTime">23:12</div>
+        <div class="lock-date" id="lockDate">2024年7月18日 星期四</div>
+      </div>
+      
+      <!-- 锁屏上的未读短信预览 -->
+      <div class="lock-sms-preview" id="lockSmsPreview" onclick="showLockSmsDetail()">
+        <div class="lock-sms-icon">✉</div>
+        <div class="lock-sms-text">
+          <div class="lock-sms-from">遥遥</div>
+          <div class="lock-sms-snippet">爸，父亲节快乐。给你买的茶叶到了没？</div>
+        </div>
+      </div>
+      
+      <!-- 锁屏上的日历提醒 -->
+      <div class="lock-calendar-note" id="lockCalendarNote">
+        <span class="cal-icon">📅</span>
+        <span>今日无日程。最近日程：<span id="lockNextEvent" onclick="showLockEventDetail()" style="text-decoration:underline;cursor:pointer;color:#7ab8e0;">9月15日 遥遥生日</span></span>
+      </div>
+      
+      <!-- 密码输入区 -->
+      <input type="text" class="lock-input" id="lockInput" placeholder="输入密码" readonly />
+      <div class="lock-keypad">
+        <button data-key="1">1</button>
+        <button data-key="2">2</button>
+        <button data-key="3">3</button>
+        <button data-key="4">4</button>
+        <button data-key="5">5</button>
+        <button data-key="6">6</button>
+        <button data-key="7">7</button>
+        <button data-key="8">8</button>
+        <button data-key="9">9</button>
+        <button data-key="del">✕</button>
+        <button data-key="0">0</button>
+        <button data-key="ok">✓</button>
+      </div>
+      <div class="lock-error" id="lockError"></div>
+      <div class="lock-hint">重要的日子</div>
+    </div>
+    
+    <!-- 主界面 -->
+    <div class="home-screen hidden" id="homeScreen">
+      <div class="home-header">桌面 · 2024年7月</div>
+      <div class="home-grid">
+        <div class="home-icon" data-app="sms">
+          <div class="icon-img">💬 <span class="badge">1</span></div>
+          <div class="icon-label">短信</div>
+        </div>
+        <div class="home-icon" data-app="call">
+          <div class="icon-img">📞</div>
+          <div class="icon-label">通话</div>
+        </div>
+        <div class="home-icon" data-app="photo">
+          <div class="icon-img">📷</div>
+          <div class="icon-label">相册</div>
+        </div>
+        <div class="home-icon" data-app="memo">
+          <div class="icon-img">📝</div>
+          <div class="icon-label">备忘录</div>
+        </div>
+        <div class="home-icon" data-app="calendar">
+          <div class="icon-img">📅</div>
+          <div class="icon-label">日历</div>
+        </div>
+        <div class="home-icon" data-app="music">
+          <div class="icon-img">🎵</div>
+          <div class="icon-label">音乐</div>
+        </div>
+        <div class="home-icon" data-app="files">
+          <div class="icon-img">🗂️</div>
+          <div class="icon-label">文件</div>
+        </div>
+        <div class="home-icon" data-app="ending" style="opacity:0.3;">
+          <div class="icon-img">❓</div>
+          <div class="icon-label">?</div>
+        </div>
+      </div>
+      <div class="home-footer">
+        <button id="softLeft">返回</button>
+        <button id="softRight">选项</button>
+      </div>
+    </div>
+    
+    <!-- 应用容器 -->
+    <div class="app-view hidden" id="appContainer">
+      <div class="app-header" id="appHeader"></div>
+      <div class="app-content" id="appContent"></div>
+    </div>
+  </div>
+  
+  <!-- 物理按键 -->
+  <div class="phone-keys">
+    <button class="soft-key" id="keyLeft">返回</button>
+    <button class="center-key" id="keyCenter">●</button>
+    <button class="soft-key" id="keyRight">选项</button>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
