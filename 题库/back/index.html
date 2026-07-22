@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NATIONEYE · 案件调查系统</title>
+<style>
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --card: #fafafa;
+  --border: #e0e0e4;
+  --divider: #eeeef0;
+  --text: #1d1d1f;
+  --text-dim: #6e6e73;
+  --text-faint: #999;
+  --accent: #d35400;
+  --accent-dim: #a04000;
+  --accent-bg: rgba(211,84,0,0.06);
+  --accent-bg-hover: rgba(211,84,0,0.12);
+  --danger: #c0392b;
+  --danger-bg: rgba(192,57,43,0.04);
+  --success: #1a8a4a;
+  --info: #2563eb;
+  --info-bg: rgba(37,99,235,0.05);
+  --topbar-h: 44px;
+  --left-w: 64px;
+  --right-w: 340px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #eeeef0;
+  font-family: 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  overflow: hidden; height: 100vh;
+  color: var(--text); font-size: 15px; line-height: 1.7;
+}
+
+/* Top Bar */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--topbar-h); background: #fafafa;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; z-index: 100; gap: 10px;
+}
+#topbar .logo { font-weight: 700; font-size: 15px; color: var(--text); letter-spacing: 1px; cursor: pointer; }
+#topbar .logo span { color: var(--accent); }
+#topbar .sep { color: var(--text-faint); font-size: 18px; margin: 0 2px; }
+#topbar .subtitle { font-size: 13px; color: var(--text-dim); letter-spacing: 0.5px; }
+#topbar .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+#topbar .case-id { font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: 1px; }
+#topbar .back-btn {
+  font-size: 12px; color: var(--text-dim); cursor: pointer;
+  background: none; border: 1px solid var(--border); padding: 2px 10px; border-radius: 3px;
+}
+#topbar .back-btn:hover { color: var(--text); border-color: #555; }
+
+/* Layout */
+#main { display: flex; height: calc(100vh - var(--topbar-h)); margin-top: var(--topbar-h); }
+
+/* Left Nav */
+#left-nav {
+  width: var(--left-w); background: #f8f8fa;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 0; gap: 2px; flex-shrink: 0;
+}
+.nav-item {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; cursor: pointer; color: var(--text-dim);
+  font-size: 20px; transition: all 0.2s; position: relative;
+}
+.nav-item:hover { color: var(--text); background: rgba(0,0,0,0.04); }
+.nav-item.active { color: var(--accent); background: var(--accent-bg); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+}
+
+/* Center */
+#center { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+#center-header {
+  padding: 16px 24px 12px; border-bottom: 1px solid var(--divider); flex-shrink: 0;
+}
+#center-header h2 { font-size: 18px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+#center-header .src-type { font-size: 12px; color: var(--text-faint); letter-spacing: 1.5px; margin-top: 2px; }
+#center-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+/* Right Panel */
+#right-panel {
+  width: var(--right-w); background: #fafafa;
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0;
+  position: relative;
+}
+#right-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--divider); flex-shrink: 0;
+}
+#right-header h3 { font-size: 14px; font-weight: 600; color: var(--text-dim); letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }
+#right-header .count { color: var(--accent); font-size: 13px; font-weight: 700; }
+#evidence-list { flex: 1; overflow-y: auto; padding: 8px; }
+.evidence-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px; margin-bottom: 6px;
+  cursor: pointer; transition: all 0.15s; position: relative;
+}
+.evidence-card:hover { border-color: #bbb; }
+.evidence-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+.evidence-card.assigned { opacity: 0.45; border-style: dashed; cursor: not-allowed; }
+.evidence-card .ev-source { font-size: 11px; color: var(--text-faint); letter-spacing: 1px; margin-bottom: 3px; }
+.evidence-card .ev-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+.evidence-card .ev-icon { position: absolute; top: 8px; right: 10px; font-size: 10px; color: var(--accent); }
+#empty-evidence { text-align: center; color: var(--text-faint); padding: 48px 16px; font-size: 14px; line-height: 2; }
+
+#deduction-trigger {
+  margin: 8px 12px 12px; padding: 12px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 6px; font-size: 15px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.5px; transition: background 0.15s; flex-shrink: 0;
+}
+#deduction-trigger:hover { background: var(--accent-dim); }
+
+/* Content Shared Styles */
+.chat-msg { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--divider); }
+.chat-msg:last-child { border-bottom: none; }
+.chat-msg .c-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.chat-msg .c-sender { font-weight: 600; font-size: 14px; color: var(--text); }
+.chat-msg .c-time { font-size: 12px; color: var(--text-faint); margin-left: auto; }
+.chat-msg .c-body { color: var(--text-dim); font-size: 15px; line-height: 1.8; }
+.chat-msg.warn { background: var(--danger-bg); padding: 10px 12px; border-radius: 6px; border: none; margin-bottom: 12px; }
+.chat-section-label { font-size: 12px; color: var(--text-faint); letter-spacing: 1px; padding: 8px 0; margin-bottom: 8px; border-bottom: 1px solid var(--divider); }
+
+.email-list-item { padding: 12px; border-bottom: 1px solid var(--divider); cursor: pointer; transition: background 0.15s; border-radius: 4px; }
+.email-list-item:hover { background: rgba(0,0,0,0.02); }
+.email-list-item .e-subject { font-size: 15px; font-weight: 600; color: var(--text); }
+.email-list-item .e-meta { font-size: 12px; color: var(--text-faint); margin-top: 3px; }
+.email-detail { margin-top: 10px; padding: 14px; background: var(--card); border-radius: 6px; border: 1px solid var(--border); display: none; font-size: 15px; color: var(--text-dim); line-height: 1.9; }
+.email-detail.open { display: block; }
+
+.cal-event { display: flex; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--divider); gap: 12px; }
+.cal-event .cal-time { font-size: 14px; font-weight: 600; color: var(--accent); min-width: 48px; }
+.cal-event .cal-desc { flex: 1; }
+.cal-event .cal-title { font-size: 15px; color: var(--text); }
+.cal-event .cal-loc { font-size: 12px; color: var(--text-faint); }
+.cal-event.warn { background: var(--danger-bg); padding: 8px 12px; border-radius: 4px; border: none; }
+
+.commit { padding: 10px 0; border-bottom: 1px solid var(--divider); font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 13px; }
+.commit .c-hash { color: var(--accent); }
+.commit .c-author { color: var(--info); }
+.commit .c-date { color: var(--text-faint); font-size: 12px; }
+.commit .c-msg { color: var(--text); margin: 3px 0; }
+.commit .c-diff { font-size: 12px; color: var(--success); margin-top: 2px; }
+.commit .c-meta { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+.commit.flagged { background: var(--danger-bg); padding: 10px 12px; border-radius: 4px; border: none; }
+
+.hr-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.hr-card .hr-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.hr-card .hr-role { font-size: 13px; color: var(--info); margin-bottom: 10px; }
+.hr-card .hr-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; color: var(--text-dim); border-bottom: 1px solid var(--divider); }
+.hr-card .hr-row:last-child { border-bottom: none; }
+.hr-card .hr-val { color: var(--text); font-weight: 500; }
+.hr-card .hr-val.danger { color: var(--danger); }
+.hr-card .hr-val.success { color: var(--success); }
+
+.surv-entry { display: flex; gap: 12px; padding: 10px 12px; border-radius: 6px; margin-bottom: 6px; background: var(--card); border: 1px solid var(--border); }
+.surv-entry .surv-time { font-size: 14px; font-weight: 700; color: var(--accent); min-width: 44px; }
+.surv-entry .surv-detail { flex: 1; }
+.surv-entry .surv-loc { font-size: 12px; color: var(--text-faint); margin-bottom: 2px; }
+.surv-entry .surv-desc { font-size: 14px; color: var(--text-dim); }
+.surv-entry.flagged { border-color: var(--danger); background: var(--danger-bg); }
+
+.clue { color: var(--accent); border-bottom: 1px dashed var(--accent); padding: 0 2px; cursor: pointer; transition: all 0.15s; border-radius: 2px; }
+.clue:hover { background: var(--accent-bg-hover); }
+.clue.collected { color: var(--success); border-bottom: 1px solid var(--success); cursor: default; }
+.clue.collected:hover { background: transparent; }
+.ctx-note { font-size: 12px; color: var(--text-faint); margin-top: 4px; font-style: italic; }
+
+/* Deduction Overlay */
+#deduction-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 500; display: none; align-items: center; justify-content: center; }
+#deduction-overlay.open { display: flex; }
+#deduction-panel { width: 660px; max-height: 82vh; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px; overflow-y: auto; }
+#deduction-panel h2 { text-align: center; font-size: 18px; color: var(--text); margin-bottom: 4px; }
+#deduction-panel .subtitle { text-align: center; font-size: 13px; color: var(--text-faint); margin-bottom: 24px; }
+.deduction-narrative { font-size: 16px; color: var(--text-dim); line-height: 2.4; }
+.deduction-blank { display: inline-block; min-width: 100px; border-bottom: 2px dashed var(--accent); padding: 0 10px; margin: 0 3px; color: var(--accent); cursor: pointer; text-align: center; font-weight: 600; transition: all 0.15s; border-radius: 2px; }
+.deduction-blank:hover { background: var(--accent-bg); }
+.deduction-blank.active { outline: 2px solid var(--accent); outline-offset: 2px; background: var(--accent-bg); }
+.deduction-blank.filled { border-bottom: 2px solid var(--success); color: var(--success); cursor: pointer; }
+.deduction-blank.filled:hover { background: rgba(39,174,96,0.08); }
+#submit-btn { display: block; width: 220px; margin: 28px auto 0; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px; transition: background 0.15s; }
+#submit-btn:hover { background: var(--accent-dim); }
+#result-area { text-align: center; margin-top: 16px; font-size: 15px; font-weight: 600; }
+#close-deduction, #next-case-btn { display: block; margin: 12px auto 0; background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 6px 24px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+#close-deduction:hover, #next-case-btn:hover { border-color: #999; color: var(--text); }
+
+/* Title Screen */
+#title-screen { position: fixed; inset: 0; background: #eeeef0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#title-screen h1 { font-size: 48px; font-weight: 700; color: var(--text); letter-spacing: 3px; margin-bottom: 4px; }
+#title-screen h1 span { color: var(--accent); }
+#title-screen .tagline { font-size: 16px; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 48px; }
+.case-grid { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+.case-card {
+  width: 260px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; cursor: pointer; transition: all 0.2s;
+  position: relative;
+}
+.case-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.case-card.locked { opacity: 0.4; cursor: not-allowed; }
+.case-card.locked:hover { border-color: var(--border); transform: none; box-shadow: none; }
+.case-card .case-num { font-size: 11px; color: var(--text-faint); letter-spacing: 2px; margin-bottom: 8px; }
+.case-card .case-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.case-card .case-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.5; }
+.case-card .case-difficulty { font-size: 12px; color: var(--accent); }
+.case-card .case-status {
+  position: absolute; top: 16px; right: 16px;
+  font-size: 20px;
+}
+.case-card .case-lock { position: absolute; top: 16px; right: 16px; font-size: 18px; color: var(--text-faint); }
+
+/* Toast */
+.toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--accent); color: var(--text); padding: 8px 20px; border-radius: 4px; font-size: 14px; z-index: 600; animation: toastIn 0.25s ease, toastOut 0.25s ease 1.8s forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(-50%) translateY(-12px); } }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Title Screen -->
+<div id="title-screen">
+  <h1>NATION<span>EYE</span></h1>
+  <div class="tagline">案件调查系统</div>
+  <div class="case-grid" id="case-grid"></div>
+</div>
+
+<!-- Top Bar -->
+<div id="topbar" style="display:none;">
+  <div class="logo" onclick="showTitle()">NATION<span>EYE</span></div>
+  <span class="sep">·</span>
+  <div class="subtitle" id="topbar-subtitle">案件调查</div>
+  <div class="topbar-right">
+    <button class="back-btn" onclick="showTitle()">← 案件列表</button>
+    <div class="case-id" id="topbar-case-id"></div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div id="main" style="display:none;">
+  <div id="left-nav"></div>
+  <div id="center">
+    <div id="center-header">
+      <h2 id="center-title"></h2>
+      <div class="src-type" id="center-subtitle"></div>
+    </div>
+    <div id="center-body"></div>
+  </div>
+  <div id="right-panel">
+    <div id="right-header"><h3>📋 证据档案 <span class="count" id="ev-count">0</span></h3></div>
+    <div id="evidence-list"><div id="empty-evidence">在数据源中点击<br><span style="color:var(--accent);">橙色高亮文字</span><br>收集证据</div></div>
+    <button id="deduction-trigger" onclick="openDeduction()">构建案情报告</button>
+  </div>
+</div>
+
+<!-- Deduction Overlay -->
+<div id="deduction-overlay">
+  <div id="deduction-panel">
+    <h2>📋 案情推理报告</h2>
+    <div class="subtitle">点击空白处，然后从右侧证据档案中选择一项</div>
+    <div class="deduction-narrative" id="deduction-text"></div>
+    <button id="submit-btn" onclick="submitDeduction()">提交推理</button>
+    <div id="result-area"></div>
+    <button id="close-deduction" onclick="closeDeduction()">返回调查</button>
+    <button id="next-case-btn" onclick="goNextCase()" style="display:none;">进入下一案件 →</button>
+  </div>
+</div>
+
+<script>
+// ==================== GAME STATE ====================
+let currentCase = null;
+let completedCases = JSON.parse(localStorage.getItem('nationeye_done') || '[]');
+let unlockedCases = JSON.parse(localStorage.getItem('nationeye_unlocked') || '["case001","case002","case003","case004","case005"]');
+let collected = {};
+let answers = {};
+let currentSource = '';
+let selectedClue = null;
+let activeBlank = null;
+
+function saveProgress() {
+  localStorage.setItem('nationeye_done', JSON.stringify(completedCases));
+  localStorage.setItem('nationeye_unlocked', JSON.stringify(unlockedCases));
+}
+
+function unlockCase(caseId) {
+  if (!unlockedCases.includes(caseId)) {
+    unlockedCases.push(caseId);
+    saveProgress();
+  }
+}
+
+// ==================== CASES DATA ====================
+const CASES = {
+
+case001: {
+  id: 'case001',
+  num: '001',
+  title: '加班',
+  subtitle: '飞鸟科技 · 程序员猝死案',
+  difficulty: 1,
+  caseLabel: '案件 #2025-0319',
+  sources: {
+    chat:  { icon: '💬', title: '通讯记录', sub: '即时消息 · 飞鸟项目组' },
+    email: { icon: '📧', title: '邮件', sub: '企业邮箱 · 陈昊的收件箱' },
+    calendar: { icon: '📅', title: '日程', sub: '3月19日 · 陈昊的个人日历' },
+    git:   { icon: '⌨️', title: '代码仓库', sub: 'GitLab · frontend-app / main' },
+    surveillance: { icon: '📷', title: '监控记录', sub: '3月19日 · 茶水间及会议室' },
+    hr:    { icon: '👤', title: '人事档案', sub: '内部系统 · 员工记录' },
+  },
+  navOrder: ['chat','email','calendar','git','surveillance','hr'],
+  clues: [
+    // 关键人名
+    { id: 'nm1', text: '陈昊', src: 'hr', ctx: '受害者 · 高级前端工程师' },
+    { id: 'nm2', text: '李明', src: 'hr', ctx: '凶手 · 产品经理' },
+    // 关键线索
+    { id: 'c1',  text: '约了人', src: 'chat', ctx: '陈昊 18:30 群聊' },
+    { id: 'c2',  text: '改到吐', src: 'chat', ctx: '陈昊账号 20:15 群聊 → 语气矛盾' },
+    { id: 'c3',  text: '报销异常', src: 'hr', ctx: '李明·HR备注 → 外包费用审批问题' },
+    { id: 'c4',  text: 'PIP截止', src: 'hr', ctx: '李明·绩效改进计划 3.21到期' },
+    { id: 'c5',  text: '绩效A', src: 'hr', ctx: '陈昊·最近绩效' },
+    { id: 'c6',  text: '50万差额', src: 'email', ctx: '陈昊→审计部 周二16:30' },
+    { id: 'c7',  text: '停下来', src: 'email', ctx: '匿名威胁邮件 周二21:00' },
+    { id: 'c8',  text: '192.168.1.88', src: 'git', ctx: 'commit abc123 提交IP → 李明工位' },
+    { id: 'c9',  text: 'BUDGET_THRESHOLD', src: 'git', ctx: 'commit abc123 diff → 500000→300000' },
+    { id: 'c10', text: '团建', src: 'calendar', ctx: 'HR当天外出 → 面谈不可能发生' },
+    { id: 'c11', text: '19:45', src: 'surveillance', ctx: '李明进入茶水间' },
+    { id: 'c12', text: '杯子', src: 'surveillance', ctx: '李明离开时手中多出的物品' },
+    { id: 'c13', text: '20:00', src: 'surveillance', ctx: '陈昊进入茶水间' },
+    { id: 'c14', text: '踉跄', src: 'surveillance', ctx: '陈昊离开时的异常状态' },
+    { id: 'c15', text: '账目问题', src: 'chat', ctx: '陈昊→张工私聊 周二17:45' },
+    { id: 'c16', text: '喝咖啡', src: 'chat', ctx: '李明群聊 20:17 → 陈昊已遇害' },
+    { id: 'c17', text: '茶水间', src: 'surveillance', ctx: '案发地点 · 监控摄像机 #3 拍摄区域' },
+    // 干扰人名
+    { id: 'rn1', text: '张工', src: 'hr', ctx: '同事 · 后端工程师' },
+    { id: 'rn2', text: '王婷', src: 'hr', ctx: '同事 · 设计师' },
+    { id: 'rn3', text: '赵经理', src: 'hr', ctx: '工程经理 · 曾催促交付进度' },
+    // 干扰线索
+    { id: 'r1', text: '设计评审', src: 'chat', ctx: '王婷与陈昊的设计争论' },
+    { id: 'r2', text: '交付压力', src: 'chat', ctx: '赵经理催促陈昊加快进度' },
+    { id: 'r3', text: '失眠', src: 'chat', ctx: '陈昊自述失眠状况' },
+    { id: 'r4', text: '不明人员', src: 'surveillance', ctx: '18:30 外卖员进入大厅' },
+    { id: 'r5', text: '借贷', src: 'hr', ctx: '王婷·备注 · 个人消费贷记录' },
+    { id: 'r6', text: '医生预约', src: 'calendar', ctx: '陈昊 · 3月20日就医预约' },
+    { id: 'r7', text: '晋升', src: 'email', ctx: '赵经理 · 晋升答辩通知' },
+    { id: 'r8', text: '加班费', src: 'email', ctx: '王婷与财务关于加班费的争论' },
+  ],
+  blanks: [
+    { id: 'b1', label: '受害者身份', answers: ['nm1','c5'] },
+    { id: 'b2', label: '凶手身份', answers: ['nm2','c3','c4'] },
+    { id: 'b3', label: '杀人动机', answers: ['c6','c15'] },
+    { id: 'b4', label: '杀人手法', answers: ['c16','c12'] },
+    { id: 'b5', label: '案发地点', answers: ['c17','c11','c13'] },
+    { id: 'b6', label: '案发时间', answers: ['c13'] },
+    { id: 'b7', label: '凶手伪造的消息', answers: ['c2'] },
+    { id: 'b8', label: '凶手伪造的记录', answers: ['c8','c9'] },
+    { id: 'b9', label: '关键破绽', answers: ['c8','c10'] },
+  ],
+  template: [
+    '2025年3月19日晚，飞鸟科技公司员工', { blank: 'b1', label: '受害者身份' },
+    '被发现死于工位。经系统调查，真凶为', { blank: 'b2', label: '凶手身份' },
+    '。\n\n杀人动机：', { blank: 'b3', label: '杀人动机' },
+    '。\n\n杀人手法：', { blank: 'b4', label: '杀人手法' },
+    '。案发地点：', { blank: 'b5', label: '案发地点' },
+    '。案发时间：', { blank: 'b6', label: '案发时间' },
+    '。\n\n为掩盖罪行，凶手使用受害者设备发送了', { blank: 'b7', label: '凶手伪造的消息' },
+    '，并在', { blank: 'b8', label: '凶手伪造的记录' },
+    '中制造了虚假记录。\n\n案件关键破绽：', { blank: 'b9', label: '关键破绽' },
+    '。',
+  ],
+  conclusion: `案件侦破：李明因50万元的外包费用造假被陈昊揭发，面临刑事追诉和PIP解雇的双重压力。3月19日晚，他在茶水间的咖啡中下毒杀害了陈昊，随后利用陈昊的电脑发送假消息、伪造Git提交记录，试图制造"过劳猝死"假象。关键证据：Git提交的IP地址指向李明工位，而非陈昊工位。`,
+  render: {
+    chat() {
+      return `
+        <div class="chat-section-label">📢 群聊 · 飞鸟项目组 (28人)</div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">赵经理</span><span class="c-time">09:12</span></div><div class="c-body">@所有人 Sprint 23 周五封板，前端还剩12个bug，陈昊你这边进度怎么样</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">09:15</span></div><div class="c-body">在跟了，今晚加个班应该能清掉大半</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">赵经理</span><span class="c-time">09:16</span></div><div class="c-body">好，这周${C('r2','交付压力')}比较大，客户那边盯着。全靠你了</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">王婷（设计师）</span><span class="c-time">11:30</span></div><div class="c-body">昨天${C('r1','设计评审')}的事我想再聊一下，那个交互方案我还是觉得有问题</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">11:32</span></div><div class="c-body">评审已经过了，你当时也没反对。现在改工期来不及</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">王婷</span><span class="c-time">11:33</span></div><div class="c-body">我当时没说是因为赵经理在场。这个方案真的有问题</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">11:35</span></div><div class="c-body">行，周四聊。今天就别加了，昨晚又${C('r3','失眠')}到三点</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">14:20</span></div><div class="c-body">@陈昊 payment模块的单元测试我review完了，没什么问题</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">14:22</span></div><div class="c-body">👍 那个BUDGET常量的值我核对过了，跟需求文档一致</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">17:45</span></div><div class="c-body">老张，我查到了${C('c15','账目问题')}，明天跟你细说</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">17:50</span></div><div class="c-body">什么账目？</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">17:51</span></div><div class="c-body">不方便在群里说，见面聊</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈昊</span><span class="c-time">18:30</span></div><div class="c-body">今天早点走，${C('c1','约了人')} 😊</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">18:31</span></div><div class="c-body">羡慕，我还有两个bug 😂</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">王婷</span><span class="c-time">18:33</span></div><div class="c-body">陈昊你不是说今晚加班吗…</div></div>
+        <div class="chat-section-label" style="margin-top: 20px;">⚠️ 20:00 之后的异常消息</div>
+        <div class="chat-msg warn"><div class="c-header"><span class="c-sender" style="color:var(--danger);">陈昊 ⚠️</span><span class="c-time">20:15</span></div><div class="c-body">这个需求${C('c2','改到吐')}</div></div>
+        <div class="chat-msg warn"><div class="c-header"><span class="c-sender">李明（产品经理）</span><span class="c-time">20:17</span></div><div class="c-body">@陈昊 辛苦了兄弟，明天请你${C('c16','喝咖啡')} ☕</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">20:22</span></div><div class="c-body">@陈昊 你还在公司？payment那个测试有个小问题想确认</div></div>`;
+    },
+    email() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📬 收件箱 · 陈昊</div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 赵经理：晋升答辩安排通知</div><div class="e-meta">发件人：赵经理 · 周一 15:00</div><div class="email-detail">陈昊：<br><br>本季度的${C('r7','晋升')}答辩安排在4月2日。你和李明都在候选名单里。只有一个名额。好好准备。<br><br>赵经理</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 陈昊→审计部：外包费用明细异常</div><div class="e-meta">发件人：陈昊 · 周二 16:30</div><div class="email-detail">审计部同事：<br><br>附件中是近三个月技术部的外包费用明细。实际工时与申报金额存在约${C('c6','50万差额')}，集中在"飞鸟2.0前端重构"项目下。<br><br>建议尽快启动内部审计。<br><br>陈昊 · 高级前端工程师</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📎 王婷：Re: 设计评审反馈</div><div class="e-meta">发件人：王婷 · 周二 17:00</div><div class="email-detail">陈昊：<br><br>关于上午说的设计评审，我把修改方案放在附件里了。真的只需要改三个页面，工期影响不超过半天。<br><br>另外我和财务那边关于${C('r8','加班费')}的事还在扯，烦死了。<br><br>王婷</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject" style="color:var(--danger);">⚠️ 匿名邮件</div><div class="e-meta">收件人：陈昊 · 周二 21:00 · 发件人不可追溯</div><div class="email-detail">陈昊：<br><br>你查的那些账，${C('c7','停下来')}。<br><br>这对谁都没好处。明天中午12点，天台见。你知道我是谁。<br><br>—— 一个为你好的人</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 HR自动通知：绩效改进计划(PIP)</div><div class="e-meta">收件人：李明 · 周一 09:00</div><div class="email-detail">李明 你好：<br><br>你的绩效改进计划(PIP)评估截止日期为 <b>本周五（3月21日）</b>。评估结果将直接影响你的去留决定。<br><br>HR部门</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 陈昊→李明：想跟你聊聊</div><div class="e-meta">发件人：陈昊 · 周二 22:00</div><div class="email-detail">李哥，明天晚上有空吗？我想跟你聊聊。<br><br>有些事情我觉得当面说比较好。<br><br>陈昊</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 IT服务中心：工位IP变更通知</div><div class="e-meta">收件人：全员 · 周一 10:00</div><div class="email-detail">各位同事：<br><br>本周三（3月19日）下午将进行网络设备维护，部分工位IP可能临时变更。如有问题请联系IT服务中心。</div></div>`;
+    },
+    calendar() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📅 3月19日 星期三</div>
+        <div class="cal-event"><span class="cal-time">09:00</span><div class="cal-desc"><span class="cal-title">每日站会</span><span class="cal-loc"> · 飞鸟项目组</span></div></div>
+        <div class="cal-event"><span class="cal-time">11:00</span><div class="cal-desc"><span class="cal-title">设计评审（改期）</span><span class="cal-loc"> · 与王婷 · 线上</span></div></div>
+        <div class="cal-event"><span class="cal-time">14:00</span><div class="cal-desc"><span class="cal-title">代码评审</span><span class="cal-loc"> · Sprint 23 · 线上</span></div></div>
+        <div class="cal-event warn"><span class="cal-time" style="color:var(--danger);">19:00</span><div class="cal-desc"><span class="cal-title">${C('c10','HR面谈')} ⚠️</span><span class="cal-loc"> · 3号会议室</span></div></div>
+        <div style="margin-top:20px;margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📅 3月20日 星期四</div>
+        <div class="cal-event"><span class="cal-time">10:30</span><div class="cal-desc"><span class="cal-title">${C('r6','医生预约')}</span><span class="cal-loc"> · 瑞金医院 · 神经内科</span></div></div>
+        <div style="margin-top:16px;padding:12px;background:var(--danger-bg);border-radius:6px;border:1px solid rgba(192,57,43,0.2);"><div style="font-size:13px;color:var(--danger);font-weight:600;margin-bottom:6px;">⚠️ 异常标记</div><div style="font-size:12px;color:var(--text-dim);line-height:1.9;">HR部门3月19日全天外出${C('c10','团建')}，无人值班。<br>该"HR面谈"事件不存在——是谁在陈昊的日历中创建的？</div></div>`;
+    },
+    git() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📁 frontend-app · main · 最近提交</div>
+        <div class="commit"><span class="c-hash">klm012</span> · <span class="c-author">王婷</span> · <span class="c-date">3月19日 18:00</span><div class="c-msg">update design tokens for review feedback</div><div class="c-diff">+12 lines in theme.css</div><div class="c-meta">提交IP: 192.168.1.56（王婷工位）</div></div>
+        <div class="commit"><span class="c-hash">def456</span> · <span class="c-author">陈昊</span> · <span class="c-date">3月19日 17:00</span><div class="c-msg">add unit tests for payment validation</div><div class="c-diff">+45 lines in payment.test.js</div><div class="c-meta">提交IP: 192.168.1.42（陈昊工位）</div></div>
+        <div class="commit flagged"><span class="c-hash">abc123</span> · <span class="c-author" style="color:var(--danger);">陈昊 ⚠️</span> · <span class="c-date">3月19日 20:30</span><div class="c-msg">fix typo</div><div class="c-diff">- const ${C('c9','BUDGET_THRESHOLD')} = 500000;<br>+ const BUDGET_THRESHOLD = 300000;</div><div class="c-meta" style="color:var(--danger);">⚠️ 提交IP: ${C('c8','192.168.1.88')}（李明工位！非陈昊工位）</div></div>
+        <div class="commit"><span class="c-hash">hij789</span> · <span class="c-author">陈昊</span> · <span class="c-date">3月18日 14:00</span><div class="c-msg">refactor payment module - extract constants</div><div class="c-diff">+ BUDGET_THRESHOLD = 500000 defined</div><div class="c-meta">提交IP: 192.168.1.42（陈昊工位）</div></div>
+        <div class="commit"><span class="c-hash">nop345</span> · <span class="c-author">张工</span> · <span class="c-date">3月18日 10:00</span><div class="c-msg">fix data race in payment queue handler</div><div class="c-diff">-12 +8 lines in queue.ts</div><div class="c-meta">提交IP: 192.168.1.35（张工工位）</div></div>
+        <div style="margin-top:16px;padding:12px;background:var(--danger-bg);border-radius:6px;"><div style="font-size:13px;color:var(--danger);font-weight:600;margin-bottom:4px;">⚠️ 提交 abc123 分析</div><div style="font-size:12px;color:var(--text-dim);line-height:1.8;">· commit message "fix typo"，实际修改了财务常量<br>· BUDGET_THRESHOLD 从50万改为30万<br>· 提交时间20:30——陈昊约20:00-20:10之间中毒<br>· 提交IP是李明工位，不是陈昊工位</div></div>`;
+    },
+    surveillance() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📷 监控摄像机 #3 · 茶水间 & 3号会议室走廊</div>
+        <div class="surv-entry"><span class="surv-time">18:30</span><div class="surv-detail"><div class="surv-loc">公司大门</div><div class="surv-desc">${C('r4','不明人员')}进入大厅。外卖员制服。在前台停留约3分钟后离开。</div></div></div>
+        <div class="surv-entry"><span class="surv-time">18:55</span><div class="surv-detail"><div class="surv-loc">3号会议室</div><div class="surv-desc">会议室空无一人。灯灭。</div></div></div>
+        <div class="surv-entry flagged"><span class="surv-time">${C('c11','19:45')}</span><div class="surv-detail"><div class="surv-loc">${C('c17','茶水间')}门口</div><div class="surv-desc">李明进入茶水间。手持文件夹。</div></div></div>
+        <div class="surv-entry"><span class="surv-time">19:48</span><div class="surv-detail"><div class="surv-loc">走廊</div><div class="surv-desc">张工经过走廊，去洗手间方向。与茶水间无交集。</div></div></div>
+        <div class="surv-entry flagged"><span class="surv-time">${C('c12','19:52')}</span><div class="surv-detail"><div class="surv-loc">${C('c17','茶水间')}门口</div><div class="surv-desc">李明离开茶水间。手中多了一个${C('c12','杯子')}。</div></div></div>
+        <div class="surv-entry flagged"><span class="surv-time">${C('c13','20:00')}</span><div class="surv-detail"><div class="surv-loc">${C('c17','茶水间')}门口</div><div class="surv-desc">陈昊进入茶水间。步伐正常。</div></div></div>
+        <div class="surv-entry flagged" style="border:1px solid var(--danger);"><span class="surv-time" style="color:var(--danger);">${C('c14','20:10')}</span><div class="surv-detail"><div class="surv-loc" style="color:var(--danger);">茶水间门口 · 关键画面</div><div class="surv-desc">陈昊${C('c14','踉跄')}扶着墙离开茶水间。表情痛苦。</div></div></div>
+        <div class="surv-entry"><span class="surv-time">20:14</span><div class="surv-detail"><div class="surv-loc">走廊</div><div class="surv-desc">陈昊艰难走回工位方向。无人注意到异常。</div></div></div>`;
+    },
+    hr() {
+      return `
+        <div class="hr-card"><div class="hr-name">${C('nm1','陈昊')}</div><div class="hr-role">高级前端工程师 · 入职2年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val success">${C('c5','绩效A')}</span></div><div class="hr-row"><span>PIP记录</span><span class="hr-val">无</span></div><div class="hr-row"><span>工位IP</span><span class="hr-val">192.168.1.42</span></div><div class="hr-row"><span>备注</span><span class="hr-val">—</span></div></div>
+        <div class="hr-card" style="border-color:rgba(192,57,43,0.35);"><div class="hr-name">${C('nm2','李明')}</div><div class="hr-role">产品经理 · 入职4年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val danger">C（连续两季度）</span></div><div class="hr-row"><span>PIP记录</span><span class="hr-val danger">${C('c4','PIP截止')} 3月21日</span></div><div class="hr-row"><span>工位IP</span><span class="hr-val">192.168.1.88</span></div><div class="hr-row"><span>备注</span><span class="hr-val danger">${C('c3','报销异常')}（外包费用审批与申报金额不符）</span></div></div>
+        <div class="hr-card"><div class="hr-name">${C('rn1','张工')}</div><div class="hr-role">后端工程师 · 入职3年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val success">B+</span></div><div class="hr-row"><span>PIP记录</span><span class="hr-val">无</span></div><div class="hr-row"><span>工位IP</span><span class="hr-val">192.168.1.35</span></div></div>
+        <div class="hr-card"><div class="hr-name">${C('rn2','王婷')}</div><div class="hr-role">UI设计师 · 入职1.5年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val">B</span></div><div class="hr-row"><span>PIP记录</span><span class="hr-val">无</span></div><div class="hr-row"><span>备注</span><span class="hr-val" style="color:var(--accent);">${C('r5','借贷')}（个人消费贷记录）</span></div></div>
+        <div class="hr-card"><div class="hr-name">${C('rn3','赵经理')}</div><div class="hr-role">工程经理 · 入职5年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val success">A</span></div><div class="hr-row"><span>PIP记录</span><span class="hr-val">无</span></div><div class="hr-row"><span>备注</span><span class="hr-val">—</span></div></div>
+        <div style="margin-top:12px;padding:12px;background:var(--info-bg);border-radius:6px;font-size:12px;color:var(--text-dim);">📌 3月19日 HR部门${C('c10','团建')}活动，全天外出，无人值班。</div>`;
+    },
+  },
+},
+
+case002: {
+  id: 'case002',
+  num: '002',
+  title: '高处',
+  subtitle: '荣华投资 · 金融分析师坠楼案',
+  difficulty: 2,
+  caseLabel: '案件 #2025-0412',
+  sources: {
+    chat:  { icon: '💬', title: '通讯记录', sub: '微信 · 投资部群组' },
+    email: { icon: '📧', title: '邮件', sub: '企业邮箱 · 周敏的收件箱' },
+    access: { icon: '🔑', title: '门禁记录', sub: '4月12日 · 荣华大厦门禁系统' },
+    portfolio: { icon: '📈', title: '交易记录', sub: '周敏个人股票账户' },
+    hr:    { icon: '👤', title: '人事档案', sub: '内部系统 · 员工记录' },
+    surveillance: { icon: '📷', title: '监控记录', sub: '4月12日 · 电梯及楼梯间' },
+  },
+  navOrder: ['chat','email','access','portfolio','hr','surveillance'],
+  clues: [
+    // Real clues - names
+    { id: 'nm1', text: '周敏', src: 'hr', ctx: '受害者 · 金融分析师' },
+    { id: 'nm2', text: '林建国', src: 'hr', ctx: '凶手 · 投资部总监' },
+    // Real clues
+    { id: 'c1', text: '合规举报', src: 'email', ctx: '周敏→合规部 4.12 18:00' },
+    { id: 'c2', text: '200万差额', src: 'email', ctx: '举报邮件附件 → 林建国经手的客户账户' },
+    { id: 'c3', text: '22:15', src: 'surveillance', ctx: '周敏乘电梯上12F' },
+    { id: 'c4', text: '22:28', src: 'surveillance', ctx: '林建国走楼梯上12F（避开电梯监控）' },
+    { id: 'c5', text: '阳台门禁', src: 'access', ctx: '12F阳台门 22:29 刷卡开启 → 林建国工卡' },
+    { id: 'c6', text: '套现记录', src: 'portfolio', ctx: '林建国关联账户 → 近三月大额转出' },
+    { id: 'c7', text: '通话记录', src: 'chat', ctx: '林建国 19:30 致电周敏"晚上留一下"' },
+    { id: 'c8', text: '走后楼梯', src: 'surveillance', ctx: '林建国 22:40 从楼梯下到1F' },
+    { id: 'c9', text: '12F阳台', src: 'surveillance', ctx: '案发地点 · 荣华大厦12楼阳台' },
+    // Red herrings - names
+    { id: 'rn1', text: '陈雨', src: 'hr', ctx: '同事 · 投资助理 · 与周敏曾有恋爱关系' },
+    { id: 'rn2', text: '刘姐', src: 'hr', ctx: '会计 · 近期报销单据抽查异常' },
+    // Red herrings
+    { id: 'r1', text: '亏损60%', src: 'portfolio', ctx: '周敏 · 个人股票账户近三月表现' },
+    { id: 'r2', text: '抑郁症', src: 'hr', ctx: '周敏 · 职工医疗档案记录' },
+    { id: 'r3', text: '分手', src: 'chat', ctx: '陈雨与周敏的私聊对话' },
+    { id: 'r4', text: '异常交易', src: 'portfolio', ctx: '刘姐 · 个人基金账户交易记录' },
+    { id: 'r5', text: '保安喝酒', src: 'surveillance', ctx: '保安老吴 · 值夜时饮酒' },
+    { id: 'r6', text: '职场霸凌', src: 'chat', ctx: '林建国在群聊中批评周敏' },
+  ],
+  blanks: [
+    { id: 'b1', label: '受害者身份', answers: ['nm1','c1'] },
+    { id: 'b2', label: '凶手身份', answers: ['nm2','c4','c5'] },
+    { id: 'b3', label: '杀人动机', answers: ['c1','c2'] },
+    { id: 'b4', label: '杀人手法', answers: ['c4'] },
+    { id: 'b5', label: '案发地点', answers: ['c9','c5'] },
+    { id: 'b6', label: '案发时间', answers: ['c4'] },
+    { id: 'b7', label: '凶手制造假象', answers: ['r1'] },
+    { id: 'b8', label: '关键破绽', answers: ['c4','c8'] },
+  ],
+  template: [
+    '2025年4月12日晚，荣华投资公司金融分析师', { blank: 'b1', label: '受害者身份' },
+    '从公司12楼坠亡。初步调查指向自杀，但经系统深入分析，真凶为', { blank: 'b2', label: '凶手身份' },
+    '。\n\n杀人动机：', { blank: 'b3', label: '杀人动机' },
+    '。\n\n杀人手法：', { blank: 'b4', label: '杀人手法' },
+    '。案发地点：', { blank: 'b5', label: '案发地点' },
+    '。案发时间：约', { blank: 'b6', label: '案发时间' },
+    '。\n\n凶手利用受害者', { blank: 'b7', label: '凶手制造的假象' },
+    '制造了自杀假象。\n\n关键破绽：', { blank: 'b8', label: '关键破绽' },
+    '。',
+  ],
+  conclusion: `案件侦破：林建国（林总）利用职务之便从客户账户套现200余万元。周敏在审计过程中发现异常并于4月12日向合规部举报。当晚林建国以"项目讨论"为由约周敏留下，22:28走楼梯避开电梯监控到达12楼阳台，将周敏推下。他利用周敏股票账户的大幅亏损制造"炒股失败自杀"假象，但12F阳台门禁记录和楼梯监控拍到了他避开电梯的行为。`,
+  render: {
+    chat() {
+      return `
+        <div class="chat-section-label">📢 群聊 · 荣华投资部 (15人)</div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">林建国（林总）</span><span class="c-time">10:30</span></div><div class="c-body">@周敏 上周的客户资产报告什么时候交？拖了两天了</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">周敏</span><span class="c-time">10:32</span></div><div class="c-body">在做了，有几个账户的数据需要再核实一下</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">林建国</span><span class="c-time">10:33</span></div><div class="c-body">别找借口。这点事都做不好，你最近状态很有问题</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈雨</span><span class="c-time">10:35</span></div><div class="c-body">林总，周敏手上同时在跟三个项目，时间确实紧</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">刘姐（会计）</span><span class="c-time">14:00</span></div><div class="c-body">@周敏 上季度的费用报销单你签过字吗？财务这边对不上</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">周敏</span><span class="c-time">14:15</span></div><div class="c-body">哪些对不上？发给我看看</div></div>
+        <div class="chat-msg warn"><div class="c-header"><span class="c-sender" style="color:var(--danger);">林建国</span><span class="c-time">19:30</span></div><div class="c-body">${C('c7','周敏，晚上留一下，有个项目要讨论')}</div></div>
+
+        <div class="chat-section-label" style="margin-top: 20px;">📱 私聊 · 周敏 ↔ 陈雨</div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈雨</span><span class="c-time">4月10日</span></div><div class="c-body">敏，我们${C('r3','分手')}的事你再想想。我只是觉得你这半年太拼了</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">周敏</span><span class="c-time">4月10日</span></div><div class="c-body">不是因为拼。是因为我发现了一些事情，我自己都没想清楚</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">陈雨</span><span class="c-time">4月10日</span></div><div class="c-body">什么事情？跟工作有关？</div></div>
+        <div class="chat-msg"><div class="c-header"><span class="c-sender">周敏</span><span class="c-time">4月10日</span></div><div class="c-body">等我搞清楚了告诉你。先不说这个</div></div>`;
+    },
+    email() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📬 收件箱 · 周敏</div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject" style="color:var(--danger);">⚠️ 周敏→合规部：客户账户异常报告</div><div class="e-meta">发件人：周敏 · 4月12日 18:00</div><div class="email-detail">合规部负责人：<br><br>经核查，近三个月有多个客户账户出现未经授权的转出操作，累计金额约${C('c2','200万差额')}。所有操作均发生在林建国（投资部总监）审批权限下。<br><br>附件为详细的账户流水和操作日志。请尽快启动内部调查。<br><br>周敏 · 金融分析师</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📎 林建国：Re: 客户资产报告</div><div class="e-meta">发件人：林建国 · 4月11日 16:00</div><div class="email-detail">周敏：<br><br>客户资产报告不用再审了。我已经看过了，没有问题。<br><br>以后这个报告直接交给我就行，不需要走合规那边的流程。<br><br>林总</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 刘姐：费用报销确认</div><div class="e-meta">发件人：刘姐 · 4月12日 14:30</div><div class="email-detail">周敏：<br><br>上季度有几笔差旅费报销单上你的签字字迹和平时不太一样。是你签的吗？<br><br>刘姐</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 猎头：职业机会</div><div class="e-meta">发件人：某猎头公司 · 4月10日</div><div class="email-detail">周敏女士：<br><br>有一家外资券商在找高级分析师，薪资涨幅约40%。如感兴趣可详聊。</div></div>
+        <div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 HR：年度体检通知</div><div class="e-meta">收件人：全员 · 4月1日</div><div class="email-detail">各位同事：年度体检安排在4月15-20日。请登录HR系统预约时间。</div></div>`;
+    },
+    access() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🔑 4月12日 · 荣华大厦门禁刷卡记录</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">18:30</span><span>周敏 · 门卡 #0412 · 1F闸机 · 进入</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">19:00</span><span>林建国 · 门卡 #0017 · 1F闸机 · 离开 💡</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">22:05</span><span>周敏 · 门卡 #0412 · 1F闸机 · 离开</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">22:10</span><span>周敏 · 门卡 #0412 · 1F闸机 · 进入 💡</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;background:var(--danger-bg);"><span style="color:var(--danger);min-width:44px;">22:29</span><span style="color:var(--danger);">⚠️ ${C('c5','阳台门禁')} · 门卡 #0017 · 12F阳台 · 开启</span></div>
+        <div style="margin-top:16px;padding:12px;background:var(--danger-bg);border-radius:6px;"><div style="font-size:13px;color:var(--danger);font-weight:600;margin-bottom:4px;">⚠️ 异常</div><div style="font-size:12px;color:var(--text-dim);line-height:1.8;">林建国于19:00刷卡离开大楼。但22:29他的门卡（#0017）出现在12F阳台。他是怎么回来的？为何不走闸机？</div></div>`;
+    },
+    portfolio() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📈 周敏 · 个人股票账户</div>
+        <div style="padding:12px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+          <div style="font-size:13px;color:var(--text-dim);">账户余额：¥43,000</div>
+          <div style="font-size:13px;color:var(--danger);">近三月收益率：<b>${C('r1','亏损60%')}</b></div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:4px;">持仓：某科技股（高位买入后暴跌）</div>
+          
+        </div>
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📈 林建国 · 关联账户（系统交叉匹配）</div>
+        <div style="padding:12px;background:var(--danger-bg);border-radius:6px;margin-bottom:12px;border:1px solid rgba(192,57,43,0.2);">
+          <div style="font-size:13px;color:var(--text-dim);">关联账户数：3个</div>
+          <div style="font-size:13px;color:var(--danger);">近三月转出总额：约${C('c6','200万')}</div>
+          <div style="font-size:12px;color:var(--text-faint);margin-top:4px;">三个账户均为客户名义开立，但实际控制IP来自林建国办公电脑。</div>
+        </div>
+        <div style="padding:12px;background:var(--card);border-radius:6px;border:1px solid var(--border);">
+          <div style="font-size:13px;color:var(--text-dim);">刘姐 · 个人基金账户</div>
+          <div style="font-size:11px;color:var(--text-faint);">近期有几笔${C('r4','异常交易')}（大额申购后短期赎回）</div>
+          
+        </div>`;
+    },
+    hr() {
+      return `
+        <div class="hr-card"><div class="hr-name">${C('nm1','周敏')}</div><div class="hr-role">金融分析师 · 入职3年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val success">A</span></div><div class="hr-row"><span>医疗记录</span><span class="hr-val" style="color:var(--accent);">${C('r2','抑郁症')}（轻度，药物治疗中）</span></div></div>
+        <div class="hr-card" style="border-color:rgba(192,57,43,0.35);"><div class="hr-name">${C('nm2','林建国')}</div><div class="hr-role">投资部总监 · 入职8年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val">B</span></div><div class="hr-row"><span>审批权限</span><span class="hr-val">客户账户操作审批权</span></div><div class="hr-row"><span>门卡号</span><span class="hr-val danger">#0017</span></div></div>
+        <div class="hr-card"><div class="hr-name">${C('rn1','陈雨')}</div><div class="hr-role">投资助理 · 入职2年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val success">B+</span></div><div class="hr-row"><span>备注</span><span class="hr-val">—</span></div></div>
+        <div class="hr-card"><div class="hr-name">${C('rn2','刘姐')}</div><div class="hr-role">会计 · 入职6年</div><div class="hr-row"><span>最近绩效</span><span class="hr-val">B</span></div><div class="hr-row"><span>备注</span><span class="hr-val" style="color:var(--accent);">近两季度报销单据抽查异常率上升</span></div></div>`;
+    },
+    surveillance() {
+      return `
+        <div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📷 电梯监控</div>
+        <div class="surv-entry"><span class="surv-time">${C('c3','22:15')}</span><div class="surv-detail"><div class="surv-loc">1F电梯</div><div class="surv-desc">周敏独自进入电梯。按12F。</div></div></div>
+        <div class="surv-entry"><span class="surv-time">22:30</span><div class="surv-detail"><div class="surv-loc">12F走廊</div><div class="surv-desc">监控画面出现短暂抖动（阳台方向传来声响）。</div></div></div>
+        <div style="margin-top:16px;margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📷 楼梯间监控</div>
+        <div class="surv-entry flagged"><span class="surv-time">${C('c4','22:28')}</span><div class="surv-detail"><div class="surv-loc">1F楼梯间入口</div><div class="surv-desc">林建国进入楼梯间。走楼梯上${C('c9','12F')}。</div></div></div>
+        <div class="surv-entry flagged"><span class="surv-time">${C('c8','22:40')}</span><div class="surv-detail"><div class="surv-loc">1F楼梯间出口</div><div class="surv-desc">林建国从楼梯离开。未经过闸机。</div></div></div>
+        <div style="margin-top:16px;padding:12px;background:var(--danger-bg);border-radius:6px;"><div style="font-size:13px;color:var(--danger);font-weight:600;margin-bottom:4px;">⚠️ 异常</div><div style="font-size:12px;color:var(--text-dim);line-height:1.8;">林建国19:00刷卡离开大楼（假装下班）。22:28却从楼梯间进入大楼，22:40又从楼梯离开。<br>全程避开电梯监控和门禁闸机——他不想留下"在现场"的记录。</div></div>
+        <div style="margin-top:16px;margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📷 保安室</div>
+        <div class="surv-entry"><span class="surv-time">22:35</span><div class="surv-detail"><div class="surv-loc">大厅</div><div class="surv-desc">保安老吴跑出保安室，表情惊慌。地面有${C('r5','酒瓶')}。</div></div></div>`;
+    },
+  },
+},
+
+case003: {
+  id: 'case003', num: '003', title: '白夜', subtitle: '仁和医院 · 外科主任猝死案', difficulty: 2, caseLabel: '案件 #2025-0508',
+  sources: {
+    chat: { icon: '💬', title: '通讯记录', sub: '微信 · 外科群组' },
+    email: { icon: '📧', title: '邮件', sub: '院内邮箱 · 赵文远的收件箱' },
+    medical: { icon: '🏥', title: '病历系统', sub: '电子病历 · 近期器官移植记录' },
+    pharmacy: { icon: '💊', title: '药房系统', sub: '药品出入库 · 氯化钾注射液' },
+    hr: { icon: '👤', title: '人事档案', sub: '内部系统 · 医护人员记录' },
+    access: { icon: '🔑', title: '门禁记录', sub: '5月8日 · 外科楼门禁' },
+  },
+  navOrder: ['chat','email','medical','pharmacy','hr','access'],
+  clues: [
+    { id: 'nm1', text: '赵文远', src: 'hr', ctx: '受害者 · 外科主任' },
+    { id: 'nm2', text: '陈美华', src: 'hr', ctx: '凶手 · 护士长' },
+    { id: 'c1', text: '器官配型', src: 'medical', ctx: '赵医生发现的异常移植配型规律' },
+    { id: 'c2', text: '氯化钾', src: 'pharmacy', ctx: '库存缺失2支 · 高浓度静脉注射可致心脏骤停' },
+    { id: 'c3', text: '19:30', src: 'access', ctx: '陈美华刷卡进入赵医生办公室' },
+    { id: 'c4', text: '护士站', src: 'access', ctx: '陈美华19:35在护士站取注射器' },
+    { id: 'c5', text: '心脏病史', src: 'hr', ctx: '赵文远确有冠心病 · 但不是直接死因' },
+    { id: 'c6', text: '境外账户', src: 'email', ctx: '陈美华与境外医院的邮件往来' },
+    { id: 'c7', text: '器官买卖', src: 'medical', ctx: '近半年6例手术供体来源存疑' },
+    { id: 'c8', text: '19:45', src: 'access', ctx: '陈美华离开赵医生办公室' },
+    { id: 'rn1', text: '刘医生', src: 'hr', ctx: '副主任医师 · 与赵竞争科室主任职位' },
+    { id: 'rn2', text: '王主任', src: 'hr', ctx: '医务科主任 · 正处理另一起手术纠纷' },
+    { id: 'r1', text: '手术失败', src: 'chat', ctx: '上周手术后患者死亡引发的医疗纠纷' },
+    { id: 'r2', text: '医闹', src: 'chat', ctx: '患者家属在医院门口抗议' },
+    { id: 'r3', text: '财务问题', src: 'email', ctx: '赵文远儿子贷款逾期催收通知' },
+    { id: 'r4', text: '加班', src: 'hr', ctx: '赵医生近一周日均工时16小时' },
+    { id: 'r5', text: '医疗事故', src: 'email', ctx: '王主任关于手术审查的内部邮件' },
+  ],
+  blanks: [
+    { id: 'b1', label: '受害者身份', answers: ['nm1'] },
+    { id: 'b2', label: '凶手身份', answers: ['nm2'] },
+    { id: 'b3', label: '杀人动机', answers: ['c1','c7','c6'] },
+    { id: 'b4', label: '杀人手法', answers: ['c2','c4'] },
+    { id: 'b5', label: '案发地点', answers: ['c3'] },
+    { id: 'b6', label: '案发时间', answers: ['c3'] },
+    { id: 'b7', label: '凶手掩盖的真相', answers: ['c7','c6'] },
+    { id: 'b8', label: '关键破绽', answers: ['c2'] },
+  ],
+  template: [
+    '2025年5月8日晚，仁和医院外科主任', { blank: 'b1', label: '受害者身份' }, '被发现死于办公室。初步诊断为心脏病突发。\n\n经系统深入调查，真凶为', { blank: 'b2', label: '凶手身份' }, '。杀人动机：', { blank: 'b3', label: '杀人动机' }, '。\n\n杀人手法：', { blank: 'b4', label: '杀人手法' }, '。案发地点：', { blank: 'b5', label: '案发地点' }, '。案发时间：', { blank: 'b6', label: '案发时间' }, '。\n\n凶手真正要掩盖的是', { blank: 'b7', label: '凶手掩盖的真相' }, '。\n\n关键破绽：', { blank: 'b8', label: '关键破绽' }, '。',
+  ],
+  conclusion: '案件侦破：陈美华利用护士长职务，勾结境外机构非法倒卖器官。赵文远在审查移植配型时发现了异常规律。5月8日晚，陈美华借查房为名进入赵的办公室，注射高浓度氯化钾致其心脏骤停。因赵本身有心脏病史，初检被误判为自然死亡。破绽在于：药房库存氯化钾缺失2支，护士站记录显示陈取走了注射器，门禁记录锁定了她的进出时间。',
+  render: {
+    chat() { return `<div class="chat-section-label">📢 群聊 · 仁和外科 (22人)</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李（护士）</span><span class="c-time">07:30</span></div><div class="c-body">早班打卡。今天手术排了三台，大家打起精神。第一台9:00肝移植，术前准备8点开始</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">07:45</span></div><div class="c-body">早。昨晚看供体资料看到十一点。这次的肝源配型数据相当好。上午我来主刀，刘医生一助</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">08:15</span></div><div class="c-body">今日手术安排已更新：第一台9:00肝移植，第二台13:00肾移植，第三台16:00胆囊切除。@赵文远 赵主任确认一下</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">08:20</span></div><div class="c-body">收到。上午肝移植我来主刀，下午肾移植叫刘医生跟我一起。胆囊是常规手术，让住院医做就行</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">刘医生</span><span class="c-time">08:22</span></div><div class="c-body">好的赵主任。供体资料我昨晚也看了，配型对得特别好。说实话，最近的供体越来越理想了，HLA匹配率比以前高了好多</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">陈美华</span><span class="c-time">08:30</span></div><div class="c-body">供体都是经过严格筛选的。手术室和器械已经准备好了。@赵文远 术前需要您签的几份同意书在我这里，您到办公室来一下</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">08:31</span></div><div class="c-body">好。正好我要跟你确认一下供体来源的事。术前讨论10分钟后开始</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">09:00</span></div><div class="c-body">第一台手术开始。患者已麻醉。体征稳定</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">11:30</span></div><div class="c-body">上午肝移植顺利完成，手术时间2小时30分。患者已转入ICU观察，各项体征稳定。赵主任辛苦了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">11:32</span></div><div class="c-body">大家辛苦了。下午肾移植的供体资料我再仔细看一遍。这个供体的配型数据比上午的还要好，HLA六个位点全匹配——这在随机供体中几乎不可能。我想搞清楚来源</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">陈美华</span><span class="c-time">11:35</span></div><div class="c-body">供体资料都在系统里，我全部核对过了，都是正规渠道。赵主任您放心。有时候运气好配型确实会完美匹配。下午的手术器械和药品我已经备好了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">12:00</span></div><div class="c-body">食堂今天的红烧肉不错。有人要带饭吗？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">刘医生</span><span class="c-time">12:05</span></div><div class="c-body">帮我带一份。加个煎蛋。下午的手术估计要做到四五点，中午得吃饱</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">14:30</span></div><div class="c-body">下午的手术先推迟半小时。我要调取近半年的所有移植配型数据做个统计分析。有些事情需要确认</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">刘医生</span><span class="c-time">14:32</span></div><div class="c-body">赵主任，上周那例${C('r1','手术失败')}的家属又来了，在医院大门口拉横幅。保安已经过去了，但家属情绪很激动。他们说要去卫健委举报</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">14:33</span></div><div class="c-body">让他们去医务科。手术记录我已经完整写了，所有操作符合规范。术后并发症是已知风险，术前知情同意书签了字的</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">刘医生</span><span class="c-time">14:35</span></div><div class="c-body">好的。王主任那边已经在处理了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">16:30</span></div><div class="c-body">赵主任，您要的移植供体资料我整理好了。不过这半年的供体信息有些地方很奇怪…我不确定是不是我看错了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">16:32</span></div><div class="c-body">哪里奇怪？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">16:33</span></div><div class="c-body">6个供体全部是外地来源，户籍地跨越四个省。但是HLA配型成功率全都在95%以上。按正常医学统计，随机供体能达到这个匹配度的概率低于千分之一。而且没有一个供体有亲属知情同意签字</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">16:35</span></div><div class="c-body">我知道了。你把数据发我邮箱。这件事先不要跟其他人提起。任何人</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">16:36</span></div><div class="c-body">好的赵主任。数据马上发</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">陈美华</span><span class="c-time">17:30</span></div><div class="c-body">@赵文远 赵主任，晚上您还在办公室吗？有几个术后病例需要您签字，还有下周的三台手术计划要确认。另外今天下午卫健委那边来了一个电话，问了我们最近移植手术的情况</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">赵文远</span><span class="c-time">17:32</span></div><div class="c-body">在的。正好我也有事想跟你好好聊一下。有些数据我看完了，需要你当面解释</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">陈美华</span><span class="c-time">17:33</span></div><div class="c-body">好的赵主任。我晚上过来</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">刘医生</span><span class="c-time">18:00</span></div><div class="c-body">各位，听说昨天门诊那边有${C('r2','医闹')}事件，患者家属带了十几个人来。大家最近注意安全。下班的时候当心一点</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">18:15</span></div><div class="c-body">好吓人。我今晚值班，会把护士站的门锁好</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">19:00</span></div><div class="c-body">@赵文远 数据发您邮箱了。附件里我标红了几个最不正常的点。另外护士站今天的排班表更新了，今晚值班的是我和王护士</div></div>
+<div class="chat-msg warn"><div class="c-header"><span class="c-sender">陈美华</span><span class="c-time">20:00</span></div><div class="c-body">赵主任？您还在办公室吗？签字的事还没弄完。我已经在楼下了，马上上来</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">20:15</span></div><div class="c-body">@赵文远 赵主任？您那边准备好了吗？我拿病历过去找您。刚才好像看到陈护士长从您办公室方向出来了</div></div>
+<div class="chat-msg warn"><div class="c-header"><span class="c-sender">小李</span><span class="c-time">20:25</span></div><div class="c-body">赵主任？？？有人看到赵主任吗？他办公室门锁着，敲门没人应。电话也没人接。怎么办？？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">刘医生</span><span class="c-time">20:26</span></div><div class="c-body">叫保安！拿备用钥匙！快！！</div></div>`; },
+    email() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📬 收件箱 · 周敏</div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 投资周报：本周市场回顾</div><div class="e-meta">发件人：研究部 · 4月11日 09:00</div><div class="email-detail">各位同事：<br><br>本周市场继续调整，上证指数下跌2.1%。科技板块跌幅最大。建议客户适当降低仓位。<br><br>研究部</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 刘姐：费用报销确认</div><div class="e-meta">发件人：刘姐 · 4月12日 14:30</div><div class="email-detail">周敏：<br><br>上季度有几笔差旅费报销单上你的签字字迹和平时不太一样。而且金额对不上——申请人填的金额和你签字确认的金额之间有出入。不是你的问题，可能是申请人填错了。<br><br>但这几笔单子都是林总审批过的。我不知道该不该直接问他。<br><br>你方便的话过来帮我看看原件。<br><br>刘姐</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📎 林建国：Re: 客户资产报告</div><div class="e-meta">发件人：林建国 · 4月11日 16:00</div><div class="email-detail">周敏：<br><br>客户资产报告不用再审了。我已经看过了，数据没有问题。你最近在报告上花的时间太多了。<br><br>以后这个报告直接交给我就行，不需要走合规那边的审核流程。效率第一。<br><br>还有，你最近好像对几个老账户特别感兴趣？那些账户很久没有活跃交易了，不需要浪费精力在上面。把时间花在当前的大客户身上。<br><br>林总</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject" style="color:var(--danger);">⚠️ 周敏→合规部：客户账户异常报告</div><div class="e-meta">发件人：周敏 · 4月12日 18:00</div><div class="email-detail">合规部负责人：<br><br>经核查近三个月的客户账户流水，我发现有多个账户出现了未经客户授权的转出操作。累计金额约${C('c2','200万差额')}。所有异常操作均发生在林建国（投资部总监）的审批权限下，时间集中在每月1日和15日前后。<br><br>特征分析：<br>1. 转出金额均为整数（每笔25万元），不符合正常投资行为特征<br>2. 收款账户均为同一家香港注册的贸易公司<br>3. 所有操作日志显示审批人为林建国<br><br>附件为详细的账户流水、操作日志和交叉比对表。<br><br>我认为这涉及严重的职务侵占和客户资金挪用。请尽快启动内部调查。我将全力配合。<br><br>周敏 · 金融分析师</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 猎头：职业机会</div><div class="e-meta">发件人：某猎头公司 · 4月10日</div><div class="email-detail">周敏女士：<br><br>有一家外资券商在找高级分析师，base在上海，薪资涨幅约40%。该机构在业内有极好的声誉，研究能力被广泛认可。如感兴趣可约时间详聊。<br><br>P.S. 请通过个人邮箱回复。我们理解您目前在职。</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 HR：年度体检通知</div><div class="e-meta">收件人：全员 · 4月1日</div><div class="email-detail">各位同事：年度体检安排在4月15-20日，体检中心为瑞慈体检（静安店）。请登录HR系统预约时间段。今年新增了心理健康评估项目，建议大家都参加。</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 行政部：4月生日会通知</div><div class="e-meta">收件人：全员 · 4月10日</div><div class="email-detail">各位同事：本月生日会定在4月25日下午3点，寿星有陈雨、刘姐。请大家准备好祝福！行政部准备了蛋糕和水果。</div></div>`; },
+    medical() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🏥 电子病历 · 器官移植记录（近6个月）</div>
+<div style="padding:12px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text);">移植手术总览</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;">手术总数：<b>6例</b>（肝脏3例、肾脏3例）</div>
+  <div style="font-size:13px;color:var(--text-dim);">供体来源标记："自愿捐献" · 6例</div>
+  <div style="font-size:13px;color:var(--text-dim);">供体户籍地：全部为外省（无本地供体）</div>
+  <div style="font-size:13px;color:var(--danger);font-weight:600;margin-top:6px;">⚠️ 所有6例供体均无亲属知情同意签字记录</div>
+  <div style="font-size:13px;color:var(--danger);font-weight:600;">⚠️ 供体-受体HLA配型成功率均值：97.2%（正常范围：40-70%）</div>
+</div>
+<div style="padding:12px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text);">供体协调人记录</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:8px;">6例手术的供体协调人均为：<b>陈美华（护士长）</b></div>
+  <div style="font-size:13px;color:var(--text-dim);">供体获取渠道记录：均为"外院转介"（具体来源医院未填写）</div>
+  <div style="font-size:12px;color:var(--accent);margin-top:4px;">所有供体记录的最后更新时间为手术前24-48小时，时间窗口非常规律。</div>
+</div>
+<div style="padding:12px;background:var(--danger-bg);border-radius:6px;border:1px solid rgba(192,57,43,0.3);">
+  <div style="font-size:14px;color:var(--danger);">⚠️ 赵文远的系统搜索记录（5月1日-5月8日）</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;">
+    · 5月2日 14:22 — "${C('c1','器官配型')} 概率模型 无关供体 HLA匹配"<br>
+    · 5月3日 09:15 — "器官移植 伦理审查委员会 举报流程"<br>
+    · 5月5日 11:08 — "${C('c7','器官买卖')} 刑法234条 量刑标准"<br>
+    · 5月6日 16:40 — "仁和医院 移植数据 卫健委专项检查"<br>
+    · 5月7日 20:15 — "护士长 供体协调 利益冲突"<br>
+    · 5月8日 15:30 — "非法器官交易 举报人保护 实名举报"
+  </div>
+</div>`; },
+    pharmacy() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">💊 药房系统 · 管制药品出入库</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:15px;color:var(--text);font-weight:600;">10%氯化钾注射液 · 10ml/支</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:8px;">批次编号：K20250418</div>
+  <div style="font-size:13px;color:var(--text-dim);">入库日期：5月1日 · 入库数量：20支</div>
+  <div style="font-size:13px;color:var(--text-dim);">5月1日-5月7日 出库记录：</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:4px;margin-left:12px;line-height:1.8;">
+    5月2日 — ICU领用 1支（常规补钾 · 经手人：李护士）<br>
+    5月3日 — 心内科领用 1支（常规补钾 · 经手人：王护士）<br>
+    5月5日 — 外科领用 1支（术后补钾 · 经手人：陈美华）<br>
+    5月8日 — 无系统领用记录<br>
+  </div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:8px;">5月8日 22:00 盘存：<b>15支</b></div>
+  <div style="font-size:13px;color:var(--text-dim);">系统记录理论库存：17支（20-3=17）</div>
+  <div style="font-size:16px;color:var(--danger);font-weight:700;margin-top:8px;">⚠️ 实际缺失2支 ${C('c2','氯化钾')}（17-15=2）</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:6px;line-height:1.7;">10%氯化钾10ml未经稀释直接静脉推注，可在30秒内导致心脏骤停。死后血钾浓度与自然心脏病发作难以区分，通常不会被做法医毒理检测。</div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;border:1px solid var(--border);">
+  <div style="font-size:15px;color:var(--text);font-weight:600;">5月8日 护士站 · 物品领用记录</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;">
+    19:35 · 领取人：<b>陈美华</b> · 门卡 #0508<br>
+    领取物品：10ml注射器 ×2 · 消毒棉 ×1包 · 静脉输液管 ×1<br>
+    事由填写："术后护理"
+  </div>
+  <div style="font-size:12px;color:var(--accent);margin-top:8px;">${C('c4','护士站')}领取记录时间（19:35）落在门禁时间（19:30-19:45）之内。</div>
+  <div style="font-size:12px;color:var(--text-faint);">5月8日晚外科楼3F没有安排任何手术。术后护理的理由不成立。</div>
+</div>`; },
+    hr() { return `<div class="hr-card"><div class="hr-name">${C('nm1','赵文远')}</div><div class="hr-role">外科主任 · 从医28年</div><div class="hr-row"><span>健康状况</span><span class="hr-val" style="color:var(--accent);">${C('c5','心脏病史')}（冠心病）</span></div><div class="hr-row"><span>近一周工时</span><span class="hr-val" style="color:var(--accent);">${C('r4','加班')} · 日均16小时</span></div></div><div class="hr-card" style="border-color:rgba(192,57,43,0.35);"><div class="hr-name">${C('nm2','陈美华')}</div><div class="hr-role">护士长 · 从医15年</div><div class="hr-row"><span>权限</span><span class="hr-val danger">药品领取、供体协调</span></div><div class="hr-row"><span>最近海外联系</span><span class="hr-val danger">频繁</span></div></div><div class="hr-card"><div class="hr-name">${C('rn1','刘医生')}</div><div class="hr-role">副主任医师 · 入职5年</div><div class="hr-row"><span>备注</span><span class="hr-val">与赵竞争科室主任职位</span></div></div><div class="hr-card"><div class="hr-name">${C('rn2','王主任')}</div><div class="hr-role">医务科主任 · 入职12年</div><div class="hr-row"><span>备注</span><span class="hr-val" style="color:var(--accent);">正掩盖另一起医疗事故</span></div></div>`; },
+    access() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🔑 5月8日 · 外科楼3F · 完整门禁记录</div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--text-faint);min-width:44px;">07:40</span><span>赵文远 · 门卡 #0312 · 3F走廊 · 进入</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--text-faint);min-width:44px;">07:50</span><span>陈美华 · 门卡 #0508 · 护士站 · 进入</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--text-faint);min-width:44px;">12:00</span><span>赵文远 · 门卡 #0312 · 3F走廊 · 离开（午休）</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--text-faint);min-width:44px;">13:30</span><span>赵文远 · 门卡 #0312 · 3F走廊 · 进入</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">18:00</span><span>赵文远 · 门卡 #0312 · 主任办公室 · 进入（此后未再离开）</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">18:20</span><span>白班护士集体离岗打卡（3F仅剩值班人员）</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">19:15</span><span>陈美华 · 门卡 #0508 · 3F走廊 · 进入（返回医院）</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;background:var(--danger-bg);"><span style="color:var(--danger);min-width:44px;">${C('c3','19:30')}</span><span style="color:var(--danger);">⚠️ 陈美华 · 门卡 #0508 · 主任办公室 · 进入</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;background:var(--danger-bg);"><span style="color:var(--danger);min-width:44px;">${C('c8','19:45')}</span><span style="color:var(--danger);">⚠️ 陈美华 · 门卡 #0508 · 主任办公室 · 离开（停留15分钟）</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">19:46</span><span>陈美华 · 门卡 #0508 · 护士站 · 进入（归还物品）</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">19:50</span><span>陈美华 · 门卡 #0508 · 3F走廊 · 离开大楼</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">20:10</span><span>小李（护士）· 门卡 #0915 · 主任办公室 · 进入</span></div>
+<div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--danger);min-width:44px;">20:11</span><span style="color:var(--danger);">⚠️ 小李 · 紧急呼叫 · 急救代码 BLUE</span></div>
+<div style="margin-top:14px;padding:14px;background:var(--danger-bg);border-radius:6px;font-size:13px;color:var(--text-dim);line-height:1.9;">19:15-19:50之间，3F仅赵文远和陈美华两人在场。19:30-19:45，陈美华在主任办公室停留了15分钟。</div>`; },
+  },
+},
+
+case004: {
+  id: 'case004', num: '004', title: '署名', subtitle: '东海大学 · 化学实验室爆炸案', difficulty: 3, caseLabel: '案件 #2025-0615',
+  sources: {
+    chat: { icon: '💬', title: '通讯记录', sub: '微信 · 化学系课题组' },
+    email: { icon: '📧', title: '邮件', sub: '学校邮箱 · 孙教授的收件箱' },
+    research: { icon: '📄', title: '论文系统', sub: 'arXiv & 期刊投稿记录' },
+    lab: { icon: '🧪', title: '实验室日志', sub: '化学楼B201 · 仪器使用记录' },
+    hr: { icon: '👤', title: '人事档案', sub: '内部系统 · 教职工记录' },
+    access: { icon: '🔑', title: '门禁记录', sub: '6月15日 · 化学楼门禁' },
+  },
+  navOrder: ['chat','email','research','lab','hr','access'],
+  clues: [
+    { id: 'nm1', text: '孙立言', src: 'hr', ctx: '受害者 · 化学系教授' },
+    { id: 'nm2', text: '王浩', src: 'hr', ctx: '凶手 · 博士后研究员' },
+    { id: 'c1', text: '论文署名', src: 'research', ctx: '孙将王的一作改成自己' },
+    { id: 'c2', text: '过氧化氢', src: 'lab', ctx: '高浓度H2O2 · 实验室存量异常减少' },
+    { id: 'c3', text: '21:00', src: 'access', ctx: '王浩刷卡进入实验室' },
+    { id: 'c4', text: 'Nature子刊', src: 'research', ctx: '论文被接收 · 孙为通讯作者' },
+    { id: 'c5', text: '温度异常', src: 'lab', ctx: '反应釜21:15温度骤升 · 触发安全日志' },
+    { id: 'c6', text: '删除邮件', src: 'email', ctx: '孙曾删除王关于署名权的抗议邮件' },
+    { id: 'c7', text: '数据造假', src: 'research', ctx: '孙在论文中使用的部分数据无法复现' },
+    { id: 'c8', text: '21:20', src: 'access', ctx: '王浩刷卡离开实验室 · 3分钟后爆炸' },
+    { id: 'rn1', text: '张博士', src: 'hr', ctx: '博士后 · 此前论文也被孙署名为第一作者' },
+    { id: 'rn2', text: '陈院长', src: 'hr', ctx: '学院院长 · 近期在申请科研经费' },
+    { id: 'r1', text: '经费压力', src: 'email', ctx: '学院经费削减通知' },
+    { id: 'r2', text: '竞争课题组', src: 'chat', ctx: '清华课题组发布了同类研究preprint' },
+    { id: 'r3', text: '抑郁倾向', src: 'hr', ctx: '王浩 · 6月初心理咨询记录' },
+    { id: 'r4', text: '延时引爆', src: 'lab', ctx: '反应釜此前曾出现定时器故障' },
+    { id: 'r5', text: '药品遗失', src: 'lab', ctx: '上周实验室丙酮遗失记录' },
+  ],
+  blanks: [
+    { id: 'b1', label: '受害者身份', answers: ['nm1'] },
+    { id: 'b2', label: '凶手身份', answers: ['nm2'] },
+    { id: 'b3', label: '杀人动机', answers: ['c1','c4','c6'] },
+    { id: 'b4', label: '杀人手法', answers: ['c2','c5'] },
+    { id: 'b5', label: '案发地点', answers: ['c3'] },
+    { id: 'b6', label: '案发时间', answers: ['c3','c8'] },
+    { id: 'b7', label: '凶手的真正诉求', answers: ['c1','c4'] },
+    { id: 'b8', label: '关键破绽', answers: ['c5','c8'] },
+  ],
+  template: [
+    '2025年6月15日晚，东海大学化学系教授', { blank: 'b1', label: '受害者身份' }, '在实验室爆炸中身亡。初步判断为实验事故。\n\n经系统深入调查，真凶为', { blank: 'b2', label: '凶手身份' }, '。杀人动机：', { blank: 'b3', label: '杀人动机' }, '。\n\n杀人手法：', { blank: 'b4', label: '杀人手法' }, '。案发地点：', { blank: 'b5', label: '案发地点' }, '。案发时间：', { blank: 'b6', label: '案发时间' }, '。\n\n这起"事故"真正要掩盖的是', { blank: 'b7', label: '凶手的真正诉求' }, '。\n\n关键破绽：', { blank: 'b8', label: '关键破绽' }, '。',
+  ],
+  conclusion: '案件侦破：孙立言长期将学生和博士后的研究成果据为己有，最近更是将王浩耗时三年的核心论文第一作者改为自己。6月15日晚，王浩在实验室反应釜中预设了高浓度过氧化氢的失控反应条件，利用自己离开后的延迟引爆制造了"实验事故"假象。破绽在于：反应釜温度传感器记录了21:15的异常升温（人为预设），且王浩在爆炸前3分钟精确离开的时间点过于巧合。',
+  render: {
+    chat() { return `<div class="chat-section-label">📢 群聊 · 孙立言课题组 (8人)</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">孙立言</span><span class="c-time">09:30</span></div><div class="c-body">@所有人 本周组会改到周四下午。王浩你准备一下催化那篇的进度汇报，Nature那边审稿人在催修改稿</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">09:35</span></div><div class="c-body">好的孙老师。修改稿我已经写完了，有几个补充实验的数据今天跑完就能加进去</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张博士</span><span class="c-time">10:00</span></div><div class="c-body">王浩那篇催化真厉害，三年磨一剑。这要是发了Nature Catalysis，咱们课题组就起飞了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">研二小刘</span><span class="c-time">10:05</span></div><div class="c-body">师兄牛逼！我看了preprint，那个C-H活化机理讲得太清楚了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">10:08</span></div><div class="c-body">谢谢。其实最关键的那步反应条件是试了上百次才找到的。化学有时候就是运气加坚持</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">孙立言</span><span class="c-time">14:00</span></div><div class="c-body">@王浩 修改稿我看了。署名顺序我做了调整——通讯作者是我，第一作者改为我，你排第二。课题组惯例，通讯和一作由导师担任</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">14:05</span></div><div class="c-body">孙老师……这个课题从设计到合成到表征，全部是我一个人做的。三年。一作应该体现实际完成实验的人</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">孙立言</span><span class="c-time">14:06</span></div><div class="c-body">课题方向是我定的，经费是我申请的，实验室是我提供的。通讯作者加一作，这是国内外通行的做法。没什么好讨论的</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张博士</span><span class="c-time">14:10</span></div><div class="c-body">（私聊王浩）哥们，孙老师之前也这样搞过我那篇JACS。你跟他硬刚没用。忍了吧</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">14:12</span></div><div class="c-body">（私聊张博士）这不是我的第一篇了。博士期间那篇Angew也是他抢的一作。三年就这一篇大文章，我真的忍不下去了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张博士</span><span class="c-time">15:00</span></div><div class="c-body">@所有人 听说隔壁清华那个${C('r2','竞争课题组')}也在做类似的催化方向，他们preprint已经挂arXiv了。我们得抓紧</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">孙立言</span><span class="c-time">15:02</span></div><div class="c-body">所以更不能拖。@王浩 今晚把补充实验跑完，数据直接发我。明天我就把修改稿投出去</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">17:00</span></div><div class="c-body">@孙老师 我看了清华的preprint。他们的方法没有我们的好，我们的选择性比他们高15个百分点。但一作署名应该体现真正做实验的人，否则发出去别人一看就知道了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">孙立言</span><span class="c-time">17:02</span></div><div class="c-body">署名的事已经定了，不用再讨论了。今晚你把反应釜的实验跑完，我在办公室等结果。明天必须投出去</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">17:05</span></div><div class="c-body">好。我会把实验做完的。</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">研二小刘</span><span class="c-time">18:00</span></div><div class="c-body">@王浩 师兄，B201的反应釜我下午用过了，温度控制器好像有点问题，设80度实际跑到了快100。你晚上用的时候注意一下</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">王浩</span><span class="c-time">18:05</span></div><div class="c-body">知道了。我会检查的。</div></div>`; },
+    email() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📬 收件箱 · 孙立言</div><div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 王浩→孙立言：关于论文署名</div><div class="e-meta">发件人：王浩 · 6月12日</div><div class="email-detail">孙老师：<br><br>关于催化那篇论文的署名问题，我认为作为实际执行者，我应当是第一作者。我在这个方向上投入了三年时间，所有的关键实验都是我独立完成的。<br><br>王浩</div></div><div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject" style="color:var(--danger);">⚠️ 系统提示：邮件已被删除</div><div class="e-meta">收件箱 · 6月12日 · 已删除</div><div class="email-detail">孙立言${C('c6','删除了')}王浩关于署名权的全部邮件。垃圾箱中可恢复。</div></div><div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📄 Nature Catalysis：论文接收通知</div><div class="e-meta">收件人：孙立言 · 6月14日</div><div class="email-detail">Dear Prof. Sun:<br><br>Your manuscript has been accepted for publication in ${C('c4','Nature子刊')}.<br>Authors: Sun L.*, Wang H., Zhang Y.<br><br>*Corresponding author.</div></div><div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 学院通知：${C('r1','经费压力')}</div><div class="e-meta">发件人：陈院长 · 6月10日</div><div class="email-detail">各位教授：<br><br>本年度科研经费削减20%。请优先保证已有项目的运转。</div></div>`; },
+    research() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📄 arXiv · 论文投稿系统</div><div style="padding:12px;background:var(--danger-bg);border-radius:6px;margin-bottom:12px;"><div style="font-size:14px;color:var(--danger);">⚠️ 反常署名人变更</div><div style="font-size:13px;color:var(--text-dim);margin-top:8px;">论文「Novel Catalytic Mechanism for C-H Activation」<br>arXiv v1（6月1日）：第一作者 王浩，通讯 孙立言<br>投稿版（6月14日）：第一作者 孙立言，第二作者 王浩<br></div></div><div style="padding:12px;background:var(--card);border-radius:6px;border:1px solid var(--border);"><div style="font-size:14px;color:var(--text);">论文数据审查</div><div style="font-size:13px;color:var(--danger);margin-top:8px;">Figure 3C 催化效率曲线：投稿版数据与原始实验记录不符</div><div style="font-size:12px;color:var(--accent);">⚠️ ${C('c7','数据造假')}：部分数据点无法从原始实验日志中复现</div></div>`; },
+    lab() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🧪 化学楼 B201 · 实验室日志</div><div style="padding:12px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);"><div style="font-size:14px;color:var(--text);">6月15日 试剂领取记录</div><div style="font-size:13px;color:var(--text-dim);margin-top:6px;">18:00 · 领取人：王浩 · 30%${C('c2','过氧化氢')}溶液 500ml</div><div style="font-size:12px;color:var(--text-faint);margin-top:4px;">常规实验用量通常不超过100ml。本次领取量为5倍。</div></div><div style="padding:12px;background:var(--danger-bg);border-radius:6px;margin-bottom:8px;"><div style="font-size:14px;color:var(--danger);">⚠️ 反应釜 #3 温度传感器记录</div><div style="font-size:13px;color:var(--text-dim);margin-top:6px;">20:30 · 启动 · 设定温度 80°C（常规）<br>21:15 · ${C('c5','温度异常')} · 骤升至 210°C（远超安全阈值）<br>21:23 · 安全阀失效 · 爆炸</div><div style="font-size:12px;color:var(--text-faint);margin-top:8px;">温度曲线在21:15出现人为预设的陡升——不是意外，是被编程的。</div></div><div style="padding:12px;background:var(--card);border-radius:6px;border:1px solid var(--border);"><div style="font-size:13px;color:var(--text-dim);">上周另有${C('r5','药品遗失')}记录：丙酮 200ml</div><div style="font-size:12px;color:var(--text-faint);"></div></div>`; },
+    hr() { return `<div class="hr-card"><div class="hr-name">${C('nm1','孙立言')}</div><div class="hr-role">化学系教授 · 入职15年</div><div class="hr-row"><span>近三年论文</span><span class="hr-val">11篇（其中6篇一作来自学生课题）</span></div><div class="hr-row"><span>备注</span><span class="hr-val" style="color:var(--accent);">多次被学生匿名举报署名权问题</span></div></div><div class="hr-card" style="border-color:rgba(192,57,43,0.35);"><div class="hr-name">${C('nm2','王浩')}</div><div class="hr-role">博士后 · 入职3年</div><div class="hr-row"><span>研究方向</span><span class="hr-val">C-H键催化活化</span></div><div class="hr-row"><span>心理评估</span><span class="hr-val" style="color:var(--accent);">${C('r3','抑郁倾向')}（6月初咨询记录）</span></div></div><div class="hr-card"><div class="hr-name">${C('rn1','张博士')}</div><div class="hr-role">博士后 · 入职2年</div><div class="hr-row"><span>备注</span><span class="hr-val">也曾被孙压榨署名权</span></div></div><div class="hr-card"><div class="hr-name">${C('rn2','陈院长')}</div><div class="hr-role">学院院长 · 入职20年</div><div class="hr-row"><span>备注</span><span class="hr-val">正在争取经费</span></div></div>`; },
+    access() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🔑 6月15日 · 化学楼 B区门禁</div><div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">18:00</span><span>王浩 · 门卡 #0615 · B201实验室 · 进入</span></div><div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--accent);min-width:44px;">19:30</span><span>孙立言 · 门卡 #0420 · B201实验室 · 进入</span></div><div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;background:var(--danger-bg);"><span style="color:var(--danger);min-width:44px;">${C('c3','21:00')}</span><span style="color:var(--danger);">⚠️ 王浩 · 门卡 #0615 · B201实验室 · 再次进入</span></div><div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;background:var(--danger-bg);"><span style="color:var(--danger);min-width:44px;">${C('c8','21:20')}</span><span style="color:var(--danger);">⚠️ 王浩 · 门卡 #0615 · B201实验室 · 离开</span></div><div style="padding:8px 0;border-bottom:1px solid var(--divider);font-family:monospace;font-size:13px;display:flex;gap:60px;"><span style="color:var(--danger);min-width:44px;">21:23</span><span style="color:var(--danger);">⚠️ 火警触发 · B201实验室爆炸</span></div><div style="margin-top:12px;padding:10px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--text-dim);">王浩在爆炸前3分钟离开。21:00-21:20这段时间他在实验室做了什么？</div></div>`; },
+  },
+},
+
+case005: {
+  id: 'case005', num: '005', title: '信号', subtitle: '国家网安中心 · 高级工程师车祸案', difficulty: 4, caseLabel: '案件 #2025-0721',
+  sources: {
+    chat:  { icon: '💬', title: '加密通讯', sub: '内部加密信道 · 李卫国的消息记录' },
+    email: { icon: '📧', title: '邮件', sub: '政务邮箱 · 李卫国的收件箱' },
+    server: { icon: '🖥️', title: '服务器日志', sub: '核心防火墙 · 运维与审计记录' },
+    finance: { icon: '💰', title: '财务记录', sub: '银行流水 · 多方关联账户分析' },
+    hr: { icon: '👤', title: '人事档案', sub: '涉密人员 · 安全审查与考勤' },
+    travel: { icon: '🚗', title: '出行与物证', sub: '7月21日 · GPS轨迹 · 事故报告 · 通讯详单' },
+  },
+  navOrder: ['chat','email','server','finance','hr','travel'],
+  clues: [
+    // 核心人名
+    { id: 'nm1', text: '李卫国', src: 'hr', ctx: '受害者 · 网络安全高级工程师' },
+    { id: 'nm2', text: '周处长', src: 'hr', ctx: '信息安全处处长 · 系统管理员权限持有者' },
+    // 真实线索：第一层 — 证伪"事故"
+    { id: 'c1', text: '无刹车痕迹', src: 'travel', ctx: '事故现场勘查 · 撞击前无制动反应' },
+    { id: 'c2', text: '偏离路线', src: 'travel', ctx: 'GPS记录 · 19:25转向工业区 · 与回家方向相反' },
+    { id: 'c3', text: '预付费电话', src: 'travel', ctx: '未实名手机号 · 21:28呼叫李卫国2分钟 · 事后弃用' },
+    { id: 'c4', text: '套牌货车', src: 'travel', ctx: '肇事货车 · 车牌3天前报失 · 事后焚毁' },
+    // 真实线索：第二层 — 锁定嫌疑人
+    { id: 'c5', text: '21:30', src: 'travel', ctx: '李卫国GPS最后信号时间 · 事故时间' },
+    { id: 'c6', text: '晚宴', src: 'hr', ctx: '周处长声称的不在场证明：19:00-22:00公务接待' },
+    { id: 'c7', text: '管理员登录', src: 'server', ctx: 'admin_zhou 19:15从办公电脑登录 · 与晚宴时间矛盾' },
+    { id: 'c8', text: '删库', src: 'server', ctx: '22:45 admin_zhou手动清除30天审计日志' },
+    // 真实线索：第三层 — 揭示犯罪
+    { id: 'c9', text: '异常流量', src: 'server', ctx: '每日凌晨3:00 · 固定外联 · 加密载荷1.5-2MB' },
+    { id: 'c10', text: '系统更新', src: 'server', ctx: '2024年9月更新#0915 · 实际植入了后门模块' },
+    { id: 'c11', text: '境外IP', src: 'server', ctx: '外联目的地 · 203.0.113.45 · 境外云服务器' },
+    { id: 'c12', text: '壳公司', src: 'finance', ctx: '香港注册 · 贸易公司 · 接收境外付款后再转出' },
+    { id: 'c13', text: '25万', src: 'finance', ctx: '壳公司→周处长亲属账户 · 每月两笔 · 持续半年' },
+    { id: 'c14', text: '货车司机', src: 'finance', ctx: '壳公司→个人账户 · 事发前3天收款¥50,000' },
+    // 复杂干扰项
+    { id: 'rn1', text: '张工', src: 'hr', ctx: '同事 · 李卫国最后联系的人之一 · 删除了部分聊天记录' },
+    { id: 'rn2', text: '刘科长', src: 'hr', ctx: '后勤科长 · 负责车辆调度 · 与李卫国曾有口角' },
+    { id: 'rn3', text: '冯主任', src: 'hr', ctx: '中心副主任 · 与周处长存在晋升竞争' },
+    { id: 'r1', text: '境外扫描', src: 'server', ctx: '7月15-18日 · 多国IP对防火墙进行端口扫描' },
+    { id: 'r2', text: '赌债', src: 'finance', ctx: '李卫国弟弟的赌博欠款记录 · ¥120,000' },
+    { id: 'r3', text: '数据泄露', src: 'server', ctx: '另一部门6月发生的数据库异常查询事件 · 已结案' },
+    { id: 'r4', text: '离职申请', src: 'hr', ctx: '李卫国曾咨询过离职流程 · 未正式提交' },
+    { id: 'r5', text: '家庭矛盾', src: 'chat', ctx: '李卫国妻子抱怨其长期加班 · 7月20日' },
+    { id: 'r6', text: '车辆维修', src: 'travel', ctx: '李卫国车辆7月19日曾在后勤处维修 · 刘科长经手' },
+    { id: 'r7', text: '匿名举报', src: 'email', ctx: '6月有人匿名举报周处长滥用权限 · 调查无果' },
+    { id: 'r8', text: '增额保险', src: 'hr', ctx: '李卫国3月将意外险从50万提高至200万 · 受益人妻子' },
+    { id: 'r9', text: '境外人员', src: 'travel', ctx: '7月19日 · 中心附近监控拍到可疑境外人员' },
+    { id: 'r10', text: '大额取现', src: 'finance', ctx: '7月20日 · 李卫国取现¥30,000 · 用途不明' },
+    { id: 'r11', text: '被跟踪', src: 'chat', ctx: '7月18日 · 李卫国向张工提起感觉被人跟踪' },
+    { id: 'r12', text: '竞业协议', src: 'hr', ctx: '李卫国与前雇主存在未了结的竞业纠纷' },
+    { id: 'r13', text: '断电', src: 'server', ctx: '7月21日20:00 · 机房短暂断电3分钟 · 原因不明' },
+  ],
+  blanks: [
+    { id: 'b1', label: '受害者身份', answers: ['nm1'] },
+    { id: 'b2', label: '真凶身份', answers: ['nm2'] },
+    { id: 'b3', label: '事故真相', answers: ['c1','c3','c4'] },
+    { id: 'b4', label: '真凶的掩护', answers: ['c6'] },
+    { id: 'b5', label: '真凶的破绽', answers: ['c7','c8'] },
+    { id: 'b6', label: '雇佣凶手的方式', answers: ['c12','c14'] },
+    { id: 'b7', label: '杀人动机', answers: ['c9','c10','c11','c13'] },
+    { id: 'b8', label: '真正的犯罪', answers: ['c9','c10','c11','c12'] },
+    { id: 'b9', label: '关键证据链', answers: ['c5','c7','c14'] },
+  ],
+  template: [
+    '2025年7月21日晚，国家网安中心高级工程师', { blank: 'b1', label: '受害者身份' },
+    '在一起交通事故中身亡，车辆与货车相撞后起火。\n\n这不是一场意外——证据是', { blank: 'b3', label: '事故真相' },
+    '。\n\n真凶是', { blank: 'b2', label: '真凶身份' },
+    '。他利用', { blank: 'b4', label: '真凶的掩护' },
+    '制造不在场证明，但', { blank: 'b5', label: '真凶的破绽' },
+    '暴露了他的行动。\n\n他通过', { blank: 'b6', label: '雇佣凶手的方式' },
+    '安排了这场"事故"。\n\n杀人动机：', { blank: 'b7', label: '杀人动机' },
+    '。\n\n这一切掩盖的真正的犯罪是', { blank: 'b8', label: '真正的犯罪' },
+    '。\n\n关键证据链：', { blank: 'b9', label: '关键证据链' },
+    '。',
+  ],
+  conclusion: '案件侦破：周处长2024年9月借系统更新之名在核心防火墙植入了后门模块（mod_netfilter_ext），将涉密数据售予境外机构，通过香港壳公司接收赃款并转至亲属账户。2025年7月，李卫国部署新审计工具后发现了异常外联流量。周处长以"紧急会议"为由约出李卫国，同时通过壳公司雇佣货车司机制造了交通事故。事后他清除了服务器审计日志并声称事发时在公务晚宴——但管理员登录记录显示他19:15在办公，GPS记录显示李卫国被诱骗至工业区废弃路段，壳公司的付款记录则将雇佣链条完整串联。',
+  render: {
+    chat() { return `<div class="chat-section-label">🔐 内部加密信道 · 李卫国的通讯记录</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">7月10日 15:30</span></div><div class="c-body">新的审计工具跑通了。我把它部署在测试环境里先观察几天，看看能抓到什么</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">7月10日 15:35</span></div><div class="c-body">什么审计工具？你又自己写了一个？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">7月10日 15:36</span></div><div class="c-body">对。之前的工具只能看应用层的流量，我自己写了个内核层的审计模块。能抓到一些用户态看不到的东西</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">7月10日 15:40</span></div><div class="c-body">内核层？你确定不会影响性能？上次有人在内核里挂hook把防火墙搞挂了，周处骂了三天</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">7月10日 15:41</span></div><div class="c-body">不会，我是只读模式挂载的。不影响转发性能。先跑一星期看看</div></div>
+<div class="chat-section-label" style="margin-top: 24px;">7月15日 · 发现异常</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">10:30</span></div><div class="c-body">@张工 工具跑了一周，抓到了一个有意思的模式。每天凌晨3:00-3:15之间，有固定的外联流量。目的地IP不在任何已知的白名单里</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">10:35</span></div><div class="c-body">凌晨三点？可能是备份任务的异步同步吧。我们的海外灾备节点确实是那个时间窗口跑的</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">10:36</span></div><div class="c-body">不是备份。流量方向是单向出站，载荷加密，每次1.5到2MB。最关键的——它在内核层跑，绕过了标准审计日志。我是在自己的工具里才看到的</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">10:40</span></div><div class="c-body">内核层？？你的意思是有人在内核里植入了一个出站模块？这得要root权限。谁有？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">10:41</span></div><div class="c-body">能做这件事的人这栋楼里不超过五个。我查了部署时间戳——去年9月15日凌晨3点14分。那天的运维日志我调了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender"></div>
+<div class="chat-section-label" style="margin-top: 16px;">7月18日</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">19:30</span></div><div class="c-body">@张工 有个事。这两天回家路上总感觉有辆车跟着我。白色面包车，连续两天了。可能是我想多了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">19:32</span></div><div class="c-body">你确定？什么牌子的车？车牌号记得吗？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">19:33</span></div><div class="c-body">没看清车牌。不过${C('r11','被跟踪')}的感觉确实不太好。我明天换条路走</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">19:35</span></div><div class="c-body">要不要我陪你走几天？或者直接报保卫处</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">19:36</span></div><div class="c-body">暂时不用。应该没事。可能就是普通车辆巧合</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">10:45</span></div><div class="c-body">……你确定要继续查下去吗？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">10:46</span></div><div class="c-body">确定。但先不声张。我需要更多证据。你把这件事也烂在肚子里，任何人都不要说</div></div>
+<div class="chat-section-label" style="margin-top: 24px;">7月20日 · 深入调查</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">22:00</span></div><div class="c-body">@张工 数据包分析做完了。比我最初估计的严重得多——传输内容包含涉密数据库的查询结果和用户凭据的哈希值。累计外传量已经约47GB</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">22:10</span></div><div class="c-body">47GB？你确定数据解包是正确的？这可是国家安全级别的问题</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">22:12</span></div><div class="c-body">我反复确认了。目标是境外IP 203.0.113.45。我已经dump了全部数据包，写好了分析报告。明天走流程上报保卫处</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">22:15</span></div><div class="c-body">老李，我觉得你先确定是谁再上报。你现在手里没有明确指向某个人的证据，贸然上报可能会打草惊蛇——甚至反噬你自己。之前有人匿名举报过周处，调查不了了之，举报人的名字倒是传开了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">22:16</span></div><div class="c-body">我知道是谁部署的。9月15日凌晨3点值班日志只记录了一个管理员在线。但我还需要最后确认一件事——我在追踪数据最终流向的资金链。给我一两天时间。证据我已经存了三份，一份加密放在云端</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">22:20</span></div><div class="c-body">你自己小心。任何人约你单独见面都别去。所有沟通留记录</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">22:22</span></div><div class="c-body">兄弟，放心。我明天再跟你同步进展</div></div>
+<div class="chat-section-label" style="margin-top: 24px;">7月21日 · 事发当日</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">09:00</span></div><div class="c-body">@张工 昨晚查到了一些很关键的财务数据。外流的这些数据不是白送的——有人在收钱。我追踪到一个银行账户，关联到香港一家贸易公司。这个公司的注册信息非常可疑，是个壳</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">09:10</span></div><div class="c-body">壳公司？你能追踪到最终受益人吗？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">09:12</span></div><div class="c-body">还在查。但壳公司有一笔转出记录很有意思——收款账户在本地，户主名我不认识。查了一下面向，是一个货车司机</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">09:15</span></div><div class="c-body">货车司机？跟网络安全有什么关系？</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">09:16</span></div><div class="c-body">不知道。有可能是巧合，也有可能不是。我先记下来</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">15:00</span></div><div class="c-body">@张工 报告写好了，但我决定先不急着发。晚上我想再跟一个人当面聊聊，确认一些细节</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">15:05</span></div><div class="c-body">跟谁？别一个人去！</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">15:06</span></div><div class="c-body">放心。回头跟你说。你先把我之前发给你的备份保存好</div></div>
+<div class="chat-msg warn"><div class="c-header"><span class="c-sender"><div class="chat-msg"><div class="c-header"><span class="c-sender">张工</span><span class="c-time">16:00</span></div><div class="c-body">@李卫国 你昨天取那么多现金干嘛？我看到你桌上的取款回单了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">16:02</span></div><div class="c-body">家里有点事。回头说</div></div>
+周处长</span><span class="c-time">19:00</span></div><div class="c-body">@李卫国 李工，有个紧急情况。关于你最近在审计的那个东西——我已经知道了。我们需要当面谈一下。老地方，工业区那个仓库后面。现在就来</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">19:02</span></div><div class="c-body">好的。我现在出发</div></div>
+<div class="chat-section-label" style="margin-top: 24px;">📱 李卫国 · 家庭通讯</div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">妻子</span><span class="c-time">7月20日 21:00</span></div><div class="c-body">你又加班？这个月第几次了。孩子问爸爸是不是出差了</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">李卫国</span><span class="c-time">7月20日 21:05</span></div><div class="c-body">快了快了。处理完这件重要的事就恢复正常。周末带你们出去玩</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">妻子</span><span class="c-time">7月21日 21:30</span></div><div class="c-body">你人呢？电话打不通</div></div>
+<div class="chat-msg"><div class="c-header"><span class="c-sender">妻子</span><span class="c-time">7月21日 22:15</span></div><div class="c-body">卫国？？？你到底在哪？我打了二十多个电话了</div></div>`; },
+
+    email() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">📬 政务邮箱 · 李卫国</div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📋 保卫处：审计工具部署审批</div><div class="e-meta">发件人：保卫处 · 7月8日 09:00</div><div class="email-detail">李卫国同志：<br><br>你自主研发的内核级安全审计工具（v4.2）已通过技术审查。请在测试环境部署并观察至少一周后再申请生产环境上线。生产部署前必须提交正式变更申请。<br><br>保卫处</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 李卫国→保卫处：异常外联模块报告（草稿）</div><div class="e-meta">草稿箱 · 7月21日 15:00 · 未发送</div><div class="email-detail">保卫处负责同志：<br><br>经审计工具v4.2深度扫描，核心防火墙中存在未经登记的内核级外联模块（mod_netfilter_ext）。该模块于2024年9月15日部署，每日凌晨向境外IP传输加密数据，累计传输量约47GB。<br><br>技术特征：<br>1. root级权限，内核态运行<br>2. AES-256-GCM加密所有外联流量<br>3. 自动从系统审计日志中删除自身活动记录<br>4. 传输内容经部分解密：包含涉密数据库查询结果、用户凭据哈希<br><br>部署权限分析：需核心防火墙root权限。具有此权限的账户共5个，其中2024年9月15日03:14在线的仅1人。<br><br>建议立即启动内部安全调查。<br><br>附件：完整数据包dump（加密）<br><br>李卫国</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject" style="color:var(--danger);">⚠️ 周处长：紧急安全事件</div><div class="e-meta">发件人：周处长 · 7月21日 18:30</div><div class="email-detail">李卫国同志：<br><br>关于你最近在进行的防火墙审计工作——我已经掌握了相关情况。需要当面沟通，涉及敏感信息不宜在邮件中详述。<br><br>请于19:30到以下地点见面。注意保密，不要告知任何人。<br><br>周</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📎 系统自动告警：审计日志异常清除</div><div class="e-meta">安全系统 · 7月21日 22:45 · 自动发送</div><div class="email-detail">【自动告警 · 严重安全事件】<br><br>核心防火墙审计日志已被手动清除。<br><br>操作者：admin_zhou<br>操作IP：192.168.1.9（周处长办公电脑）<br>操作命令：audit_log_purge --range 2025-06-21..2025-07-21 --force<br>被清除数据：30天完整审计日志<br><br>该操作已触犯安全策略SC-7。本告警自动抄送保卫处。</div></div>
+<div class="email-list-item" onclick="toggleEmail(this)"><div class="e-subject">📧 6月匿名举报（存档）</div><div class="e-meta">发件人：匿名 · 6月18日 · 状态：已存档</div><div class="email-detail">（匿名举报信）<br><br>信息安全处周处长涉嫌滥用系统管理员权限，未经审批擅自修改核心防火墙配置。建议调查。<br><br>调查结论（6月25日）：经核实，周处长的操作属于正常运维范围。举报不成立。归档。</div></div>`; },
+
+    server() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🖥️ 核心防火墙 · 运维与深度审计记录</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:15px;color:var(--text);font-weight:600;">2024年9月15日 · 系统更新日志</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;font-family:monospace;line-height:1.9;">
+    03:00 — 计划内安全更新 #2024-0915 开始执行<br>
+    03:14 — 内核模块加载：mod_netfilter_ext v1.0（日志记录为"性能优化补丁"）<br>
+    03:14 — 操作账户：admin_zhou · 操作IP：192.168.1.9<br>
+    03:15 — 更新完成<br><br>
+    该${C('c10','系统更新')}的变更申请单中未提及内核模块的部署。mod_netfilter_ext不是标准更新包的一部分。<br>
+    <span style="color:var(--accent);">拥有此次更新操作权限的账户：仅 admin_zhou（值班管理员）。</span>
+  </div>
+</div>
+<div style="padding:14px;background:var(--danger-bg);border-radius:6px;margin-bottom:12px;border:1px solid rgba(192,57,43,0.2);">
+  <div style="font-size:15px;color:var(--danger);font-weight:600;">⚠️ 异常外联流量模式（审计工具v4.2捕获）</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;font-family:monospace;line-height:1.9;">
+    外联时间：每日 03:00-03:15（持续284天 · 2024.9.15至今）<br>
+    外联目标：${C('c11','境外IP')} 203.0.113.45（境外注册的云服务器）<br>
+    每次传输量：1.5-2.0 MB（AES-256-GCM加密）<br>
+    累计传输：约47GB<br>
+    流量特征：单向出站 · 内核态 · 绕过标准审计日志<br>
+    模块标识：mod_netfilter_ext · 注册名"${C('c9','异常流量')}处理"（伪装名称）<br>
+    模块能力：日志自清理 · 远程指令接收 · 文件系统隐身
+  </div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text-dim);font-weight:600;">7月21日 · ${C('r13','断电')}事件</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:6px;">20:00:12 — 机房主电源中断 · 20:00:36 — UPS切换成功 · 20:03:08 — 主电源恢复 · 总中断时长2分56秒。原因待查。期间部分监控和门禁系统短暂离线。</div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text);font-weight:600;">管理员登录记录 · 7月21日</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:8px;font-family:monospace;line-height:1.9;">
+    ${C('c7','管理员登录')} · admin_zhou · 19:15 · IP 192.168.1.9 · 办公电脑<br>
+    <span style="color:var(--accent);">与周处长声称的"19:00-22:00在公务晚宴"时间矛盾。</span>
+  </div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text-dim);">外部安全事件：7月15-18日 ${C('r1','境外扫描')}</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:4px;">多国IP对防火墙VPN网关进行端口扫描和暴力破解（共1,247次）。已被IDS/IPS阻断。与mod_netfilter_ext使用的协议栈不同。</div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text-dim);">6月安全事件（已结案）· ${C('r3','数据泄露')}</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:4px;">人力资源数据库出现非授权查询。经查为运维人员误操作。已经处理完毕，与本案无关。</div>
+</div>
+<div style="padding:14px;background:var(--danger-bg);border-radius:6px;margin-top:12px;border:1px solid rgba(192,57,43,0.2);">
+  <div style="font-size:15px;color:var(--danger);font-weight:600;">⚠️ 审计日志清除事件 ${C('c8','删库')}</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;font-family:monospace;line-height:1.9;">
+    操作时间：7月21日 22:45:07<br>
+    操作账户：admin_zhou · IP：192.168.1.9<br>
+    执行命令：audit_log_purge --range 2025-06-21..2025-07-21 --force<br>
+    被清除：30天全部防火墙审计日志<br>
+    <span style="color:var(--accent);">事故发生于约21:30。日志清除发生在75分钟后。周处长声称事发时在晚宴——从晚宴地点到办公电脑，车程约40分钟。</span>
+  </div>
+</div>`; },
+
+    finance() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">💰 关联账户 · 银行流水分析</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:15px;color:var(--text);font-weight:600;">香港辉达贸易有限公司（${C('c12','壳公司')}）</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;line-height:1.9;">
+    注册地：香港湾仔 · 注册资本：HKD 10,000<br>
+    注册时间：2024年8月（后门部署前一个月）<br>
+    业务范围：电子产品贸易（无实际业务记录）<br><br>
+    近半年收入：<br>
+    · 2025.2-2025.7 · 每月1日和15日 · 各USD 3,500入账<br>
+    · 汇款方：境外账户（与203.0.113.45 IP属地一致）<br>
+    · 累计入账约USD 42,000<br><br>
+    近半年支出：<br>
+    · 每月1日和15日 · 各${C('c13','25万')}人民币转出 · 收款方：周某（周处长母亲账户）<br>
+    · 7月18日 · ¥50,000转出 · 收款方：王某（货车司机账户）${C('c14','货车司机')}<br>
+    <span style="color:var(--accent);">壳公司同时向周处长亲属和货车司机付款。</span>
+  </div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text);font-weight:600;">李卫国个人账户</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:6px;">工资收入正常。无海外转账。</div>
+  <div style="font-size:13px;color:var(--accent);margin-top:6px;">7月20日 · ${C('r10','大额取现')} ¥30,000（柜台取现 · 用途备注：家庭支出）</div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text);font-weight:600;">李卫国个人账户（旧）</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:6px;">工资收入正常。无异常大额资金。无海外转账。</div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text-dim);">李某（李卫国弟弟）· ${C('r2','赌债')}</div>
+  <div style="font-size:13px;color:var(--text-faint);margin-top:6px;">近三个月有数笔大额支出。累计欠款¥120,000。与李卫国本人财务无关。</div>
+</div>`; },
+
+    hr() { return `<div class="hr-card"><div class="hr-name">${C('nm1','李卫国')}</div><div class="hr-role">高级网络安全工程师 · 入职7年</div><div class="hr-row"><span>安全级别</span><span class="hr-val">绝密</span></div><div class="hr-row"><span>备注</span><span class="hr-val">近期申请了内部调动咨询（${C('r4','离职申请')}方向离职申请</span></div><div class="hr-row"><span>保险</span><span class="hr-val" style="color:var(--accent);">${C('r8','增额保险')}200万 · 3月生效 · 受益人妻子</span></div><div class="hr-row"><span>法律</span><span class="hr-val" style="color:var(--accent);">${C('r12','竞业协议')}纠纷 · 前雇主曾发律师函）</span></div></div>
+<div class="hr-card" style="border-color:rgba(192,57,43,0.35);"><div class="hr-name">${C('nm2','周处长')}</div><div class="hr-role">信息安全处处长 · 入职15年</div><div class="hr-row"><span>权限级别</span><span class="hr-val danger">系统管理员 · 核心防火墙root</span></div><div class="hr-row"><span>7月21日考勤</span><span class="hr-val">声称19:00-22:00参加${C('c6','晚宴')}（公务接待）</span></div><div class="hr-row"><span>审查记录</span><span class="hr-val" style="color:var(--accent);">6月曾被匿名举报 · ${C('r7','匿名举报')}调查已结</span></div></div>
+<div class="hr-card"><div class="hr-name">${C('rn1','张工')}</div><div class="hr-role">安全工程师 · 入职5年</div><div class="hr-row"><span>与李工关系</span><span class="hr-val">密切 · 最后联络人之一</span></div><div class="hr-row"><span>备注</span><span class="hr-val" style="color:var(--accent);">7月20日22:20后删除了与李卫国的部分私聊记录</span></div></div>
+<div class="hr-card"><div class="hr-name">${C('rn2','刘科长')}</div><div class="hr-role">后勤科长 · 入职10年</div><div class="hr-row"><span>职责</span><span class="hr-val">车辆调度与维护</span></div><div class="hr-row"><span>备注</span><span class="hr-val" style="color:var(--accent);">与李卫国因车辆使用有过口角 · 7月19日李卫国车辆经后勤维修</span></div></div>
+<div class="hr-card"><div class="hr-name">${C('rn3','冯主任')}</div><div class="hr-role">中心副主任 · 入职12年</div><div class="hr-row"><span>备注</span><span class="hr-val">与周处长竞争下任主任职位</span></div></div>`; },
+
+    travel() { return `<div style="margin-bottom:10px;font-size:12px;color:var(--text-faint);letter-spacing:1px;">🚗 7月21日 · 综合出行物证</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:15px;color:var(--text);font-weight:600;">GPS轨迹时间线</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;line-height:2;">
+    18:00 — 车辆未移动（单位停车场）<br>
+    19:10 — 启动，离开单位。方向：东向（正常回家路线）<br>
+    19:25 — ${C('c2','偏离路线')}，右转进入工业区方向。与回家方向完全相反<br>
+    20:30 — 进入工业区废弃路段<br>
+    ${C('c5','21:30')} — GPS信号丢失。最后坐标：工业区废弃仓库路段<br>
+    21:32 — 110接报：该路段严重交通事故
+  </div>
+</div>
+<div style="padding:14px;background:var(--danger-bg);border-radius:6px;margin-bottom:12px;border:1px solid rgba(192,57,43,0.2);">
+  <div style="font-size:15px;color:var(--danger);font-weight:600;">⚠️ 事故现场勘查</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:10px;line-height:1.9;">
+    · 无${C('c1','无刹车痕迹')}—驾驶员在撞击前未做出任何制动反应<br>
+    · 撞击角度：侧面45°斜角（对方车辆主动转向撞击的特征）<br>
+    · 肇事车辆：${C('c4','套牌货车')} · 车牌于7月18日报失 · 事发后逃逸<br>
+    · 货车2小时后在5公里外被发现，已焚毁<br>
+    · 货车残骸中未提取到可辨认的指纹或DNA<br>
+    · 路段特征：废弃工业区 · 夜间无行人 · 无监控
+  </div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:12px;border:1px solid var(--border);">
+  <div style="font-size:15px;color:var(--text);font-weight:600;">通讯详单 · 李卫国手机</div>
+  <div style="font-size:13px;color:var(--text-dim);margin-top:8px;line-height:2;">
+    21:28 — 接到${C('c3','预付费电话')}来电（号码：132****7241）<br>
+    21:28-21:30 — 通话持续2分14秒<br>
+    21:30 — 通话结束。GPS信号随即丢失<br>
+    <span style="color:var(--accent);">该号码为未实名注册的预付费卡。7月18日激活，7月22日起无任何通讯活动。</span>
+  </div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--accent);">${C('r9','境外人员')}目击报告 · 7月19日</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:6px;">中心外围监控拍到一名外籍男性在围栏附近徘徊约15分钟。该人员携带高倍率相机。保安到场时已离开。无法确认身份。</div>
+</div>
+<div style="padding:14px;background:var(--card);border-radius:6px;margin-bottom:8px;border:1px solid var(--border);">
+  <div style="font-size:14px;color:var(--text-dim);">车辆维护记录 · ${C('r6','车辆维修')}</div>
+  <div style="font-size:12px;color:var(--text-faint);margin-top:6px;">7月19日 · 李卫国车辆在后勤处进行常规保养。经手人：刘科长。保养记录显示制动系统正常。</div>
+</div>`; },
+  },
+},
+
+}; // end CASES
+
+// ==================== HELPERS ====================
+function C(id, text) {
+  return `<span class="clue${collected[id] ? ' collected' : ''}" data-clue="${id}">${text}</span>`;
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+function toggleEmail(el) {
+  const d = el.querySelector('.email-detail');
+  if (!d) return;
+  d.classList.toggle('open');
+  if (d.classList.contains('open')) bindCluesIn(d);
+}
+
+function bindCluesIn(container) {
+  container.querySelectorAll('.clue:not(.collected)').forEach(el => {
+    if (!el.dataset.bound) { el.dataset.bound = '1'; el.addEventListener('click', e => { e.stopPropagation(); collectClue(el.dataset.clue); }); }
+  });
+}
+
+// ==================== TITLE SCREEN ====================
+function showTitle() {
+  document.getElementById('title-screen').style.display = 'flex';
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('deduction-overlay').classList.remove('open');
+  currentCase = null;
+  renderCaseGrid();
+}
+
+function renderCaseGrid() {
+  const grid = document.getElementById('case-grid');
+  grid.innerHTML = '';
+  const caseIds = Object.keys(CASES);
+  for (const id of caseIds) {
+    const c = CASES[id];
+    const done = completedCases.includes(id);
+    const unlocked = unlockedCases.includes(id);
+    // Auto-unlock next case after previous is completed
+    const isLocked = false; // All cases unlocked
+    grid.innerHTML += `
+      <div class="case-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="startCase('${id}')"`}>
+        <div class="case-num">案件 ${c.num}</div>
+        ${done ? '<div class="case-status">✅</div>' : (isLocked ? '<div class="case-lock">🔒</div>' : '')}
+        <div class="case-title">${c.title}</div>
+        <div class="case-subtitle">${c.subtitle}</div>
+        <div class="case-difficulty">${'★'.repeat(c.difficulty)}${'☆'.repeat(4 - c.difficulty)}</div>
+      </div>`;
+  }
+}
+
+// ==================== CASE START ====================
+function startCase(caseId) {
+  currentCase = CASES[caseId];
+  collected = {};
+  answers = {};
+  currentSource = '';
+  selectedClue = null;
+  activeBlank = null;
+
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('topbar').style.display = 'flex';
+  document.getElementById('main').style.display = 'flex';
+  document.getElementById('topbar-case-id').textContent = currentCase.caseLabel;
+
+  // Build nav
+  const nav = document.getElementById('left-nav');
+  nav.innerHTML = '';
+  for (const src of currentCase.navOrder) {
+    const s = currentCase.sources[src];
+    nav.innerHTML += `<div class="nav-item" data-app="${src}" title="${s.title}" onclick="switchSource('${src}')">${s.icon}</div>`;
+  }
+
+  // Reset right panel
+  document.getElementById('evidence-list').innerHTML = '<div id="empty-evidence">在数据源中点击<br><span style="color:var(--accent);">橙色高亮文字</span><br>收集证据</div>';
+  document.getElementById('ev-count').textContent = '0';
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('next-case-btn').style.display = 'none';
+  document.getElementById('deduction-overlay').classList.remove('open');
+
+  // Open first source
+  switchSource(currentCase.navOrder[0]);
+}
+
+// ==================== SOURCE SWITCHING ====================
+function switchSource(src) {
+  currentSource = src;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navItem = document.querySelector(`.nav-item[data-app="${src}"]`);
+  if (navItem) navItem.classList.add('active');
+
+  const s = currentCase.sources[src];
+  document.getElementById('center-title').textContent = s.icon + ' ' + s.title;
+  document.getElementById('center-subtitle').textContent = s.sub;
+
+  const body = document.getElementById('center-body');
+  const renderFn = currentCase.render[src];
+  body.innerHTML = renderFn ? renderFn() : '';
+  bindClues();
+}
+
+function bindClues() {
+  document.querySelectorAll('#center-body .clue:not(.collected)').forEach(el => {
+    if (!el.dataset.bound) { el.dataset.bound = '1'; el.addEventListener('click', () => collectClue(el.dataset.clue)); }
+  });
+}
+
+// ==================== CLUE SYSTEM ====================
+function collectClue(clueId) {
+  if (collected[clueId]) return;
+  collected[clueId] = true;
+
+  document.querySelectorAll(`[data-clue="${clueId}"]`).forEach(el => el.classList.add('collected'));
+
+  const clue = currentCase.clues.find(c => c.id === clueId);
+  if (!clue) return;
+
+  const emptyEl = document.getElementById('empty-evidence');
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  const card = document.createElement('div');
+  card.className = 'evidence-card';
+  card.dataset.clueId = clueId;
+  const srcInfo = currentCase.sources[clue.src];
+  card.innerHTML = `
+    <div class="ev-source">${srcInfo ? srcInfo.icon + ' ' + srcInfo.title : clue.src}</div>
+    <div class="ev-text">${clue.text}</div>
+    <div class="ev-icon">+</div>
+  `;
+  card.addEventListener('click', () => selectEvidence(clueId, card));
+  document.getElementById('evidence-list').appendChild(card);
+  document.getElementById('ev-count').textContent = Object.keys(collected).length;
+  showToast('证据已收集');
+}
+
+function selectEvidence(clueId, cardEl) {
+  if (Object.values(answers).includes(clueId)) return;
+  document.querySelectorAll('.evidence-card.selected').forEach(c => c.classList.remove('selected'));
+  if (selectedClue === clueId) { selectedClue = null; return; }
+  selectedClue = clueId;
+  cardEl.classList.add('selected');
+  if (activeBlank) fillBlank(activeBlank, clueId);
+}
+
+// ==================== DEDUCTION ====================
+function openDeduction() {
+  if (Object.keys(collected).length < 5) { showToast('需要至少5条证据才能构建案情报告'); return; }
+  document.getElementById('deduction-overlay').classList.add('open');
+  document.getElementById('right-panel').style.zIndex = '510';
+  document.getElementById('right-panel').style.borderLeft = '2px solid var(--accent)';
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('next-case-btn').style.display = 'none';
+  renderDeduction();
+  selectedClue = null;
+  activeBlank = null;
+}
+
+function closeDeduction() {
+  document.getElementById('deduction-overlay').classList.remove('open');
+  document.getElementById('right-panel').style.zIndex = '';
+  document.getElementById('right-panel').style.borderLeft = '';
+  activeBlank = null;
+  selectedClue = null;
+  document.querySelectorAll('.evidence-card.selected').forEach(c => c.classList.remove('selected'));
+}
+
+function renderDeduction() {
+  const container = document.getElementById('deduction-text');
+  let html = '';
+  for (const part of currentCase.template) {
+    if (typeof part === 'string') { html += part.replace(/\n/g, '<br>'); }
+    else {
+      const filled = answers[part.blank];
+      if (filled) {
+        const clue = currentCase.clues.find(c => c.id === filled);
+        html += `<span class="deduction-blank filled" data-blank="${part.blank}" title="点击清除">${clue ? clue.text : filled}</span>`;
+      } else {
+        html += `<span class="deduction-blank" data-blank="${part.blank}">[${part.label}]</span>`;
+      }
+    }
+  }
+  container.innerHTML = html;
+
+  container.querySelectorAll('.deduction-blank:not(.filled)').forEach(b => {
+    b.addEventListener('click', () => {
+      activeBlank = b.dataset.blank;
+      container.querySelectorAll('.deduction-blank').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      showToast('在右侧证据档案中选择一项');
+    });
+  });
+  container.querySelectorAll('.deduction-blank.filled').forEach(b => {
+    b.addEventListener('click', () => clearBlank(b.dataset.blank));
+  });
+}
+
+function fillBlank(blankId, clueId) {
+  const oldClue = answers[blankId];
+  if (oldClue) document.querySelectorAll(`.evidence-card[data-clue-id="${oldClue}"]`).forEach(c => c.classList.remove('assigned'));
+  answers[blankId] = clueId;
+  document.querySelectorAll(`.evidence-card[data-clue-id="${clueId}"]`).forEach(c => { c.classList.add('assigned'); c.classList.remove('selected'); });
+  selectedClue = null; activeBlank = null;
+  renderDeduction();
+}
+
+function clearBlank(blankId) {
+  const clueId = answers[blankId];
+  if (!clueId) return;
+  delete answers[blankId];
+  document.querySelectorAll(`.evidence-card[data-clue-id="${clueId}"]`).forEach(c => c.classList.remove('assigned'));
+  document.querySelectorAll('.evidence-card.selected').forEach(c => c.classList.remove('selected'));
+  selectedClue = null; activeBlank = null;
+  renderDeduction();
+}
+
+function submitDeduction() {
+  let correct = 0;
+  const total = currentCase.blanks.length;
+  const details = [];
+  for (const b of currentCase.blanks) {
+    const ans = answers[b.id];
+    if (ans && b.answers.includes(ans)) { correct++; details.push({ label: b.label, ok: true }); }
+    else { details.push({ label: b.label, ok: false }); }
+  }
+  const area = document.getElementById('result-area');
+  if (correct === total) {
+    area.innerHTML = `<div style="font-size:28px;margin-bottom:8px;">✓</div><div style="color:var(--success);">案情推理完全正确</div><div style="font-size:12px;color:var(--text-dim);margin-top:12px;line-height:1.8;">${currentCase.conclusion}</div>`;
+    if (!completedCases.includes(currentCase.id)) {
+      completedCases.push(currentCase.id);
+      saveProgress();
+    }
+    document.getElementById('next-case-btn').style.display = 'block';
+  } else {
+    const detailHtml = details.map(d => d.ok ? `<span style="color:var(--success);">✓ ${d.label}</span>` : `<span style="color:var(--danger);">✗ ${d.label}</span>`).join(' · ');
+    area.innerHTML = `<div style="color:var(--accent);">正确 ${correct} / ${total}</div><div style="font-size:11px;margin-top:8px;">${detailHtml}</div><div style="font-size:11px;color:var(--text-faint);margin-top:8px;">点击已填写的空白可以清除后重新选择</div>`;
+  }
+}
+
+function goNextCase() {
+  const caseIds = Object.keys(CASES);
+  const idx = caseIds.indexOf(currentCase.id);
+  if (idx >= 0 && idx + 1 < caseIds.length) {
+    startCase(caseIds[idx + 1]);
+  } else {
+    showTitle();
+  }
+}
+
+// ==================== INIT ====================
+renderCaseGrid();
+</script>
+</body>
+</html>
