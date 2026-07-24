@@ -241,6 +241,7 @@
     <div class="footer-right">
       <span>EST. 2026</span>
       <span>NODE: HK-03</span>
+      <span id="visitorCount">访问：--</span>
     </div>
   </footer>
 
@@ -458,6 +459,15 @@
         }
       } catch (e) {}
     });
+  })();
+
+  (function() {
+    const key = 'voidcipher-visits';
+    let count = parseInt(localStorage.getItem(key) || '0', 10);
+    count += 1;
+    localStorage.setItem(key, count);
+    const el = document.getElementById('visitorCount');
+    if (el) el.textContent = '访问：' + count;
   })();
 
   renderFilterBar();
